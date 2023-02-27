@@ -1,0 +1,57 @@
+version: '3.8'
+
+
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: docker
+      POSTGRES_USER: docker
+      POSTGRES_DB: products
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./database:/var/lib/postgresql/data
+  pgAdmin:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5051:80"
+    depends_on:
+      - db
+  nats:
+    image: nats:latest
+    ports:
+      - "4222:4222"
+    networks:
+      - nats-net
+  admin:
+    build: ./backend/admin
+    restart: always
+    ports:
+      - "3001:3001"
+      - "3000:3000"
+    networks:
+      - nats-net
+    volumes:
+      - .:/app/backend/admin
+  login:
+    build: ./backend/login
+    volumes:
+      - .:/app/backend/login
+  backoffice:
+    build: ./frontend
+    ports:
+      - "8080:8080"
+      - "5173:5173"
+    depends_on:
+      - admin
+
+      
+networks:
+  nats-net:

@@ -1,0 +1,538 @@
+[
+  {
+    "CATEGORIA AVE": "Antiestrés",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Bar y vino",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Deportes",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Gorras",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Memorias USB",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Relojes",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Escritura",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Escritura",
+    "SUBCATEGORIA AVE": "Boligrafos plasticos"
+  },
+  {
+    "CATEGORIA AVE": "Escritura",
+    "SUBCATEGORIA AVE": "Boligrafos metálicos"
+  },
+  {
+    "CATEGORIA AVE": "Escritura",
+    "SUBCATEGORIA AVE": "Boligrafo con Resaltador"
+  },
+  {
+    "CATEGORIA AVE": "Escritura",
+    "SUBCATEGORIA AVE": "Lápices"
+  },
+  {
+    "CATEGORIA AVE": "Escritura",
+    "SUBCATEGORIA AVE": "Portaminas"
+  },
+  {
+    "CATEGORIA AVE": "Escritura",
+    "SUBCATEGORIA AVE": "Resaltadores"
+  },
+  {
+    "CATEGORIA AVE": "Escritura",
+    "SUBCATEGORIA AVE": "Boligrafos ecológicos"
+  },
+  {
+    "CATEGORIA AVE": "Escritura",
+    "SUBCATEGORIA AVE": "Estuches"
+  },
+  {
+    "CATEGORIA AVE": "Escritura",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Ecológicos",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Herramientas e iluminación",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Herramientas e iluminación",
+    "SUBCATEGORIA AVE": "Automóvil"
+  },
+  {
+    "CATEGORIA AVE": "Herramientas e iluminación",
+    "SUBCATEGORIA AVE": "Linternas"
+  },
+  {
+    "CATEGORIA AVE": "Herramientas e iluminación",
+    "SUBCATEGORIA AVE": "Metros"
+  },
+  {
+    "CATEGORIA AVE": "Herramientas e iluminación",
+    "SUBCATEGORIA AVE": "Herramienteros"
+  },
+  {
+    "CATEGORIA AVE": "Herramientas e iluminación",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Llaveros",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Llaveros",
+    "SUBCATEGORIA AVE": "con destapador"
+  },
+  {
+    "CATEGORIA AVE": "Llaveros",
+    "SUBCATEGORIA AVE": "con linterna"
+  },
+  {
+    "CATEGORIA AVE": "Llaveros",
+    "SUBCATEGORIA AVE": "con pito"
+  },
+  {
+    "CATEGORIA AVE": "Llaveros",
+    "SUBCATEGORIA AVE": "Metalicos"
+  },
+  {
+    "CATEGORIA AVE": "Llaveros",
+    "SUBCATEGORIA AVE": "Premium"
+  },
+  {
+    "CATEGORIA AVE": "Llaveros",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Confecciones",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Confecciones",
+    "SUBCATEGORIA AVE": "Confecciones"
+  },
+  {
+    "CATEGORIA AVE": "Confecciones",
+    "SUBCATEGORIA AVE": "Camiseta Polo"
+  },
+  {
+    "CATEGORIA AVE": "Confecciones",
+    "SUBCATEGORIA AVE": "Camiseta T-shirt"
+  },
+  {
+    "CATEGORIA AVE": "Confecciones",
+    "SUBCATEGORIA AVE": "Chaquetas"
+  },
+  {
+    "CATEGORIA AVE": "Confecciones",
+    "SUBCATEGORIA AVE": "Toallas"
+  },
+  {
+    "CATEGORIA AVE": "Confecciones",
+    "SUBCATEGORIA AVE": "Dotaciones"
+  },
+  {
+    "CATEGORIA AVE": "Confecciones",
+    "SUBCATEGORIA AVE": "Cobijas"
+  },
+  {
+    "CATEGORIA AVE": "Confecciones",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Hogar",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Hogar",
+    "SUBCATEGORIA AVE": "Artículos Cocina"
+  },
+  {
+    "CATEGORIA AVE": "Hogar",
+    "SUBCATEGORIA AVE": "Artículos Hogar"
+  },
+  {
+    "CATEGORIA AVE": "Hogar",
+    "SUBCATEGORIA AVE": "Bar y vino"
+  },
+  {
+    "CATEGORIA AVE": "Hogar",
+    "SUBCATEGORIA AVE": "Contenedores y Portacomidas"
+  },
+  {
+    "CATEGORIA AVE": "Hogar",
+    "SUBCATEGORIA AVE": "Destapadores"
+  },
+  {
+    "CATEGORIA AVE": "Hogar",
+    "SUBCATEGORIA AVE": "Fondue"
+  },
+  {
+    "CATEGORIA AVE": "Hogar",
+    "SUBCATEGORIA AVE": "Set de BBQ"
+  },
+  {
+    "CATEGORIA AVE": "Hogar",
+    "SUBCATEGORIA AVE": "Set de Quesos"
+  },
+  {
+    "CATEGORIA AVE": "Hogar",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Deportes y Juegos",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Deportes y Juegos",
+    "SUBCATEGORIA AVE": "Deportes"
+  },
+  {
+    "CATEGORIA AVE": "Deportes y Juegos",
+    "SUBCATEGORIA AVE": "Golf"
+  },
+  {
+    "CATEGORIA AVE": "Deportes y Juegos",
+    "SUBCATEGORIA AVE": "Productos Futbol"
+  },
+  {
+    "CATEGORIA AVE": "Deportes y Juegos",
+    "SUBCATEGORIA AVE": "Juegos y recreación"
+  },
+  {
+    "CATEGORIA AVE": "Deportes y Juegos",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Bolsos Maletines y Morrales",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Bolsos Maletines y Morrales",
+    "SUBCATEGORIA AVE": "Bolsas en cambrel"
+  },
+  {
+    "CATEGORIA AVE": "Bolsos Maletines y Morrales",
+    "SUBCATEGORIA AVE": "Bolsas en algodon"
+  },
+  {
+    "CATEGORIA AVE": "Bolsos Maletines y Morrales",
+    "SUBCATEGORIA AVE": "Tulas"
+  },
+  {
+    "CATEGORIA AVE": "Bolsos Maletines y Morrales",
+    "SUBCATEGORIA AVE": "Canguros"
+  },
+  {
+    "CATEGORIA AVE": "Bolsos Maletines y Morrales",
+    "SUBCATEGORIA AVE": "Maletines Deportivas"
+  },
+  {
+    "CATEGORIA AVE": "Bolsos Maletines y Morrales",
+    "SUBCATEGORIA AVE": "Morrales y Maletines"
+  },
+  {
+    "CATEGORIA AVE": "Bolsos Maletines y Morrales",
+    "SUBCATEGORIA AVE": "Neveras y Loncheras"
+  },
+  {
+    "CATEGORIA AVE": "Bolsos Maletines y Morrales",
+    "SUBCATEGORIA AVE": "Organizadores de Viaje"
+  },
+  {
+    "CATEGORIA AVE": "Bolsos Maletines y Morrales",
+    "SUBCATEGORIA AVE": "Portapasaportes"
+  },
+  {
+    "CATEGORIA AVE": "Bolsos Maletines y Morrales",
+    "SUBCATEGORIA AVE": "Yute"
+  },
+  {
+    "CATEGORIA AVE": "Bolsos Maletines y Morrales",
+    "SUBCATEGORIA AVE": "Trolleys"
+  },
+  {
+    "CATEGORIA AVE": "Bolsos Maletines y Morrales",
+    "SUBCATEGORIA AVE": "Manos Libres"
+  },
+  {
+    "CATEGORIA AVE": "Seguridad Industrial y reflectivos",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Marcas exclusivas",
+    "SUBCATEGORIA AVE": "Boompods"
+  },
+  {
+    "CATEGORIA AVE": "Marcas exclusivas",
+    "SUBCATEGORIA AVE": "Callaway"
+  },
+  {
+    "CATEGORIA AVE": "Marcas exclusivas",
+    "SUBCATEGORIA AVE": "Chili"
+  },
+  {
+    "CATEGORIA AVE": "Marcas exclusivas",
+    "SUBCATEGORIA AVE": "Ecopromo"
+  },
+  {
+    "CATEGORIA AVE": "Marcas exclusivas",
+    "SUBCATEGORIA AVE": "Gildan"
+  },
+  {
+    "CATEGORIA AVE": "Marcas exclusivas",
+    "SUBCATEGORIA AVE": "Lexon"
+  },
+  {
+    "CATEGORIA AVE": "Marcas exclusivas",
+    "SUBCATEGORIA AVE": "Moptoppers"
+  },
+  {
+    "CATEGORIA AVE": "Marcas exclusivas",
+    "SUBCATEGORIA AVE": "Rainpro"
+  },
+  {
+    "CATEGORIA AVE": "Marcas exclusivas",
+    "SUBCATEGORIA AVE": "Rastal"
+  },
+  {
+    "CATEGORIA AVE": "Marcas exclusivas",
+    "SUBCATEGORIA AVE": "STYB"
+  },
+  {
+    "CATEGORIA AVE": "Marcas exclusivas",
+    "SUBCATEGORIA AVE": "Swisspeak"
+  },
+  {
+    "CATEGORIA AVE": "Marcas exclusivas",
+    "SUBCATEGORIA AVE": "TaylorMade"
+  },
+  {
+    "CATEGORIA AVE": "Marcas exclusivas",
+    "SUBCATEGORIA AVE": "Urban Travel"
+  },
+  {
+    "CATEGORIA AVE": "Marcas exclusivas",
+    "SUBCATEGORIA AVE": "Xindao"
+  },
+  {
+    "CATEGORIA AVE": "Marcas exclusivas",
+    "SUBCATEGORIA AVE": "NomaWalk"
+  },
+  {
+    "CATEGORIA AVE": "Marcas exclusivas",
+    "SUBCATEGORIA AVE": "Tosh"
+  },
+  {
+    "CATEGORIA AVE": "Marcas exclusivas",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Bebidas",
+    "SUBCATEGORIA AVE": "Botilitos Metálicos"
+  },
+  {
+    "CATEGORIA AVE": "Bebidas",
+    "SUBCATEGORIA AVE": "Botilitos Plásticos"
+  },
+  {
+    "CATEGORIA AVE": "Bebidas",
+    "SUBCATEGORIA AVE": "Mug Cerámica"
+  },
+  {
+    "CATEGORIA AVE": "Bebidas",
+    "SUBCATEGORIA AVE": "Mug Metálicos"
+  },
+  {
+    "CATEGORIA AVE": "Bebidas",
+    "SUBCATEGORIA AVE": "Mug Plásticos"
+  },
+  {
+    "CATEGORIA AVE": "Bebidas",
+    "SUBCATEGORIA AVE": "Termos"
+  },
+  {
+    "CATEGORIA AVE": "Bebidas",
+    "SUBCATEGORIA AVE": "Vasos y copas"
+  },
+  {
+    "CATEGORIA AVE": "Bebidas",
+    "SUBCATEGORIA AVE": "Botilitos y mugs sublimacion"
+  },
+  {
+    "CATEGORIA AVE": "Bebidas",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Oficina y Negocios",
+    "SUBCATEGORIA AVE": "Artículos Escritorio"
+  },
+  {
+    "CATEGORIA AVE": "Oficina y Negocios",
+    "SUBCATEGORIA AVE": "Ecológicos"
+  },
+  {
+    "CATEGORIA AVE": "Oficina y Negocios",
+    "SUBCATEGORIA AVE": "Libretas y agendas"
+  },
+  {
+    "CATEGORIA AVE": "Oficina y Negocios",
+    "SUBCATEGORIA AVE": "Mouse-Pad"
+  },
+  {
+    "CATEGORIA AVE": "Oficina y Negocios",
+    "SUBCATEGORIA AVE": "Portadocumentos y Portafolios"
+  },
+  {
+    "CATEGORIA AVE": "Oficina y Negocios",
+    "SUBCATEGORIA AVE": "Portalápices"
+  },
+  {
+    "CATEGORIA AVE": "Oficina y Negocios",
+    "SUBCATEGORIA AVE": "Resaltadores"
+  },
+  {
+    "CATEGORIA AVE": "Oficina y Negocios",
+    "SUBCATEGORIA AVE": "Stickies y sets adhesivos"
+  },
+  {
+    "CATEGORIA AVE": "Oficina y Negocios",
+    "SUBCATEGORIA AVE": "Tarjeteros"
+  },
+  {
+    "CATEGORIA AVE": "Oficina y Negocios",
+    "SUBCATEGORIA AVE": "Producción Nacional"
+  },
+  {
+    "CATEGORIA AVE": "Oficina y Negocios",
+    "SUBCATEGORIA AVE": "Calculadoras"
+  },
+  {
+    "CATEGORIA AVE": "Oficina y Negocios",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Paraguas e impermeables",
+    "SUBCATEGORIA AVE": "Paraguas Golf"
+  },
+  {
+    "CATEGORIA AVE": "Paraguas e impermeables",
+    "SUBCATEGORIA AVE": "Paraguas Mini"
+  },
+  {
+    "CATEGORIA AVE": "Paraguas e impermeables",
+    "SUBCATEGORIA AVE": "Paraguas Premium"
+  },
+  {
+    "CATEGORIA AVE": "Paraguas e impermeables",
+    "SUBCATEGORIA AVE": "Impermeables"
+  },
+  {
+    "CATEGORIA AVE": "Paraguas e impermeables",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Salud y cuidado Personal",
+    "SUBCATEGORIA AVE": "Pharma"
+  },
+  {
+    "CATEGORIA AVE": "Salud y cuidado Personal",
+    "SUBCATEGORIA AVE": "Gel y liquidos antibacteriales"
+  },
+  {
+    "CATEGORIA AVE": "Salud y cuidado Personal",
+    "SUBCATEGORIA AVE": "Masajeadores"
+  },
+  {
+    "CATEGORIA AVE": "Salud y cuidado Personal",
+    "SUBCATEGORIA AVE": "Mentas"
+  },
+  {
+    "CATEGORIA AVE": "Salud y cuidado Personal",
+    "SUBCATEGORIA AVE": "Pastilleros"
+  },
+  {
+    "CATEGORIA AVE": "Salud y cuidado Personal",
+    "SUBCATEGORIA AVE": "Protectores solares"
+  },
+  {
+    "CATEGORIA AVE": "Salud y cuidado Personal",
+    "SUBCATEGORIA AVE": "Belleza"
+  },
+  {
+    "CATEGORIA AVE": "Salud y cuidado Personal",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Produccion Nacional",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Alimentos y bebidas",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Mascotas",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Viaje",
+    "SUBCATEGORIA AVE": ""
+  },
+  {
+    "CATEGORIA AVE": "Tecnología",
+    "SUBCATEGORIA AVE": "Accesorios de Computador"
+  },
+  {
+    "CATEGORIA AVE": "Tecnología",
+    "SUBCATEGORIA AVE": "Accesorios para Automovil"
+  },
+  {
+    "CATEGORIA AVE": "Tecnología",
+    "SUBCATEGORIA AVE": "Accesorios para moviles"
+  },
+  {
+    "CATEGORIA AVE": "Tecnología",
+    "SUBCATEGORIA AVE": "Speakers"
+  },
+  {
+    "CATEGORIA AVE": "Tecnología",
+    "SUBCATEGORIA AVE": "Audifonos"
+  },
+  {
+    "CATEGORIA AVE": "Tecnología",
+    "SUBCATEGORIA AVE": "Cables y Adaptadores de carga"
+  },
+  {
+    "CATEGORIA AVE": "Tecnología",
+    "SUBCATEGORIA AVE": "Hubs"
+  },
+  {
+    "CATEGORIA AVE": "Tecnología",
+    "SUBCATEGORIA AVE": "Pilas Power Bank"
+  },
+  {
+    "CATEGORIA AVE": "Tecnología",
+    "SUBCATEGORIA AVE": "Relojes"
+  },
+  {
+    "CATEGORIA AVE": "Tecnología",
+    "SUBCATEGORIA AVE": ""
+  }
+]
