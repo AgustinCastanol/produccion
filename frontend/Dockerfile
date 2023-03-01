@@ -17,4 +17,4 @@ EXPOSE 8080
 EXPOSE 5173
 
 # Ejecuta el servidor de la aplicación
-CMD [ "npm", "run", "dev" ]
+CMD [ "npm", "run", "start" ]

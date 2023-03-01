@@ -32,7 +32,7 @@
       </Column>
       <Column field="price" header="Precio Sugerido">
         <template #body="slotProps">
-          <span>{{ (slotProps.data.metadata_price.precioSugerido !=undefined || slotProps.data.metadata_price.precioSugerido != null)? `${slotProps.data.metadata_price.precioSugerido}$${slotProps.data.currency}`:0 }}</span>
+          <span>{{ slotProps.data.metadata_price !== undefined && (slotProps.data.metadata_price.precioSugerido !=undefined || slotProps.data.metadata_price.precioSugerido != null)? `${slotProps.data.metadata_price.precioSugerido}$${slotProps.data.currency}`:0 }}</span>
         </template>
       </Column>
       <Column field="name_category" header="Categoria">
@@ -59,7 +59,7 @@
       <Column header="Acciones">
         <template #body="slotProps">
           <Button icon="pi pi-pencil" class="p-button-rounded p-button bg-purple-600 p-mr-2"
-            :disabled="isApiSupplier(slotProps.data.name_supplier) == 'API'" />
+            :disabled="isApiSupplier(slotProps.data.name_supplier!== undefined? slotProps.data.name_supplier:'none') == 'API'" />
           <Button icon="pi pi-eye" class="p-button-rounded p-button" @click="openModal(slotProps.data)" />
         </template>
       </Column>
@@ -512,104 +512,97 @@ function isApiSupplier(name_supplier) {
 function openModalOptions(event) {
   newProduct.value.toggle(event)
 }
+
 async function onPageChange(event) {
   try {
     loading.value = true
     const offset = event.first
     const limit = event.rows
-    const res = await API.getProducts({ offset, limit })
-    if (res.data !== undefined) {
-      products.value = res.data
-      products.value = res.data.map(async (item)=>{
-        const aux = JSON.parse(item["urlImage"])
-          item.metadata_price = JSON.parse(item.metadata_price)
-          item["urlImage"] = aux[0] == undefined ? item["urlImage"] : aux[0]
-          if(item.parent !== null){
-            const cparent = await API.getCategory({id:item.parent})
-            item.name_parent_category = cparent.data[0].name_category
-          }
-      })
-    } else {
-      console.log(res)
+    products.value= []
+    console.log(offset, limit)
+    await loadProducts({offset, limit})
+
+      loading.value = false
+    } catch (e) {
+      console.log(e)
       useToast().add({ severity: 'error', summary: 'Error', detail: 'Ocurrio un error al obtener los campos', life: 3000 });
+      loading.value = false
     }
-    loading.value = false
-  } catch (e) {
-    console.log(e)
-    useToast().add({ severity: 'error', summary: 'Error', detail: 'Ocurrio un error al obtener los campos', life: 3000 });
-    loading.value = false
   }
-}
-function handleSubmit() {
-  if(variantsForm.value.length < 1){
-    toast.add({ severity: 'warn', summary: 'Warning', detail: 'Producto sin variantes', life: 3000 });
-    return;
-  }
-  console.log("submit",form.value)
-  console.log("submit variants",variantsForm.value)
-  for (let key in form.value) {
-    if (form.value[key] === '') {
-      toast.add({ severity: 'warn', summary: 'Warning', detail: `Complete todos los campos '${key}'`, life: 3000 });
+  function handleSubmit() {
+    if(variantsForm.value.length < 1){
+      toast.add({ severity: 'warn', summary: 'Warning', detail: 'Producto sin variantes', life: 3000 });
       return;
     }
+    console.log("submit",form.value)
+    console.log("submit variants",variantsForm.value)
+    for (let key in form.value) {
+      if (form.value[key] === '') {
+        toast.add({ severity: 'warn', summary: 'Warning', detail: `Complete todos los campos '${key}'`, life: 3000 });
+        return;
+      }
+    }
+    dialogNewProduct.value.visible = false
+    toast.add({ severity: 'success', summary: 'Success', detail: 'Producto creado', life: 3000 });
   }
-  dialogNewProduct.value.visible = false
-  toast.add({ severity: 'success', summary: 'Success', detail: 'Producto creado', life: 3000 });
-}
-
-async function search(data) {
-  if (key_search.value !== '' && key_search.value.length > 3) {
-    let res = await API.searchProduct({ search: key_search.value })
-    console.log("data", res)
-    products.value = []
-    products.value = res
-    totalRows.value = res.length
-
-  } else {
-    let res = await API.getProducts()
-    products.value = []
-    products.value = res.data
-    totalRows.value = res.totalRows
+  
+  async function search(data) {
+    if (key_search.value !== '' && key_search.value.length > 3) {
+      let res = await API.searchProduct({ search: key_search.value })
+      console.log("data", res)
+      products.value = []
+      products.value = res
+      totalRows.value = res.length
+      
+    } else {
+      await loadProducts({ offset: 0, limit: 10 })
+    }
   }
-}
-async function onUpload(event) {
-  console.log(event)
-}
-async function redirect() {
-  router.push({ name: 'loadProducts' })
-}
-async function setVariant(event){
-  console.log(variantsForm.value)
-  indexVariant.value = event.index
-  bounce.value = event.index
-  hideVariantsFrom.value = true
-}
-async function rowDblclick(event){
-  indexVariant.value = event.index
-  bounce.value = event.index
-  hideVariantsFrom.value = false
-}
-onMounted(async () => {
-  try {
-    const res = await API.getProducts()
-    if (res.data !== undefined) {
-      console.log(res)
+  async function onUpload(event) {
+    console.log(event)
+  }
+  async function redirect() {
+    router.push({ name: 'loadProducts' })
+  }
+  async function setVariant(event){
+    console.log(variantsForm.value)
+    indexVariant.value = event.index
+    bounce.value = event.index
+    hideVariantsFrom.value = true
+  }
+  async function rowDblclick(event){
+    indexVariant.value = event.index
+    bounce.value = event.index
+    hideVariantsFrom.value = false
+  }
+  async function loadProducts({offset,limit}){
+   try{
+    const res = await API.getProducts({offset,limit})
+    if(res.data !== undefined){
       products.value = res.data
       products.value.map(async (item)=>{
-          const aux = JSON.parse(item["urlImage"])
-          item.metadata_price = JSON.parse(item.metadata_price)
-          item["urlImage"] = aux[0] == undefined ? item["urlImage"] : aux[0]
-          if(item.parent !== null){
-            const cparent = await API.getCategory({id:item.parent})
-            item.name_parent_category = cparent.data[0].name_category
-          }
+        const aux = JSON.parse(item["urlImage"])
+        item.metadata_price = JSON.parse(item.metadata_price)
+        item["urlImage"] = aux[0] == undefined ? item["urlImage"] : aux[0]
+        if(item.parent !== null){
+          const cparent = await API.getCategory({id:item.parent})
+          item.name_parent_category = cparent.data[0].name_category
+        }
 
-      })
-      totalRows.value = res.totalRows
-    } else {
-      console.log(res)
-      useToast().add({ severity: 'error', summary: 'Error', detail: 'Ocurrio un error al obtener los campos', life: 3000 });
-    }
+    })
+    totalRows.value = res.totalRows
+  }else{
+    console.log(res)
+    useToast().add({ severity: 'error', summary: 'Error', detail: 'Ocurrio un error al obtener los campos', life: 3000 });
+  }
+   }catch(err){
+      console.log(err)
+
+   }
+  }
+  onMounted(async () => {
+    try {
+      await loadProducts({offset:0,limit:10})
   } catch (e) {
     console.log(e)
     useToast().add({ severity: 'error', summary: 'Error', detail: 'Ocurrio un error al obtener los campos', life: 3000 });
