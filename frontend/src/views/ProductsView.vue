@@ -95,7 +95,7 @@
         <Column field="sku" header="Sku" />
         <Column field="price" header="Precio por variante">
           <template #body="slotProps">
-            <span>{{ dialog.data.product.price + '$' + dialog.data.product.currency }}</span>
+            <span>{{ slotProps.data.price_override + '$' + dialog.data.product.currency }}</span>
           </template>
         </Column>
         <Column field="stock" header="Stock">
@@ -497,7 +497,7 @@ async function openModal(data) {
       product: data,
       variants: variants
     }
-    console.log(dialog.value.data.variants)
+    console.log(dialog.value.data.variants,"variantes")
     dialog.value.visible = true
     dialog.value.loading = false
   } catch (e) {
