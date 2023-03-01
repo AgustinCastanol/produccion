@@ -2,8 +2,7 @@
   <Toast />
   <section>
     <DataTable :value="products" responsiveLayout="scroll" :loading="loading" editMode="cell" :lazy="true"
-      :rowEditor="true" :paginator="true" :rows="rows" :totalRecords="totalRows" stripedRows
-      @page="onPageChange($event)">
+      :rowEditor="true" :paginator="true" :rows="rows" :totalRecords="totalRows" stripedRows @page="onPageChange($event)">
       <template #header>
         <div class="flex justify-content-between align-items-center">
           <span class="p-input-icon-left">
@@ -32,17 +31,20 @@
       </Column>
       <Column field="price" header="Precio Sugerido">
         <template #body="slotProps">
-          <span>{{ slotProps.data.metadata_price !== undefined && (slotProps.data.metadata_price.precioSugerido !=undefined || slotProps.data.metadata_price.precioSugerido != null)? `${slotProps.data.metadata_price.precioSugerido}$${slotProps.data.currency}`:0 }}</span>
+          <span>{{ slotProps.data.metadata_price !== undefined && (slotProps.data.metadata_price.precioSugerido
+            != undefined || slotProps.data.metadata_price.precioSugerido != null) ?
+            `${slotProps.data.metadata_price.precioSugerido}$${slotProps.data.currency}` : 0 }}</span>
         </template>
       </Column>
       <Column field="name_category" header="Categoria">
         <template #body="slotProps">
-          <span>{{ slotProps.data.parent == null? slotProps.data.name_category: slotProps.data.name_parent_category}}</span>
+          <span>{{ slotProps.data.parent == null ? slotProps.data.name_category :
+            slotProps.data.name_parent_category }}</span>
         </template>
       </Column>
       <Column field="name_category" header="Subcategorias">
         <template #body="slotProps">
-          <span>{{ slotProps.data.parent !== null? slotProps.data.name_category: '-' }}</span>
+          <span>{{ slotProps.data.parent !== null ? slotProps.data.name_category : '-' }}</span>
         </template>
       </Column>
       <Column field="name_supplier" header="Proveedor" />
@@ -59,7 +61,7 @@
       <Column header="Acciones">
         <template #body="slotProps">
           <Button icon="pi pi-pencil" class="p-button-rounded p-button bg-purple-600 p-mr-2"
-            :disabled="isApiSupplier(slotProps.data.name_supplier!== undefined? slotProps.data.name_supplier:'none') == 'API'" />
+            :disabled="isApiSupplier(slotProps.data.name_supplier !== undefined ? slotProps.data.name_supplier : 'none') == 'API'" />
           <Button icon="pi pi-eye" class="p-button-rounded p-button" @click="openModal(slotProps.data)" />
         </template>
       </Column>
@@ -98,8 +100,8 @@
         </Column>
         <Column field="stock" header="Stock">
           <template #body="slotProps">
-            <span class="flex gap-1" v-for="stock in slotProps.data.stock">{{`${stock.name} :
-            ${stock.quantity}`}}</span>
+            <span class="flex gap-1" v-for="stock in slotProps.data.stock">{{ `${stock.name} :
+                          ${stock.quantity}` }}</span>
           </template>
         </Column>
       </DataTable>
@@ -107,8 +109,7 @@
   </Dialog>
   <OverlayPanel ref="newProduct" appendTo="body" id="overlay_panel">
     <section class="flex flex-col gap-2">
-      <Button label="Agregar producto unitario" class="p-button-rounded p-button-success"
-        @click="openModalNewProduct" />
+      <Button label="Agregar producto unitario" class="p-button-rounded p-button-success" @click="openModalNewProduct" />
       <Button label="Carga masiva de productos (CSV)" class="p-button-rounded p-button-success" @click="redirect" />
     </section>
   </OverlayPanel>
@@ -175,11 +176,11 @@
               <div class="field">
                 <div class="p-float-label">
                   <Dropdown id="categoria" v-model="form.category" :options="dropdownForm['category']"
-                    optionLabel="name_category" optionValue="id_categorias" @change="loadSubcategories"/>
+                    optionLabel="name_category" optionValue="id_categorias" @change="loadSubcategories" />
                   <label for="Categorias">Categorias*</label>
                 </div>
               </div>
-              <div class="field" v-if ="categorySelected!=null" >
+              <div class="field" v-if="categorySelected != null">
                 <div class="p-float-label">
                   <Dropdown id="categoria" v-model="form.subCategory" :options="categorySelected.subCategory"
                     optionLabel="name_category" optionValue="id_categorias" />
@@ -203,7 +204,7 @@
               <div class="field">
                 <div class="p-label">
                   <label for="">Raiting</label>
-                  <Rating v-model="form.raiting" :stars="5" :cancel="false"/>
+                  <Rating v-model="form.raiting" :stars="5" :cancel="false" />
                 </div>
               </div>
               <div class="field">
@@ -214,7 +215,7 @@
                 </div>
               </div>
             </div>
-            <Button type="submit" label="Submit" class="mt-2"/>
+            <Button type="submit" label="Submit" class="mt-2" />
           </form>
         </div>
       </div>
@@ -223,47 +224,47 @@
           <template #header>
             <div class="flex justify-content-between">
               <h3>Variantes</h3>
-              <Button label="Agregar Variante" class=" p-button-rounded p-button-success"
-                @click="addVariant"/>
+              <Button label="Agregar Variante" class=" p-button-rounded p-button-success" @click="addVariant" />
             </div>
           </template>
-          <Column field="name_variant" header="Nombre" >
+          <Column field="name_variant" header="Nombre">
             <template #body="slotProps">
-              <div :class="bounce == slotProps.index? 'selectedRow':''">
+              <div :class="bounce == slotProps.index ? 'selectedRow' : ''">
                 {{ slotProps.data.name_variant }}
               </div>
             </template>
           </Column>
-          <Column field="sku" header="Sku" >
+          <Column field="sku" header="Sku">
             <template #body="slotProps">
-              <div :class="bounce == slotProps.index? 'selectedRow':''">
+              <div :class="bounce == slotProps.index ? 'selectedRow' : ''">
                 {{ slotProps.data.sku }}
               </div>
             </template>
           </Column>
           <Column field="price" header="Precio">
             <template #body="slotProps">
-              <div :class="bounce == slotProps.index? 'selectedRow':''">
+              <div :class="bounce == slotProps.index ? 'selectedRow' : ''">
                 {{ slotProps.data.price }}
               </div>
             </template>
           </Column>
           <Column field="stock" header="Stock">
             <template #body="slotProps">
-              <div v-if="slotProps.data.stock.leng > 1" :class="bounce == slotProps.index? 'selectedRow flex gap-1':'flex gap-1'"
-                v-for="stock in slotProps.data.stock">{{`${stock.name} :
-                ${stock.quantity}`}}</div>
-              <div :class="bounce == slotProps.index? 'selectedRow':''" v-else>-</div>
+              <div v-if="slotProps.data.stock.leng > 1"
+                :class="bounce == slotProps.index ? 'selectedRow flex gap-1' : 'flex gap-1'"
+                v-for="stock in slotProps.data.stock">{{ `${stock.name} :
+                                ${stock.quantity}` }}</div>
+              <div :class="bounce == slotProps.index ? 'selectedRow' : ''" v-else>-</div>
             </template>
           </Column>
           <Column field="image">
             <template #body="slotProps">
-              <Button class="pi pi-trash p-button-danger" @click="deleteVariant(slotProps.index)"/>
+              <Button class="pi pi-trash p-button-danger" @click="deleteVariant(slotProps.index)" />
             </template>
           </Column>
         </DataTable>
         <Divider />
-        <div v-if="variantsForm.length>0 && !hideVariantsFrom" class="form variants">
+        <div v-if="variantsForm.length > 0 && !hideVariantsFrom" class="form variants">
           <form @submit.prevent="handleSubmit" class="p-fluid grid">
             <div class="col">
               <div class="field">
@@ -289,11 +290,11 @@
             <div class="col">
               <div class="field">
                 <div class="flex flex-column align-items-center justify-content-center">
-                  <div v-for="(stock,index) in variantsForm[indexVariant].stock" class="flex flex-wrap">
-                    <InputText class="w-4"  id="stock" v-model="stock[index]" placeholder="Cantidad de stock" />
-                   <Dropdown  class="w-6" id="stockLocation" v-model="stock[index]" placeholder="Ubicacion"
-                    :options="dropdownForm['stockLocation']" optionLabel="name" />
-                    <Button class="pi pi-trash w-2 p-button-danger align-self-start" @click="deleteStock(index)"/>
+                  <div v-for="(stock, index) in variantsForm[indexVariant].stock" class="flex flex-wrap">
+                    <InputText class="w-4" id="stock" v-model="stock[index]" placeholder="Cantidad de stock" />
+                    <Dropdown class="w-6" id="stockLocation" v-model="stock[index]" placeholder="Ubicacion"
+                      :options="dropdownForm['stockLocation']" optionLabel="name" />
+                    <Button class="pi pi-trash w-2 p-button-danger align-self-start" @click="deleteStock(index)" />
                   </div>
                   <Button class="w-2 h-2rem" @click="addStock">+</Button>
                 </div>
@@ -356,7 +357,6 @@ const hideVariantsFrom = ref(true)
 const loading = ref(false)
 const bounce = ref(0)
 const newProduct = ref(false)
-const categories_loaded = ref([])
 const router = useRouter()
 const variantsForm = ref([{
   name_variant: '',
@@ -401,32 +401,32 @@ const form = ref({
   description: '',
   reference: '',
   price: '',
-  canal:'',
+  canal: '',
   supplier: '',
-  peso:'',
+  peso: '',
   currency: '',
-  category:'',
-  collection:'',
-  is_published:'',
+  category: '',
+  collection: '',
+  is_published: '',
   raiting: '',
-  subCategory:''
+  subCategory: ''
 })
 const toast = useToast()
-const api_suppliers = ['promos', 'cdo','marpico','promoopcion']
+const api_suppliers = ['promos', 'cdo', 'marpico', 'promoopcion']
 
-async function loadSubcategories(event){
+async function loadSubcategories(event) {
   const id = event.value
   /*buscar el id padre en dropdown['category'] */
-  const aux = dropdownForm.value['category'].filter((item)=>(item.id_categorias == id && item.subCategory.length>0))
-  if(aux.length>0){
+  const aux = dropdownForm.value['category'].filter((item) => (item.id_categorias == id && item.subCategory.length > 0))
+  if (aux.length > 0) {
     categorySelected.value = aux[0]
     console.log(categorySelected.value)
     console.log(aux)
 
   }
 }
-async function foundCategoryFather(category_id){
- const res = await API.getCategory({id:category_id})
+async function foundCategoryFather(category_id) {
+  const res = await API.getCategory({ id: category_id })
   console.log(res)
   return "hola"
 }
@@ -441,24 +441,24 @@ async function openModalNewProduct() {
   const res_stockLocation = API.getStockLocation()
   Promise.all([res_category, res_collection, res_supplier, res_stockLocation]).then((values) => {
     console.log(values)
-    dropdownForm.value['category'] = values[0].data.map((item)=>item.parent==null?item:null)
-    dropdownForm.value['category'] = dropdownForm.value['category'].filter((item)=>item!=null)
-    
-    dropdownForm.value['category'].forEach((item)=>{
-      item['subCategory'] = values[0].data.map((subItem)=>(item.id_categorias == subItem.parent) ?subItem:null)
-      item['subCategory'] = item['subCategory'].filter((subItem)=>subItem!=null)
+    dropdownForm.value['category'] = values[0].data.map((item) => item.parent == null ? item : null)
+    dropdownForm.value['category'] = dropdownForm.value['category'].filter((item) => item != null)
+
+    dropdownForm.value['category'].forEach((item) => {
+      item['subCategory'] = values[0].data.map((subItem) => (item.id_categorias == subItem.parent) ? subItem : null)
+      item['subCategory'] = item['subCategory'].filter((subItem) => subItem != null)
 
     })
-    
+
     dropdownForm.value['collecion'] = values[1]
     dropdownForm.value['supplier'] = values[2].res.data
     dropdownForm.value['stockLocation'] = values[3].data
-    
+
     console.log('dropdownForm', dropdownForm.value['category'])
   })
 }
 async function addVariant() {
-  bounce.value= variantsForm.value.length
+  bounce.value = variantsForm.value.length
   indexVariant.value = variantsForm.value.length
   hideVariantsFrom.value = false
   variantsForm.value.push({
@@ -492,7 +492,7 @@ async function openModal(data) {
     for (let i = 0; i < variants.length; i++) {
       variants[i].stock = await API.getStock({ id_variant: variants[i].id_variant })
     }
-    console.log(data,"data")
+    console.log(data, "data")
     dialog.value['data'] = {
       product: data,
       variants: variants
@@ -502,7 +502,7 @@ async function openModal(data) {
     dialog.value.loading = false
   } catch (e) {
     console.log(e)
-    useToast().add({ severity: 'error', summary: 'Error', detail: 'Ocurrio un error al obtener los campos de variantes', life: 3000 });
+    toast.add({ severity: 'error', summary: 'Error', detail: 'Ocurrio un error al obtener los campos de variantes', life: 3000 });
     loading.value = false
   }
 }
@@ -518,125 +518,144 @@ async function onPageChange(event) {
     loading.value = true
     const offset = event.first
     const limit = event.rows
-    products.value= []
+    products.value = []
     console.log(offset, limit)
-    await loadProducts({offset, limit})
+    await loadProducts({ offset, limit })
 
-      loading.value = false
-    } catch (e) {
-      console.log(e)
-      useToast().add({ severity: 'error', summary: 'Error', detail: 'Ocurrio un error al obtener los campos', life: 3000 });
-      loading.value = false
-    }
+    loading.value = false
+  } catch (e) {
+    console.log(e)
+    toast.add({ severity: 'error', summary: 'Error', detail: 'Ocurrio un error al obtener los campos', life: 3000 });
+    loading.value = false
   }
-  function handleSubmit() {
-    if(variantsForm.value.length < 1){
-      toast.add({ severity: 'warn', summary: 'Warning', detail: 'Producto sin variantes', life: 3000 });
+}
+function handleSubmit() {
+  if (variantsForm.value.length < 1) {
+    toast.add({ severity: 'warn', summary: 'Warning', detail: 'Producto sin variantes', life: 3000 });
+    return;
+  }
+  console.log("submit", form.value)
+  console.log("submit variants", variantsForm.value)
+  for (let key in form.value) {
+    if (form.value[key] === '') {
+      toast.add({ severity: 'warn', summary: 'Warning', detail: `Complete todos los campos '${key}'`, life: 3000 });
       return;
     }
-    console.log("submit",form.value)
-    console.log("submit variants",variantsForm.value)
-    for (let key in form.value) {
-      if (form.value[key] === '') {
-        toast.add({ severity: 'warn', summary: 'Warning', detail: `Complete todos los campos '${key}'`, life: 3000 });
-        return;
-      }
-    }
-    dialogNewProduct.value.visible = false
-    toast.add({ severity: 'success', summary: 'Success', detail: 'Producto creado', life: 3000 });
   }
-  
-  async function search(data) {
-    if (key_search.value !== '' && key_search.value.length > 3) {
-      let res = await API.searchProduct({ search: key_search.value })
-      console.log("data", res)
+  dialogNewProduct.value.visible = false
+  toast.add({ severity: 'success', summary: 'Success', detail: 'Producto creado', life: 3000 });
+}
+
+async function search(data) {
+  if (key_search.value !== '' && key_search.value.length > 3) {
+    let res = await API.searchProduct({ search: key_search.value })
+    if (res !== undefined) {
       products.value = []
       products.value = res
-      totalRows.value = res.length
-      
-    } else {
-      await loadProducts({ offset: 0, limit: 10 })
-    }
-  }
-  async function onUpload(event) {
-    console.log(event)
-  }
-  async function redirect() {
-    router.push({ name: 'loadProducts' })
-  }
-  async function setVariant(event){
-    console.log(variantsForm.value)
-    indexVariant.value = event.index
-    bounce.value = event.index
-    hideVariantsFrom.value = true
-  }
-  async function rowDblclick(event){
-    indexVariant.value = event.index
-    bounce.value = event.index
-    hideVariantsFrom.value = false
-  }
-  async function loadProducts({offset,limit}){
-   try{
-    const res = await API.getProducts({offset,limit})
-    if(res.data !== undefined){
-      products.value = res.data
-      products.value.map(async (item)=>{
+      products.value.map(async (item) => {
         const aux = JSON.parse(item["urlImage"])
         item.metadata_price = JSON.parse(item.metadata_price)
         item["urlImage"] = aux[0] == undefined ? item["urlImage"] : aux[0]
-        if(item.parent !== null){
-          const cparent = await API.getCategory({id:item.parent})
+        if (item.parent !== null) {
+          const cparent = await API.getCategory({ id: item.parent })
           item.name_parent_category = cparent.data[0].name_category
         }
 
-    })
-    totalRows.value = res.totalRows
-  }else{
-    console.log(res)
-    useToast().add({ severity: 'error', summary: 'Error', detail: 'Ocurrio un error al obtener los campos', life: 3000 });
-  }
-   }catch(err){
-      console.log(err)
+      })
+      totalRows.value = res.length
+    } else {
+      console.log(res)
+      toast.add({ severity: 'error', summary: 'Error', detail: 'Ocurrio un error al obtener los campos', life: 3000 });
+    }
 
-   }
+  } else {
+    await loadProducts({ offset: 0, limit: 10 })
   }
-  onMounted(async () => {
-    try {
-      await loadProducts({offset:0,limit:10})
+}
+async function onUpload(event) {
+  console.log(event)
+}
+async function redirect() {
+  router.push({ name: 'loadProducts' })
+}
+async function setVariant(event) {
+  console.log(variantsForm.value)
+  indexVariant.value = event.index
+  bounce.value = event.index
+  hideVariantsFrom.value = true
+}
+async function rowDblclick(event) {
+  indexVariant.value = event.index
+  bounce.value = event.index
+  hideVariantsFrom.value = false
+}
+async function loadProducts({ offset, limit }) {
+  try {
+    const res = await API.getProducts({ offset, limit })
+    if (res.data !== undefined) {
+      products.value = res.data
+      products.value.map(async (item) => {
+        const aux = JSON.parse(item["urlImage"])
+        item.metadata_price = JSON.parse(item.metadata_price)
+        item["urlImage"] = aux[0] == undefined ? item["urlImage"] : aux[0]
+        if (item.parent !== null) {
+          const cparent = await API.getCategory({ id: item.parent })
+          item.name_parent_category = cparent.data[0].name_category
+        }
+
+      })
+      totalRows.value = res.totalRows
+    } else {
+      console.log(res)
+      alert.add({ severity: 'error', summary: 'Error', detail: 'Ocurrio un error al obtener los campos', life: 3000 });
+    }
+  } catch (err) {
+    console.log(err)
+
+  }
+}
+onMounted(async () => {
+  try {
+    await loadProducts({ offset: 0, limit: 10 })
   } catch (e) {
     console.log(e)
-    useToast().add({ severity: 'error', summary: 'Error', detail: 'Ocurrio un error al obtener los campos', life: 3000 });
+    toast.add({ severity: 'error', summary: 'Error', detail: 'Ocurrio un error al obtener los campos', life: 3000 });
   }
 })
 </script>
 <style scoped lang="scss">
 .variants {
   border: 1px solid #ddd;
-  animation-duration: 0.5s ;
+  animation-duration: 0.5s;
   animation-name: fadeInOpacity;
   animation-fill-mode: forwards;
 }
-.selectedRow{
-    background-color: #f5f5f5;
-  animation: 1s infinite alternate ;
-    animation-name: bounce ;
-  }
+
+.selectedRow {
+  background-color: #f5f5f5;
+  animation: 1s infinite alternate;
+  animation-name: bounce;
+}
 
 @keyframes fadeInOpacity {
   0% {
     opacity: 0;
   }
+
   100% {
     opacity: 1;
   }
 }
+
 @keyframes bounce {
   0% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-5px);
   }
+
   100% {
     transform: translateY(0);
   }
@@ -721,5 +740,4 @@ a {
   border: 1px solid #c8c8c8;
   border-width: 1px 1px 1px 1px;
   font-weight: 700;
-}
-</style>
+}</style>
