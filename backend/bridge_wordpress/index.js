@@ -1,33 +1,48 @@
-var config = require("dotenv").config();
+import jwt_proxy from "./middleware/authJWT.js";
+import api_key_proxy from "./middleware/authKey.js";
+import dotenv from "dotenv";
+import express from "express";
+import http from "http";
+import cors from "cors";
+import bodyParser from "body-parser";
+import express_session from "express-session";
+import users from "./routes/api/users.js";
+import handlerError from "./middleware/errors.js";
+import notfound from "./middleware/notfound.js";
+// CONFIG DOTENV
+var config = dotenv.config();
 global.config = config.parsed;
-console.log("Check env --------");
+
+console.log("----------- AVE BACKEND ---------------");
+// VERIFICATION ENV
+console.log("----------- CHECK ENV");
 var required_env_variables = [
-  "service_port",
+  "PORT",
   "environment",
-  "pg_host",
-  "pg_port",
-  "pg_database",
-  "pg_user",
-  "pg_password",
+  "SALT_ROUNDS",
+  "SECRET"
 ];
-var hay_error = false;
-required_env_variables.map((variable) => {
-  if (!process.env[variable]) {
-    hay_error = true;
-    console.error("ERROR: falta variable env:", variable);
+var err = false;
+required_env_variables.map((e) => {
+  if (!process.env[e]) {
+    err = true;
+    console.error("ERROR: falta variable env:", e);
   }
 });
-if (hay_error) {
-  console.log("-------------------------");
-
+if (err) {
+  console.log("----------- ERROR --------------");
   process.exit(1);
 }
 
-var app = require("express")();
-var server = require("http").Server(app);
-if (process.env.environment == "dev") {
-  var cors = require("cors");
-  console.log("devmode");
+console.log("----------- SUCCESS ENV");
+
+// CONFIG EXPRESS
+const app = express();
+const server = http.Server(app);
+
+
+if (process.env.environment == "development") {
+  console.log("----------- DEVELOPE MODE -------------");
   var corsOptions = {
     credentials: true,
     origin: [
@@ -38,26 +53,23 @@ if (process.env.environment == "dev") {
       "http://localhost:9531",
       "http://127.0.0.1:5500",
       "http://127.0.0.1:5501",
-      "http://https://onlati.host:80"
     ],
   };
   app.use(cors(corsOptions));
+  console.log("----------- CORS ENABLED");
+}else{
+  console.log("----------- PRODUCTION MODE -------------");
+  app.use(cors());
 }
-var bodyParser = require("body-parser");
-
+/*access controll allow origin */
 app.use(bodyParser.json());
-
-var Session = require("express-session");
-
-
 app.disable("x-powered-by");
-app.use(
-  Session({
-    secret: "session_secret",
-    saveUninitialized: false,
-    resave: true,
-  })
-);
+app.use(express_session({
+  secret: "session_secret",
+  resave: false,
+  saveUninitialized: true,
+}));
+
 
 // const conn_obj = {
 //   host: process.env.pg_host,
@@ -90,9 +102,17 @@ app.use(
 // });
 // global.knex = knex;
 
-app.use("/bgwp", require("./api/users"));
+//de aca no pasa sin tokens
+app.use(api_key_proxy);
+app.use(jwt_proxy);
+//
 
+app.use("/bgwp", users);
 
-console.log("Servidor API escuchando en       ", process.env.service_port);
+///Si llega aca hubo un error
+app.use(handlerError)
+app.use(notfound);
+////
+console.log("Servidor API escuchando en       ", process.env.PORT);
 console.log("Environment mode", process.env.environment);
-server.listen(process.env.service_port);
+server.listen(process.env.PORT);

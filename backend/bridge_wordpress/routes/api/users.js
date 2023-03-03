@@ -1,16 +1,6 @@
-var express = require("express");
+import express from "express";
 var router = express.Router();
-const API_KEY_WP = 'API-KEY' + ' ' + process.env.API_KEY_WP
-router.use(function (request, response, next) {
-  console.log("Api _path:", request.headers);
-  if (request.headers.authorization === undefined) {
-    response.status(401).json({ error: "Empty key" });
-  }
-  if (request.headers.authorization !== API_KEY_WP) {
-    response.status(498).json({ error: "Unauthorized" });
-  }
-  next();
-});
+
 
 router.post("/register_user", function (request, response) {
   if (request.body.email == "test@ave.com") {
@@ -38,12 +28,6 @@ router.post("/register_user", function (request, response) {
     })
 })
 router.post("/login_user", function (request, response) {
-  console.log("Api _path:", request.body);
-  response.json({
-    error: [], data: {
-      user: "Usuario Encontrado",
-      token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
-    }
-  })
+  response.status(200).send("ok")
 })
-module.exports = router;
+export default router;

@@ -1,4 +1,4 @@
-FROM node:12.18.3-alpine3.9
+FROM node:18.14.2
 
 # Define el directorio de trabajo
 WORKDIR /app/backend/bridge_wordpress
