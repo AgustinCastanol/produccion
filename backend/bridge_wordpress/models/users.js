@@ -15,9 +15,7 @@ export default class Users {
     this.id = '';
     this.role=[];
   }
-  async registerUser(user) {
 
-  }
   async registerUser() {
     /*INSERT INTO public.user_admin(
   id_admin_user, id_wordpress, email, password, "user", role_admin)
@@ -34,12 +32,19 @@ export default class Users {
       const salt = await bcrypt.genSalt(parseInt(process.env.SALT_ROUNDS));
       user.password = await bcrypt.hash(this.password, salt);
       const exist_user = await this.userIsRegistered(user)
+      console.log("hola")
       if (exist_user) {
+        console.log("entre")
         return false;
       }
-      await knex('user_admin').insert(user);
-      return true;
+
+      await knex_user_db('user_admin').insert(user);
+      const token = this.createToken();
+      console.log(token)
+      return {token};
+
     } catch (err) {
+      console.log(err)
       return false;
     }
   }
