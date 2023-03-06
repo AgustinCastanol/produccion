@@ -26,10 +26,11 @@ try{
   }
   const users = new Users({ email, password, id_wordpress, user });
   const register = await users.registerUser();
+  console.log(register)
   if(register == false){
     next( "Error al crear usuario")
   }
-  response.status(200).send({ message: "Creado con exito", error:[] })
+  response.status(200).send({ message: "Creado con exito",token:register.token ,error:[] })
 }catch(err){
   console.log(err);
   next(err.message);

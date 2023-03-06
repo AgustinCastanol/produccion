@@ -37,10 +37,14 @@ export default class Users {
         console.log("entre")
         return false;
       }
-      console.log("sali")
+
       await knex_user_db('user_admin').insert(user);
-      return true;
+      const token = this.createToken();
+      console.log(token)
+      return {token};
+
     } catch (err) {
+      console.log(err)
       return false;
     }
   }
