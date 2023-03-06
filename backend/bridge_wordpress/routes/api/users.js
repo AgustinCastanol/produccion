@@ -3,7 +3,7 @@ import Users from "../../models/users.js";
 var router = express.Router();
 
 
-router.post("/register_user", function (request, response,next) {
+router.post("/register_user", async function (request, response,next) {
 try{
   const email = request.body.email;
   const password = request.body.password;
@@ -25,11 +25,11 @@ try{
     response.status(400).send({ error: "User vacio" })
   }
   const users = new Users({ email, password, id_wordpress, user });
-  const register = users.registerUser();
-  if(register == true){
-    response.status(200).send({ message: "Creado con exito", error:[] })
+  const register = await users.registerUser();
+  if(register == false){
+    next( "Error al crear usuario")
   }
-  next( "Error al crear usuario")
+  response.status(200).send({ message: "Creado con exito", error:[] })
 }catch(err){
   console.log(err);
   next(err.message);
@@ -49,7 +49,6 @@ try{
   }
   const users = new Users({ email, password, id_wordpress: id_wordpress, user: user });
   const {token,role} = await users.login();
-  console.log("login",token,"hola",role);
   if(token == false || token == null){
     response.status(401).json({error:"Unauthorized"})
   }
