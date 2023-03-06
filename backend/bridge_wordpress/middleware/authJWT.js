@@ -10,9 +10,9 @@ try{
   }
   if (!token) next("No token provided.");
   const decoded = jwt.verify(token, process.env.SECRET);
-  // req.user = decoded;
-  // if (!req.user) next("No user found.");
-  // if(!req.user.role || req.user.role.length === 0) next("No role found.");
+  req.user = decoded;
+  if (!req.user) next("No user found.");
+  if(!req.user.role || req.user.role.length === 0) next("No role found.");
   next();
 }catch(err){
   next(err);

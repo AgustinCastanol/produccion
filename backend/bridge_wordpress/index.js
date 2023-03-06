@@ -9,6 +9,8 @@ import express_session from "express-session";
 import users from "./routes/api/users.js";
 import handlerError from "./middleware/errors.js";
 import notfound from "./middleware/notfound.js";
+import products from "./routes/products/products.js";
+import knex from "knex";
 // CONFIG DOTENV
 var config = dotenv.config();
 global.config = config.parsed;
@@ -20,7 +22,19 @@ var required_env_variables = [
   "PORT",
   "environment",
   "SALT_ROUNDS",
-  "SECRET"
+  "SECRET",
+  "pg_products_host",
+  "pg_products_port",
+  "pg_products_database",
+  "pg_products_user",
+  "pg_products_password",
+  "pg_users_host",
+  "pg_users_port",
+  "pg_users_database",
+  "pg_users_user",
+  "pg_users_password",
+
+
 ];
 var err = false;
 required_env_variables.map((e) => {
@@ -57,7 +71,7 @@ if (process.env.environment == "development") {
   };
   app.use(cors(corsOptions));
   console.log("----------- CORS ENABLED");
-}else{
+} else {
   console.log("----------- PRODUCTION MODE -------------");
   app.use(cors());
 }
@@ -71,43 +85,83 @@ app.use(express_session({
 }));
 
 
-// const conn_obj = {
-//   host: process.env.pg_host,
-//   port: process.env.pg_port,
-//   user: process.env.pg_user,
-//   password: process.env.pg_password,
-//   database: process.env.pg_database,
-//   supportBigNumbers: true,
-//   bigNumberStrings: true,
-// };
-// var knex = require("knex")({
-//   //debug: true,
-//   client: "pg",
-//   connection: conn_obj,
-//   pool: { min: 0, max: 7 },
-//   log: {
-//     warn(message) {
-//       console.log("KNEX WARN:", message);
-//     },
-//     error(message) {
-//       console.log("KNEX ERROR:", message);
-//     },
-//     deprecate(message) {
-//       console.log("KNEX DEPRECATE:", message);
-//     },
-//     debug(message) {
-//       console.log("KNEX DEBUG:", message);
-//     },
-//   },
-// });
-// global.knex = knex;
+const conn_obj_users = {
+  host: process.env.pg_users_host,
+  port: process.env.pg_users_port,
+  user: process.env.pg_users_user,
+  password: process.env.pg_users_password,
+  database: process.env.pg_users_database,
+  supportBigNumbers: true,
+  bigNumberStrings: true,
+};
+var user_db = knex({
+  //debug: true,
+  client: "pg",
+  connection: conn_obj_users,
+  pool: { min: 0, max: 7 },
+  log: {
+    warn(message) {
+      console.log("KNEX WARN:", message);
+    },
+    error(message) {
+      console.log("KNEX ERROR:", message);
+    },
+    deprecate(message) {
+      console.log("KNEX DEPRECATE:", message);
+    },
+    debug(message) {
+      console.log("KNEX DEBUG:", message);
+    },
+  },
+});
+console.log("----------- CONECTED TO USERS DB");
+global.knex_user_db = user_db;
 
-//de aca no pasa sin tokens
+const conn_obj_products = {
+  host: process.env.pg_products_host,
+  port: process.env.pg_products_port,
+  user: process.env.pg_products_user,
+  password: process.env.pg_products_password,
+  database: process.env.pg_products_database,
+  supportBigNumbers: true,
+  bigNumberStrings: true,
+};
+
+const products_db = knex({
+  //debug: true,
+  client: "pg",
+  connection: {...conn_obj_products},
+  pool: { min: 0, max: 7 },
+  log: {
+    warn(message) {
+      console.log("KNEX WARN:", message);
+    },
+    error(message) {
+      console.log("KNEX ERROR:", message);
+    },
+    deprecate(message) {
+      console.log("KNEX DEPRECATE:", message);
+    },
+    debug(message) {
+      console.log("KNEX DEBUG:", message);
+    },
+  },
+});
+console.log("----------- CONECTED TO USERS DB");
+
+global.knex_products_db = products_db;
+try{
+  //de aca no pasa sin tokens
 app.use(api_key_proxy);
-app.use(jwt_proxy);
 //
 
 app.use("/bgwp", users);
+//de aca no pasa sin tokens
+
+app.use(jwt_proxy);
+app.use("/bgwp", products);
+//
+
 
 ///Si llega aca hubo un error
 app.use(handlerError)
@@ -116,3 +170,7 @@ app.use(notfound);
 console.log("Servidor API escuchando en       ", process.env.PORT);
 console.log("Environment mode", process.env.environment);
 server.listen(process.env.PORT);
+}catch(e){
+  console.log(e,"error main")
+  process.exit(1);
+}
