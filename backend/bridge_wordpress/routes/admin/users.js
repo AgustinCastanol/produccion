@@ -33,15 +33,16 @@ router.post("/new_user", async function (req, res, next) {
     next(err.message);
   }
 })
-router.post("/edit_user", async function (res, req, next) {
+router.post("/edit_user", async function (req, res, next) {
   try {
     const { user, email, role, id_wordpress, password ,id_wordpress_user } = req.body;
     if(!user || !email || !role){
       return res.status(400).json({error: "Missing fields"})
     }
-    const checkAdmin = await AdminUser.userIsAdmin({id_wordpress:id_wordpress_user})
-    const checkUserEdit = await AdminUser.userIsAdmin({id_wordpress:id_wordpress})
-    if(role != 'admin'){
+    const admin = new AdminUser({})
+    const checkAdmin = await admin.userIsAdmin({id_wordpress:id_wordpress_user})
+    const checkUserEdit = await admin.userIsAdmin({id_wordpress:id_wordpress})
+    if(role == 'admin'){
       return res.status(400).json({error: "Role not asignable"})
     }
     if(checkAdmin == false && checkUserEdit == true){

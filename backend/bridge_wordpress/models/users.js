@@ -70,12 +70,18 @@ export default class User {
     }
     async editUser({ email, user, password, role}){
       try{
+        const user_db = await this.getUser();
+        console.log("user db ", user_db)
         const obj_user = {
           email_user: email,
           password_user: password,
           role: role,
           name_user: user,
-          role:''
+          role:'',
+          id_user_admin: user_db.id_user_admin,
+          id_wp: user_db.id_wp,
+
+
         }
         const aux_role = await this.getRole({role});
         if(aux_role.error == true){
@@ -84,8 +90,20 @@ export default class User {
         const salt = await bcrypt.genSalt(parseInt(process.env.SALT_ROUNDS));
         obj_user.password_user = await bcrypt.hash(password, salt);
         obj_user.role = aux_role;
-        await knex_user_db('user').where({id_wp: this.id_wordpress}).update(user);
+        await knex_user_db('user').where({id_wp: this.id_wordpress}).update(obj_user);
         return true;
+      }catch(err){
+        console.log(err)
+        return {error: true, message: err.message}
+      }
+    }
+    async getUser(){
+      try{
+        const res = await knex_user_db.raw(`SELECT * FROM "public"."user" WHERE "id_wp" = '${this.id_wordpress}'`)
+        if(res.rows.length > 0){
+          return res.rows[0];
+        }
+        return null;
       }catch(err){
         console.log(err)
         return {error: true, message: err.message}
