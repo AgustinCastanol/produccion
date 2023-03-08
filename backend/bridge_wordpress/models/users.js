@@ -29,9 +29,10 @@ export default class User {
     }
     async setAdmin({id_wordpress_admin}){
       try{
+        console.log("id_wordpress_admin", id_wordpress_admin)
         const res = await knex_user_db.raw(`SELECT * FROM "public"."user_admin" WHERE "id_wordpress" = '${id_wordpress_admin}'`)
         if(res.rows.length > 0){
-          this.id_user_admin = res.rows[0].id_wordpress;
+          this.id_user_admin = res.rows[0].id_admin_user;
           return;
         }
         this.id_user_admin=null
@@ -49,6 +50,7 @@ export default class User {
     }
     async registerUser(){
       await this.setPassword(this.password);
+      await this.setRole();
       const user = {
         id_user: this.id,
         email_user: this.email,
@@ -62,7 +64,6 @@ export default class User {
       if(exist_user){
         return false;
       }
-      const role = await this.setRole();
       console.log("user", user)
       await knex_user_db('user').insert(user);
       return true;
@@ -80,6 +81,8 @@ export default class User {
         if(aux_role.error == true){
           return aux_role;
         }
+        const salt = await bcrypt.genSalt(parseInt(process.env.SALT_ROUNDS));
+        obj_user.password_user = await bcrypt.hash(password, salt);
         obj_user.role = aux_role;
         await knex_user_db('user').where({id_wp: this.id_wordpress}).update(user);
         return true;

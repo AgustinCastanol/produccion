@@ -72,7 +72,7 @@ try{
         console.log(reply,"reply");
       }
     });
-
+   
     if(res_redis == null){
       await global.redis.set(`${email}`, token, 'EX', 86400, (err, reply) => {
         if (err) {
