@@ -11,6 +11,9 @@ import handlerError from "./middleware/errors.js";
 import notfound from "./middleware/notfound.js";
 import products from "./routes/products/products.js";
 import knex from "knex";
+import verifLogin from "./middleware/verifLogin.js";
+import redis from 'redis';
+import adminUsers from "./routes/admin/users.js";
 // CONFIG DOTENV
 var config = dotenv.config();
 global.config = config.parsed;
@@ -150,6 +153,18 @@ const products_db = knex({
 console.log("----------- CONECTED TO USERS DB");
 
 global.knex_products_db = products_db;
+// Crea una instancia del cliente Redis
+const client = redis.createClient({
+  url: 'redis://46.101.159.194:6379'
+});
+ client.on('connect', function() {
+    console.log('Redis client connected');
+});
+client.on('error', function (err) {
+    console.log('Something went wrong ' + err);
+});
+await client.connect();
+global.redis = client;
 try{
   //de aca no pasa sin tokens
 app.use(api_key_proxy);
@@ -159,8 +174,13 @@ app.use("/bgwp", users);
 //de aca no pasa sin tokens
 
 app.use(jwt_proxy);
+app.use(verifLogin);
 app.use("/bgwp", products);
+// manejo de roles
+
 //
+app.use("/bgwp/admin", adminUsers);
+
 
 
 ///Si llega aca hubo un error
