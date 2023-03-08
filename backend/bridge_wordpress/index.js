@@ -155,7 +155,8 @@ console.log("----------- CONECTED TO USERS DB");
 global.knex_products_db = products_db;
 // Crea una instancia del cliente Redis
 const client = redis.createClient({
-  url: 'redis://46.101.159.194:6379'
+  url: 'redis://46.101.159.194:6379',
+  password:'_dir$to-easy./'
 });
  client.on('connect', function() {
     console.log('Redis client connected');
