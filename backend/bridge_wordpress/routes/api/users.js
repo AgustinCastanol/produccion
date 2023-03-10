@@ -32,6 +32,10 @@ try{
   if(register == false){
     next( "Error al crear usuario")
   }
+  const check_property = await users.crateProperty({user_id:register.user.id_admin_user});
+  if(check_property.error == true){
+    return response.status(400).json({error: ["Error set location", check_property.message]})
+  }
   await redis.set(`${email}`, register.token, 'EX', 86400, (err, reply) => {
     if (err) {
       error.push(err.message)
