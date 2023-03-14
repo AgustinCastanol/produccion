@@ -234,16 +234,16 @@ export default class Users {
       return { error: true, message: err.message };
     }
   }
-  async setSocialNetworks({ user_id, name, is_active_network, url }) {
+  async setSocialNetworks({ property_id,user_id, name, is_active_network, url }) {
     try {
       const data = {
         id_network: uuid(),
         network_name: name,
         is_active_network,
-        url: url
+        url: url,
+        property_id
       }
       await knex_user_db('social_networks').insert(data);
-      await knex_user_db('properties_user').where({ user_id }).update({ id_social_networks: data.id_network });
       return { error: false, message: 'Social networks added' };
     } catch (err) {
       return { error: true, message: err.message };
@@ -338,12 +338,13 @@ export default class Users {
   async getFullProperties({ user_id }) {
     try {
       /*seleccionar todos los datos de las subtablas con joins  */
-      const res = await knex_user_db.reaw(`
-SELECT  * FROM properties_user
-INNER JOIN company_data ON properties_user.id_company_data = company_data.id_company_data
-INNER JOIN social_networks ON properties_user.id_social_networks = social_networks.id_network
-WHERE properties_user.user_id = '${user_id}'`)
-      return { error: false, message: 'Properties', data: res };
+      const res = await knex_user_db.raw(`
+      SELECT  * FROM properties_user
+      LEFT JOIN company_data ON properties_user.id_company_data = company_data.id_company_data
+      INNER JOIN social_networks ON properties_user.id_property = social_networks.property_id
+      WHERE properties_user.user_id = '${user_id}'`)
+
+      return  res.rows ;
 
     }
     catch (err) {
@@ -372,7 +373,7 @@ WHERE properties_user.user_id = '${user_id}'`)
   async getPropertyId({ user_id }) {
     try {
       const res = await knex_user_db('properties_user').where({ user_id }).select('*');
-      return { error: false, message: 'Properties', data: res };
+      return res[0].id_property;
     } catch (err) {
       return { error: true, message: err.message };
     }
