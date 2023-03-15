@@ -3,7 +3,7 @@
     <div class="flex justify-content-center">
       <div class="card">
         <div class="flex flex-column align-items-center justify-content-center">
-          <img src="@/assets/logoave.svg" alt="Logo" width="100" height="100"/>
+          <img src="@/assets/logoave.svg" alt="Logo" width="100" height="100" />
           <h3 class="text-center">Login</h3>
         </div>
         <form @submit.prevent="login" class="p-fluid">
@@ -50,13 +50,19 @@ const username = ref('')
 const password = ref('')
 const email = ref('')
 async function login() {
-  if(username.value === '' || password.value === '' || email.value === ''){
+  if (username.value === '' || password.value === '' || email.value === '') {
     toast.add({ severity: 'error', summary: 'Error', detail: 'Please fill all fields', life: 3000 });
     return
   }
-  const res = await API.login({user: username.value, password: password.value, email: email.value})
-  localStorage.setItem('token', res.data.token)
-  router.push('/')
+  const res = await API.login({ user: username.value, password: password.value, email: email.value })
+  if (res.status === 200) {
+    toast.add({ severity: 'success', summary: 'Success', detail: 'Login successful', life: 3000 });
+    localStorage.setItem('token', res.data.token)
+    router.push('/')
+  } else {
+    toast.add({ severity: 'error', summary: 'Error', detail: 'Login failed', life: 3000 });
+  }
+
 }
 
 </script>

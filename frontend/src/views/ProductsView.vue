@@ -189,7 +189,7 @@
               </div>
               <div class="field">
                 <div class="p-float-label">
-                  <Dropdown id="currency" v-model="form.collecion" :options="dropdownForm['collecion']"
+                  <Dropdown id="currency" v-model="form.collection" :options="dropdownForm['collecion']"
                     optionLabel="name_collection" />
                   <label for="Colleciones">Colleciones*</label>
                 </div>
@@ -209,9 +209,8 @@
               </div>
               <div class="field">
                 <div class="p-label">
-                  <label for="disponible">Subir una imagen*</label>
-                  <FileUpload mode="basic" name="demo[]" url="./upload" accept="image/*" :maxFileSize="1000000"
-                    @upload="onUpload" :auto="true" chooseLabel="Browse" />
+                  <label for="image">Subir una imagen*</label>
+                  <InputText id="image" v-model="form.image" placeholder="https://example.com"/>
                 </div>
               </div>
             </div>
@@ -291,8 +290,8 @@
               <div class="field">
                 <div class="flex flex-column align-items-center justify-content-center">
                   <div v-for="(stock, index) in variantsForm[indexVariant].stock" class="flex flex-wrap">
-                    <InputText class="w-4" id="stock" v-model="stock[index]" placeholder="Cantidad de stock" />
-                    <Dropdown class="w-6" id="stockLocation" v-model="stock[index]" placeholder="Ubicacion"
+                    <InputText class="w-4" id="stock" v-model="variantsForm[indexVariant].stock[index]['quantity']" placeholder="Cantidad de stock" />
+                    <Dropdown class="w-6" id="stockLocation" v-model="variantsForm[indexVariant].stock[index]['name']" placeholder="Ubicacion"
                       :options="dropdownForm['stockLocation']" optionLabel="name" />
                     <Button class="pi pi-trash w-2 p-button-danger align-self-start" @click="deleteStock(index)" />
                   </div>
@@ -320,8 +319,7 @@
               <div class="field">
                 <div class="p-label">
                   <label for="disponible">Subir una imagen de la variante*</label>
-                  <FileUpload mode="basic" name="demo[]" url="./upload" accept="image/*" :maxFileSize="1000000"
-                    @upload="onUpload" :auto="true" chooseLabel="Browse" />
+                  <InputText id="disponible" v-model="variantsForm[indexVariant].image" />
                 </div>
               </div>
             </div>
@@ -409,7 +407,7 @@ const form = ref({
   collection: '',
   is_published: '',
   raiting: '',
-  subCategory: ''
+  subCategory: 'no-subcategory'
 })
 const toast = useToast()
 const api_suppliers = ['promos', 'cdo', 'marpico', 'promoopcion']
@@ -425,11 +423,7 @@ async function loadSubcategories(event) {
 
   }
 }
-async function foundCategoryFather(category_id) {
-  const res = await API.getCategory({ id: category_id })
-  console.log(res)
-  return "hola"
-}
+
 
 
 async function openModalNewProduct() {
@@ -529,7 +523,7 @@ async function onPageChange(event) {
     loading.value = false
   }
 }
-function handleSubmit() {
+async function handleSubmit() {
   if (variantsForm.value.length < 1) {
     toast.add({ severity: 'warn', summary: 'Warning', detail: 'Producto sin variantes', life: 3000 });
     return;
@@ -542,8 +536,15 @@ function handleSubmit() {
       return;
     }
   }
-  dialogNewProduct.value.visible = false
-  toast.add({ severity: 'success', summary: 'Success', detail: 'Producto creado', life: 3000 });
+  const res = await API.setProductForm({product:form.value,variants:variantsForm.value})
+  if(res.data !== undefined || res.data !== null){
+    toast.add({ severity: 'success', summary: 'Success', detail: 'Producto creado', life: 3000 });
+    dialogNewProduct.value.visible = false
+    return;
+  }
+
+  toast.add({ severity: 'error', summary: 'Error', detail: 'Ocurrio un error al crear el producto', life: 3000 });
+
 }
 
 async function search(data) {
@@ -555,6 +556,9 @@ async function search(data) {
       products.value.map(async (item) => {
         const aux = JSON.parse(item["urlImage"])
         item.metadata_price = JSON.parse(item.metadata_price)
+        if(typeof item.metadata_price == 'string'){
+          item.metadata_price = JSON.parse(item.metadata_price)
+        }
         item["urlImage"] = aux[0] == undefined ? item["urlImage"] : aux[0]
         if (item.parent !== null) {
           const cparent = await API.getCategory({ id: item.parent })
@@ -572,9 +576,7 @@ async function search(data) {
     await loadProducts({ offset: 0, limit: 10 })
   }
 }
-async function onUpload(event) {
-  console.log(event)
-}
+
 async function redirect() {
   router.push({ name: 'loadProducts' })
 }

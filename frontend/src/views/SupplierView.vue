@@ -276,6 +276,7 @@ onMounted(async () => {
         if (index !== -1) {
           e.count = res.count[index].count
         }
+        console.log(e.metadata_supplier)
         e.metadata_supplier = JSON.parse(e.metadata_supplier)
       })
       totalRows.value = res.totalRows

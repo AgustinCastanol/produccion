@@ -525,6 +525,9 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
         quantity: data.quantity,
         quantity_allocated: data.quantity_allocated,
       }
+      console.log(obj,"obj")
+      console.log(data,"daya")
+
       await this.sequelize.query(`
       INSERT INTO public.stock(
         "idStock", "locationId", variant_id, quantity, quantity_allocated)
@@ -742,13 +745,13 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
         id_price: uuidv1(),
         price: price.price,
         currency: price.currency,
-        type: price.type,
+        type: price.type==undefined?'no type':price.type,
         metadata: JSON.stringify(price.metadata),
         productId: price.productId,
       };
       await this.sequelize.query(`
     INSERT INTO public.price(
-      id, price, currency, type, metadata, "productId")
+      id, price, currency, type, metadata_price, "productId")
       VALUES ('${obj.id_price}', ${obj.price}, '${obj.currency}', '${obj.type}', '${obj.metadata}', ${obj.productId == null ? null : `'${obj.productId}'`});`);
       return obj;
     } catch (e) {

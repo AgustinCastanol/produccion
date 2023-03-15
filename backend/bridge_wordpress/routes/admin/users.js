@@ -293,19 +293,22 @@ router.post("/get_properties", async function (req, res, next) {
   }
 })
 router.post("/set_logo", async function (req, res, next) {
-  try {
-    const {id,user} = req.body
-    const file = req.file
-    const formData = new FormData();
-    formData.append('image', file);
-    formData.append('fileName', `${id+user}.png`);
-    const logo = await axios.post(process.env.URL_IMAGES + "create_logo_user", formData,{
-      headers: {
-        'Content-Type': 'multipart/form-data'
+  try{
+    const {id_wordpress,path}=req.body
+    if(!id_wordpress || !path){
+      return res.status(400).send({mesagge:"Missing fields",data:[],err:["Missing fields"]})
     }
-  })
-  res.status(200).send({mesagge:"Image upload",data:{path:logo.path},err:[]})
+    const admin = new AdminUser({})
+    const checkAdmin = await admin.userIsAdmin({ id_wordpress })
+    if (checkAdmin == false) {
+      return res.status(401).json({ mesagge:"Missing fields",data:[],error: ["Not authorized"] })
+    }
+    const user = new AdminUser({ id_wordpress });
+    const user_id = await user.getUserId();
+    const logo=await user.setLogo({user_id,logo:path})
+    res.status(200).send({mesagge:"Image upload",data:"logo.data",err:[]})
   } catch (err) {
+    console.log(err)
     next(err.message);
   }
 })

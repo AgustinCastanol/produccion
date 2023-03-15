@@ -378,4 +378,14 @@ export default class Users {
       return { error: true, message: err.message };
     }
   }
+  async setLogo({ user_id, logo }) {
+    try {
+      console.log(user_id, logo);
+      await knex_user_db('properties_user').where({ user_id }).update({ logo_user: logo });
+      return { error: false, message: 'Logo added' };
+    } catch (err) {
+      console.log(err);
+      return { error: true, message: err.message };
+    }
+  }
 }
