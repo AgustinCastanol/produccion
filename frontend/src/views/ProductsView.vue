@@ -323,7 +323,7 @@
                   <label for="disponible">Subir una imagen de la variante*</label>
                   <!-- <InputText id="disponible" v-model="variantsForm[indexVariant].image" /> -->
                   <FileUpload name="image" mode="basic" accept="image/*" url="http://localhost:48700/create_image_variant_product"  
-                  :maxFileSize="1000000" :auto="true" chooseLabel="Buscar" @before-upload="setVariantImage" :disabled="disabled_image_variant[indexVariant]"/>
+                  :maxFileSize="1000000" :auto="true" chooseLabel="Buscar" @before-upload="setVariantImage" :disabled="disabled_image_variant[indexVariant]['disabled']"/>
                 </div>
               </div>
             </div>
@@ -387,7 +387,7 @@ const dropdownForm = ref({
 
 })
 const disabled_image = ref(false)
-const disable_image_variants = ref([{disabled: false}])
+const disabled_image_variant = ref([{disabled: false}])
 const dialogNewProduct = ref({
   visible: false,
   data: {},
@@ -444,7 +444,7 @@ async function setVariantImage(event){
     const res = JSON.parse(event.xhr.response)
     console.log(res.data.path)
     variantsForm.value[indexVariant.value].image = res.data.path
-    disabled_image_variant[indexVariant.value].disabled = true
+    disabled_image_variant.value[indexVariant.value]['disabled'] = true
   }
 }
 
@@ -487,7 +487,7 @@ async function addVariant() {
       name: '-'
     }]
   })
-  disable_image_variants.value.push({disabled: false})
+  disabled_image_variant.value.push({disabled: false})
 }
 async function addStock() {
   variantsForm.value[indexVariant.value].stock.push({
