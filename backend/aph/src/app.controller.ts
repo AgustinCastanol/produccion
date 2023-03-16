@@ -540,8 +540,6 @@ export class AppController {
         //     variantId: variant_db[j].id_variant
         //   })
         // }
-
-
         /*checkeo el precio */
         let priceChange = false;
         const arrayUrls = res.results[i].imagenes.map((item: { imagen: { file: any; }; }) => {
@@ -560,6 +558,7 @@ export class AppController {
           })
 
         if(price_db == null || price_db == undefined){
+          priceChange = true;
          const newPrice = await this.aphService.setPrice({ price:res.results[i].materiales[0].precio, currency: 'COP', type: null, metadata: null, productId: product_db[0].idProducts });
         await this.aphService.updateProductPrice({ id: product_db[0].idProducts, price: newPrice[0].id_price });
         }
@@ -808,7 +807,7 @@ const productaux = {
   collection_id: product.collection.idCollection,
 }
 const price_db = await this.aphService.setPrice({
-  metadata: JSON.stringify({ precioSugerido: product.collection.name_collection == 'precio sugerido'?product.price:0 }),
+  metadata: { precioSugerido: product.collection.name_collection == 'precio sugerido'?product.price:0 },
   currency: product.currency.currency,
   price: product.collection.name_collection == 'precio neto'?product.price:0,
   productId: null

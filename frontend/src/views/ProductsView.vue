@@ -210,7 +210,9 @@
               <div class="field">
                 <div class="p-label">
                   <label for="image">Subir una imagen*</label>
-                  <InputText id="image" v-model="form.image" placeholder="https://example.com"/>
+                  <!-- <InputText id="image" v-model="form.image" placeholder="https://example.com"/> -->
+                  <FileUpload name="image" mode="basic" accept="image/*" url="http://localhost:48700/create_image_product"  
+                  :maxFileSize="1000000" :auto="true" chooseLabel="Buscar" @before-upload="setProductImage" :disabled="disabled_image"/>
                 </div>
               </div>
             </div>
@@ -319,7 +321,9 @@
               <div class="field">
                 <div class="p-label">
                   <label for="disponible">Subir una imagen de la variante*</label>
-                  <InputText id="disponible" v-model="variantsForm[indexVariant].image" />
+                  <!-- <InputText id="disponible" v-model="variantsForm[indexVariant].image" /> -->
+                  <FileUpload name="image" mode="basic" accept="image/*" url="http://localhost:48700/create_image_variant_product"  
+                  :maxFileSize="1000000" :auto="true" chooseLabel="Buscar" @before-upload="setVariantImage" :disabled="disabled_image_variant[indexVariant]"/>
                 </div>
               </div>
             </div>
@@ -382,7 +386,8 @@ const dropdownForm = ref({
   stockLocation: []
 
 })
-
+const disabled_image = ref(false)
+const disable_image_variants = ref([{disabled: false}])
 const dialogNewProduct = ref({
   visible: false,
   data: {},
@@ -424,7 +429,24 @@ async function loadSubcategories(event) {
   }
 }
 
-
+async function setProductImage(event){
+  event.xhr.onload = function () {
+    console.log(event.xhr.response)
+    const res = JSON.parse(event.xhr.response)
+    console.log(res.data.path)
+    form.value.image = res.data.path
+    disabled_image.value = true
+  }
+}
+async function setVariantImage(event){
+  event.xhr.onload = function () {
+    console.log(event.xhr.response)
+    const res = JSON.parse(event.xhr.response)
+    console.log(res.data.path)
+    variantsForm.value[indexVariant.value].image = res.data.path
+    disabled_image_variant[indexVariant.value].disabled = true
+  }
+}
 
 async function openModalNewProduct() {
   dialogNewProduct.value.visible = true
@@ -465,6 +487,7 @@ async function addVariant() {
       name: '-'
     }]
   })
+  disable_image_variants.value.push({disabled: false})
 }
 async function addStock() {
   variantsForm.value[indexVariant.value].stock.push({

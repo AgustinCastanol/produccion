@@ -12,3 +12,5 @@ COPY . .
 EXPOSE 47300
 # Compila la aplicación
 CMD [ "node", "index.js" ]
+# docker build -t bridge-wp .
+# docker run -d -p 47300:47300 bridge-wp

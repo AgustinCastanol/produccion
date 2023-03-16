@@ -1,5 +1,5 @@
 import request from './request.js';
-
+import request_product_image from './request_logos.js';
 export function login(data) {
   return request({
     url: '/login',
@@ -145,5 +145,15 @@ export function setSupplier(data){
     url: '/set_supplier',
     method: 'post',
     data
+  })
+}
+export function setProductImage(data){
+  return request({
+    url: '/setProductImage',
+    method: 'post',
+    data,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
   })
 }
