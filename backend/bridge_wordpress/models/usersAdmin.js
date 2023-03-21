@@ -341,9 +341,9 @@ export default class Users {
       const res = await knex_user_db.raw(`
       SELECT  * FROM properties_user
       LEFT JOIN company_data ON properties_user.id_company_data = company_data.id_company_data
-      INNER JOIN social_networks ON properties_user.id_property = social_networks.property_id
+      LEFT JOIN social_networks ON properties_user.id_property = social_networks.property_id
       WHERE properties_user.user_id = '${user_id}'`)
-
+      console.log(res)
       return  res.rows ;
 
     }

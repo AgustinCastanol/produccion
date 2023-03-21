@@ -237,6 +237,22 @@ export class AppService {
       console.log(err);
     }
   }
+  async getProductByReferenceAndSupplier({reference, supplier}: any) {
+    try {
+      if (reference == null) {
+        return {
+          data: null,
+          message: 'missing reference',
+        };
+      }
+      const product = await this.sequelize.query(`
+      SELECT * FROM public.products
+      WHERE reference = '${reference}' and supplier = '${supplier}'`);
+      return product[0];
+    } catch (err) {
+      console.log(err);
+    }
+  }
   async searchProduct(data: any) {
     try {
       if (data.search == null) {
@@ -502,6 +518,22 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
       return res[0]
     } catch (err) {
       console.log(err)
+    }
+  }
+  async getProveedorByName(data: any) {
+    try{
+      if(data.name == null){
+        return {
+          data: null,
+          message: 'missing name',
+        }
+      }
+      const res = await this.sequelize.query(`
+      SELECT * FROM public."supplier" WHERE name_supplier = '${data.name}'`);
+      return res[0]
+    }catch(err){
+      console.log(err)
+      return err;
     }
   }
   async getstockLocation() {
@@ -770,6 +802,7 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
         metadata: price.metadata,
         productId: price.productId,
       };
+      console.log(obj, 'obj price')
       await this.sequelize.query(`
       UPDATE public.price
       SET price=${obj.price}, currency='${obj.currency}', type='${obj.type}', metadata_price='${obj.metadata}', "productId"='${obj.productId}'
@@ -780,11 +813,31 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
       return e;
     }
   }
+  async getCollectionsBySlug({slug}) {
+    try{
+      const res = await this.sequelize.query(`
+      SELECT * FROM public.collections WHERE slug_collection = '${slug}';`);
+      return res[0];
+    }catch(e){
+      console.log(e);
+      return e;
+    }
+  }
   async getPrice({ id }: any) {
     try {
 
       const res = await this.sequelize.query(`
       SELECT * FROM public.price WHERE "productId" = '${id}';`);
+      return res[0];
+    } catch (e) {
+      console.log(e);
+      return e;
+    }
+  }
+  async getPriceById({ id }: any) {
+    try {
+      const res = await this.sequelize.query(`
+      SELECT * FROM public.price WHERE id = '${id}';`);
       return res[0];
     } catch (e) {
       console.log(e);

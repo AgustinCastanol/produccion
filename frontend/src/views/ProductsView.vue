@@ -211,6 +211,7 @@
                 <div class="p-label">
                   <label for="image">Subir una imagen*</label>
                   <!-- <InputText id="image" v-model="form.image" placeholder="https://example.com"/> -->
+                  <Chip v-if="form.image!= null" :label="form.image.split('http://46.101.159.194/img/products/')[1]" removable @remove="removeImages('product')"/>
                   <FileUpload name="image" mode="basic" accept="image/*" url="http://localhost:48700/create_image_product"  
                   :maxFileSize="1000000" :auto="true" chooseLabel="Buscar" @before-upload="setProductImage" :disabled="disabled_image"/>
                 </div>
@@ -322,6 +323,7 @@
                 <div class="p-label">
                   <label for="disponible">Subir una imagen de la variante*</label>
                   <!-- <InputText id="disponible" v-model="variantsForm[indexVariant].image" /> -->
+                  <Chip v-if="variantsForm[indexVariant].image" :label="variantsForm[indexVariant].image.split('http://46.101.159.194/img/variants')[1]" removable @remove="removeImages('')" />
                   <FileUpload name="image" mode="basic" accept="image/*" url="http://localhost:48700/create_image_variant_product"  
                   :maxFileSize="1000000" :auto="true" chooseLabel="Buscar" @before-upload="setVariantImage" :disabled="disabled_image_variant[indexVariant]['disabled']"/>
                 </div>
@@ -342,6 +344,7 @@ import DataTable from 'primevue/datatable'
 import Toast from 'primevue/toast'
 import Dropdown from 'primevue/dropdown'
 import OverlayPanel from 'primevue/overlaypanel';
+import Chip from 'primevue/chip';
 import Column from 'primevue/column'
 import * as API from '../helpers/api.js'
 import { useToast } from "primevue/usetoast";
@@ -445,6 +448,18 @@ async function setVariantImage(event){
     console.log(res.data.path)
     variantsForm.value[indexVariant.value].image = res.data.path
     disabled_image_variant.value[indexVariant.value]['disabled'] = true
+  }
+}
+async function removeImages(type){
+  if(type == 'product'){
+    await API.deleteImage({path:form.value.image.split('http://46.101.159.194/img/products/')[1]})
+    form.value.image = ''
+    disabled_image.value = false
+  }else{
+    await API.deleteVariantsImage({path:variantsForm.value[indexVariant.value].image.split('http://46.101.159.194/img/variants')[1]})
+    variantsForm.value[indexVariant.value].image = ''
+    disabled_image_variant.value[indexVariant.value]['disabled'] = false
+    
   }
 }
 

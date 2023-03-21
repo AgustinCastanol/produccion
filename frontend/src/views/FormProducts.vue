@@ -23,7 +23,7 @@
       <Column field="actions" header="Acciones">
         <template #body="slotProps">
           <Button icon="pi pi-plus" class="p-button-rounded p-button h-1" label="Agregar variante productos" />
-          <Button icon="pi pi-trash" class="p-button-rounded p-button-danger h-1" label="Eliminar Producto" />
+          <Button icon="pi pi-trash" class="p-button-rounded p-button-danger h-1" label="Eliminar Producto" @click="deleteProduct(slotProps.index)" />
         </template>
       </Column>
     </TreeTable>
@@ -36,11 +36,10 @@
         <Button label="Descargar csv de referencia" icon="pi pi-file" class="p-button-rounded p-button-info h-1" @click="download" />
       </div>
     </template>
-    <FileUpload name="demo[]" url="https://primefaces.org/primevue/showcase/upload.php" accept="image/*"
-      :maxFileSize="1000000" :auto="true" :chooseLabel="Choose" :uploadLabel="Upload" :cancelLabel="Cancel"
-      :customUpload="true" :showUploadButton="false" :showCancelButton="false" :showClearButton="false"
-      :showProgressBar="true" :showPreview="true" :previewWidth="80"
-></FileUpload>
+    <FileUpload name="csv" accept=".csv" url="http://localhost:48700/csv" 
+    :chooseLabel="Choose" :uploadLabel="Upload" @upload="procesCSV"
+      >
+    </FileUpload>
   </Dialog>
 </template>
 
@@ -49,7 +48,6 @@ import { ref, onMounted } from 'vue'
 import TreeTable from 'primevue/treetable'
 import Column from 'primevue/column'
 import Dialog from 'primevue/dialog';
-
 import FileUpload from 'primevue/fileupload';
 const products = ref([])
 const expandedKeys = ref([])
@@ -73,8 +71,16 @@ const addProduct = () => {
 function openModal() {
   dialog.value = true
 } 
-function download(){
-  var csv = "Nombre,Edad,Ciudad\nJuan,25,Madrid\nPedro,32,Barcelona\nMaría,29,Valencia";
+function deleteProduct(index) {
+  products.value.splice(index, 1)
+}
+function procesCSV(event) {
+  console.log(event)
+}
+async function download(){
+  /*sku padre,sku hijo,nombre,descripcion corta,precio neto,precio sugerido,coleccion,categoria,subcategoria,proveedor,publicado,disponible desde,imagen,stock,localizacion del stock
+MU-102,MU-102 N,aca iria el nombre,aca iria la descripcion,1555,0,precio neto,antiestres,,nombre del proveedor,si,20/03/2023,url de la imagen,200,total*/
+  var csv = 'sku padre,sku hijo,nombre,descripcion corta,precio neto,precio sugerido,coleccion,categoria,subcategoria,proveedor,publicado,disponible desde,imagen,stock,localizacion del stock\n';
   var hiddenElement = document.createElement('a');
   hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
   hiddenElement.target = '_blank';

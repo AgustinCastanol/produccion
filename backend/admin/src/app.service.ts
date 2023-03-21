@@ -328,4 +328,14 @@ async loadApiPromoOpcion(data: any) {
     .toPromise();
   return res;
 }
+async loadPricePromoOpcion(data: any) {
+  const res = await this.clienteLogin
+    .send('load_price_promoopcion', data)
+    .toPromise();
+  return res;
+  }
+async processCsv(data: any) {
+  const res = await this.clienteLogin.send('process_csv', data).toPromise();
+  return res;
+}
 }

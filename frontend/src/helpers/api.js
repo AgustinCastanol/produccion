@@ -157,3 +157,19 @@ export function setProductImage(data){
     }
   })
 }
+
+export function deleteImage(data){
+  return request_product_image({
+    url: '/delete_image_product',
+    method: 'post',
+    data
+  })
+}
+
+export function deleteVariantsImage(data){
+  return request_product_image({
+    url:'/delete_image_variant_product',
+    method: 'post',
+    data
+  })
+}

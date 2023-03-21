@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Body, Post, Query, UseGuards } from '@nestjs/common';
+import { Controller, Body, Post, Query, UseGuards, Res, Req } from '@nestjs/common';
 import { AppService } from './app.service';
 import { CorsGuard } from './guards/corsGuard';
 @Controller()
@@ -184,9 +184,10 @@ export class AppController {
   }
   @Post('/apiPromosProducts')
   // eslint-disable-next-line @typescript-eslint/ban-types
-  async apiPromosProducts(@Body() body: any): Promise<Object> {
+  async apiPromosProducts(@Body() body: any,@Req() require:any): Promise<Object> {
+    console.log (require.hostname)
     const res = await this.appService.apiPromosProducts(body);
-    return res;
+    return {res};
   }
   @Post('/loadApiMarpico')
   // eslint-disable-next-line @typescript-eslint/ban-types
@@ -198,6 +199,16 @@ export class AppController {
   // eslint-disable-next-line @typescript-eslint/ban-types
   async loadApiPromoOpcion(@Body() body: any): Promise<Object> {
     const res = await this.appService.loadApiPromoOpcion(body);
+    return res;
+  }
+  @Post('/loadPricePromoOpcion')
+  async loadPricePromoOpcion(@Body() body: any): Promise<any> {
+    const res = await this.appService.loadPricePromoOpcion(body);
+    return res;
+  }
+  @Post('/processCsv')
+  async processCsv(@Body() body: any): Promise<any> {
+    const res = await this.appService.processCsv(body);
     return res;
   }
 }
