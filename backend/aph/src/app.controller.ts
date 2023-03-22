@@ -959,10 +959,11 @@ export class AppController {
             category_id: catergoria != undefined ? {id:catergoria.id_categorias,name:catergoria.name_category ,slug:catergoria.slug_category}: {name:null,id:null},
             product_class_id:null,
             collection_id: collection != undefined ? {name:collection[0].name_collection,id:collection[0].idCollection,slug:collection[0].slug_collection} : {name:null,id:null},
-            proveedor: supplier != undefined ? {id:supplier[0].id,name:supplier.name_supplier} : {name:null,id:null},
+            proveedor: supplier != undefined ? {id:supplier[0].id,name:supplier[0].name_supplier} : {name:null,id:null},
             price: data[c]['precio neto'],
             image: data[c]['imagen'],
           }
+          console.log(product, "product")
         }
           const check_variant = <any>await this.aphService.getVariantBySku({ sku: data[c]['sku hijo'] })
           if (check_variant.length > 0) {

@@ -343,8 +343,7 @@ export default class Users {
         is_active_network,
         url: url
       }
-      //buscar que coincida el name y el property id
-      await knex_user_db('social_networks').where({ network_name: name, property_id }).update(data);
+      await knex_user_db('social_networks').where({network_name: name, property_id}).update(data);
       return { error: false, message: 'Social networks edited' };
     } catch (err) {
       return { error: true, message: err.message };

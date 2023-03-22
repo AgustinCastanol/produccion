@@ -1,6 +1,6 @@
 <template>
   <div>
-    <DataTable :value="products" >
+    <DataTable :value="products" :lazy="true" responsiveLayout="scroll" :loading="loading" >
       <template #header>
         <div class="flex justify-content-between">
           <h3>Productos</h3>
@@ -10,6 +10,13 @@
           </div>
         </div>
       </template>
+      <Column field="image" header="Imagen">
+        <template #body="slotProps">
+          <div class="flex gap-1 align-items-center justify-content-center flex-column">
+            <img :src="slotProps.data.image" alt="Imagen" width="100" height="100" />
+          </div>
+        </template>
+      </Column>
       <Column field="nombre" header="Nombre">
       </Column>
       <Column field="price" header="Precio">
@@ -25,7 +32,9 @@
       <Column field="referencia" header="Referencia">
       </Column>
       <Column field="sku" header="Sku">
-        
+        <template #body="slotProps">
+          <div>{{ slotProps.data.variants[0].sku == null?' - ':slotProps.data.variants[0].sku }}</div>
+        </template>
       </Column>
       <Column field="collection_id" header="Colección">
         <template #body="slotProps">
@@ -34,7 +43,7 @@
       </Column>
       <Column field="proveedor" header="Proveedor">
         <template #body="slotProps">
-          <div>{{ slotProps.data.proveedor.name_supplier}}</div>
+          <div>{{ slotProps.data.proveedor.name}}</div>
         </template>
       </Column>
       <Column field="description_product" header="Descripción"></Column>
@@ -43,7 +52,7 @@
       <Column field="actions" header="Acciones">
         <template #body="slotProps">
         <div class="flex gap-1 align-items-center justify-content-center flex-column">
-          <Button icon="pi pi-pencil" class="p-button-rounded p-button h-1 w-full bg-purple-600 border-purple-600" label="Editar" />
+          <Button icon="pi pi-pencil" class="p-button-rounded p-button h-1 w-full bg-purple-600 border-purple-600" label="Editar" @click="loadData(slotProps.data)" />
           <Button icon="pi pi-trash" class="p-button-rounded p-button-danger h-1 w-full " label="Eliminar Producto" @click="deleteProduct(slotProps.index)" />
         </div>
         </template>
@@ -63,6 +72,15 @@
       >
     </FileUpload>
   </Dialog>
+  <Dialog class="card" v-model:visible="editProduct['visible']" :breakpoints="{ '960px': '75vw', '640px': '90vw' }"
+    :style="{ width: '80vw' }">
+    <template #header>
+      <div class="flex gap-2 justify-content-between">
+        <h3>Editar Producto</h3>
+      </div>
+    </template>
+    <FormProducts :product="editProduct['product']" ></FormProducts>
+  </Dialog>
 </template>
 
 <script setup>
@@ -72,8 +90,14 @@ import TreeTable from 'primevue/treetable'
 import Column from 'primevue/column'
 import Dialog from 'primevue/dialog';
 import FileUpload from 'primevue/fileupload';
+import FormProducts from '../components/FormProducts.vue'
 const products = ref([])
 const expandedKeys = ref([])
+const editProduct = ref({
+  visible: false,
+  product: {}
+})
+const loading = ref(false)
 const dialog = ref(false)
 const addProduct = () => {
   products.value.push(  {
@@ -91,7 +115,10 @@ const addProduct = () => {
       },
       description: "descripción prueba",
       is_published: true,
-      actions: "acciones"
+      actions: "acciones",
+      variants:[{
+        sku: "sku prueba"
+      }]
   })
 }
 function openModal() {
@@ -99,6 +126,11 @@ function openModal() {
 } 
 function deleteProduct(index) {
   products.value.splice(index, 1)
+}
+async function loadData(product) {
+  editProduct.value.visible = true
+  editProduct.value.product = product
+  console.log(editProduct.value.product)
 }
 async function procesCSV(event) {
    event.xhr.onload =function () {

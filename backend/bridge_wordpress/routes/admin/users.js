@@ -258,7 +258,8 @@ router.post("/edit_social", async function (req, res, next) {
     const user = new AdminUser({ id_wordpress });
     const user_id = await user.getUserId();
     const property_id = await user.getPropertyId({ user_id });
-    const check_set = await user.editSocialNetworks({ property_id:property_id.data[0].property_id, name, is_active_network, url });
+    console.log(property_id,"get property id")
+    const check_set = await user.editSocialNetworks({ property_id:property_id, name, is_active_network, url });
     if (check_set.error == true) {
       return res.status(400).json({ error: ["Error edit social", check_set.message] })
     }
