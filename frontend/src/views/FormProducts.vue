@@ -4,7 +4,7 @@
       <template #header>
         <div class="flex justify-content-between">
           <h3>Productos</h3>
-          <div class="flex">
+          <div class="flex gap-1">
             <Button icon="pi pi-upload" class="p-button-rounded p-button h-1" label="Cargar CSV" @click="openModal" />
             <Button icon="pi pi-plus" class="p-button-rounded p-button h-1" label="Agregar Producto" @click="addProduct" />
           </div>
@@ -17,17 +17,32 @@
           <div>{{ slotProps.data.price == null?0:slotProps.data.price }}</div>
         </template>
       </Column>
-      <Column field="category_id" header="Categoria"></Column>
-      <Column field="referencia" header="Referencia"></Column>
-      <Column field="collection_id" header="Colección"></Column>
-      <Column field="proveedor" header="Proveedor"></Column>
+      <Column field="category_id" header="Categoria">
+        <template #body="slotProps">
+          <div>{{ slotProps.data.category_id.name}}</div>
+        </template>
+      </Column>
+      <Column field="referencia" header="Referencia">
+      </Column>
+      <Column field="collection_id" header="Colección">
+        <template #body="slotProps">
+          <div>{{ slotProps.data.collection_id.name}}</div>
+        </template>
+      </Column>
+      <Column field="proveedor" header="Proveedor">
+        <template #body="slotProps">
+          <div>{{ slotProps.data.proveedor.name_supplier}}</div>
+        </template>
+      </Column>
       <Column field="description_product" header="Descripción"></Column>
       <Column field="is_published" header="Publicado"></Column>
 
       <Column field="actions" header="Acciones">
         <template #body="slotProps">
-          <Button icon="pi pi-plus" class="p-button-rounded p-button h-1" label="Agregar variante productos" />
-          <Button icon="pi pi-trash" class="p-button-rounded p-button-danger h-1" label="Eliminar Producto" @click="deleteProduct(slotProps.index)" />
+        <div class="flex gap-1 align-items-center justify-content-center flex-column">
+          <Button icon="pi pi-pencil" class="p-button-rounded p-button h-1 w-full bg-purple-600 border-purple-600" label="Editar" />
+          <Button icon="pi pi-trash" class="p-button-rounded p-button-danger h-1 w-full " label="Eliminar Producto" @click="deleteProduct(slotProps.index)" />
+        </div>
         </template>
       </Column>
     </DataTable>
@@ -40,7 +55,7 @@
         <Button label="Descargar csv de referencia" icon="pi pi-file" class="p-button-rounded p-button-info h-1" @click="download" />
       </div>
     </template>
-    <FileUpload name="csv" accept=".csv" url="http://46.101.159.194:48700/csv" 
+    <FileUpload name="csv" accept=".csv" url="http://localhost:48700/csv" 
     :chooseLabel="Choose" :uploadLabel="Upload" @before-upload="procesCSV"
       >
     </FileUpload>
@@ -61,10 +76,16 @@ const addProduct = () => {
   products.value.push(  {
       nombre: "producto prueba",
       price: 100,
-      category: "categoria prueba",
+      category_id: {
+        name: "categoria prueba"
+      },
       reference: "referencia prueba",
-      collection: "colección prueba",
-      suplier: "proveedor prueba",
+      collection_id:{
+        name: "colección prueba"
+      },
+      proveedor: {
+        name: "proveedor prueba"
+      },
       description: "descripción prueba",
       is_published: true,
       actions: "acciones"
