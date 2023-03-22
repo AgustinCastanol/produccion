@@ -211,7 +211,7 @@
                 <div class="p-label">
                   <label for="image">Subir una imagen*</label>
                   <!-- <InputText id="image" v-model="form.image" placeholder="https://example.com"/> -->
-                  <Chip v-if="form.image!= null" :label="form.image.split('http://46.101.159.194/img/products/')[1]" removable @remove="removeImages('product')" @click="openLink(form.image)"/>
+                  <Chip v-if="form.image!= null" :label="form.image.split('http://46.101.159.194/img/products/')[1]" removable @remove="removeImages('product')" @click.ctrl="openLink(form.image)"/>
                   <FileUpload name="image" mode="basic" accept="image/*" url="http://46.101.159.194:48700/create_image_product"  
                   :maxFileSize="1000000" :auto="true" chooseLabel="Buscar" @before-upload="setProductImage" :disabled="disabled_image"/>
                 </div>
