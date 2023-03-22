@@ -323,7 +323,7 @@
                 <div class="p-label">
                   <label for="disponible">Subir una imagen de la variante*</label>
                   <!-- <InputText id="disponible" v-model="variantsForm[indexVariant].image" /> -->
-                  <Chip v-if="variantsForm[indexVariant].image" :label="variantsForm[indexVariant].image.split('http://46.101.159.194/img/variants')[1]" removable @remove="removeImages('')" />
+                  <Chip v-if="variantsForm[indexVariant].image" :label="variantsForm[indexVariant].image.split('http://46.101.159.194/img/variants')[1]" removable @remove="removeImages('')" @click.ctrl="openLink(variantsForm[indexVariant].image)" />
                   <FileUpload name="image" mode="basic" accept="image/*" url="http://46.101.159.194:48700/create_image_variant_product"  
                   :maxFileSize="1000000" :auto="true" chooseLabel="Buscar" @before-upload="setVariantImage" :disabled="disabled_image_variant[indexVariant]['disabled']"/>
                 </div>
