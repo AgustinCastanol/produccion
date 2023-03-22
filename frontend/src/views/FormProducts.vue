@@ -24,6 +24,9 @@
       </Column>
       <Column field="referencia" header="Referencia">
       </Column>
+      <Column field="sku" header="Sku">
+        
+      </Column>
       <Column field="collection_id" header="Colección">
         <template #body="slotProps">
           <div>{{ slotProps.data.collection_id.name}}</div>

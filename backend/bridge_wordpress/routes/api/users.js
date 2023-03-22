@@ -33,8 +33,17 @@ try{
     next( "Error al crear usuario")
   }
   const check_property = await users.crateProperty({user_id:register.user.id_admin_user});
+
   if(check_property.error == true){
     return response.status(400).json({error: ["Error set location", check_property.message]})
+  }
+  const check_socials = await users.crateSocials({property_id:check_property.property.id_property});
+  if(check_socials.error == true){
+    return response.status(400).json({error: ["Error set socials", check_socials.message]})
+  }
+  const check_company = await users.setCompanyData({user_id:register.user.id_admin_user,schedules:null,phone:null,city:null,name:null,country:null});
+  if(check_company.error == true){
+    return response.status(400).json({error: ["Error set company", check_company.message]})
   }
   await redis.set(`${email}`, register.token, 'EX', 86400, (err, reply) => {
     if (err) {

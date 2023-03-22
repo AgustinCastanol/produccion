@@ -258,7 +258,7 @@ router.post("/edit_social", async function (req, res, next) {
     const user = new AdminUser({ id_wordpress });
     const user_id = await user.getUserId();
     const property_id = await user.getPropertyId({ user_id });
-    const check_set = await user.editSocialNetworks({ id_social_networks: property_id.data[0].id_social_networks, name, is_active_network, url });
+    const check_set = await user.editSocialNetworks({ property_id:property_id.data[0].property_id, name, is_active_network, url });
     if (check_set.error == true) {
       return res.status(400).json({ error: ["Error edit social", check_set.message] })
     }
@@ -286,7 +286,6 @@ router.post("/get_properties", async function (req, res, next) {
     const id_user = await user.getUserId()
     console.log(id_user)
     const props = await user.getFullProperties({ user_id: id_user })
-    //ver la respuesta y filtrar y ordenar los campos para que sea mas bonito para marco
     res.status(200).send({ data: props, err: [] })
   } catch (err) {
     next(err.message);
@@ -312,3 +311,66 @@ router.post("/set_logo", async function (req, res, next) {
     next(err.message);
   }
 })
+/*        {
+            "id_property": "c8d814e1-9290-4859-8c62-6b3e81335b4b",
+            "id_social_networks": null,
+            "colors_user": "\"{\\\"primario\\\":\\\"#3f51b5\\\",\\\"secundario\\\":\\\"#303f9f\\\",\\\"fondo\\\":\\\"#eaecf5\\\",\\\"enfasis\\\":\\\"#5af158\\\"}\"",
+            "id_company_data": null,
+            "location": null,
+            "suppliers_select": null,
+            "user_id": "fc3965c3-4530-49f9-94f3-4572ad7ecbdc",
+            "logo_user": null,
+            "schedules": null,
+            "name_company": null,
+            "address_company": null,
+            "country": null,
+            "city": null,
+            "phone_number": null,
+            "network_name": "Facebook",
+            "url": "https://www.facebook.com/marcojhurtadob",
+            "is_active_network": true,
+            "id_network": "0c6a7e09-380c-4c56-a558-a456cbae307c",
+            "property_id": "c8d814e1-9290-4859-8c62-6b3e81335b4b"
+        },
+        {
+            "id_property": "c8d814e1-9290-4859-8c62-6b3e81335b4b",
+            "id_social_networks": null,
+            "colors_user": "\"{\\\"primario\\\":\\\"#3f51b5\\\",\\\"secundario\\\":\\\"#303f9f\\\",\\\"fondo\\\":\\\"#eaecf5\\\",\\\"enfasis\\\":\\\"#5af158\\\"}\"",
+            "id_company_data": null,
+            "location": null,
+            "suppliers_select": null,
+            "user_id": "fc3965c3-4530-49f9-94f3-4572ad7ecbdc",
+            "logo_user": null,
+            "schedules": null,
+            "name_company": null,
+            "address_company": null,
+            "country": null,
+            "city": null,
+            "phone_number": null,
+            "network_name": "Facebook",
+            "url": "https://www.facebook.com/marcojhurtadob",
+            "is_active_network": true,
+            "id_network": "59142fea-42b9-4212-babf-48e9a4c05cf1",
+            "property_id": "c8d814e1-9290-4859-8c62-6b3e81335b4b"
+        },
+        {
+            "id_property": "c8d814e1-9290-4859-8c62-6b3e81335b4b",
+            "id_social_networks": null,
+            "colors_user": "\"{\\\"primario\\\":\\\"#3f51b5\\\",\\\"secundario\\\":\\\"#303f9f\\\",\\\"fondo\\\":\\\"#eaecf5\\\",\\\"enfasis\\\":\\\"#5af158\\\"}\"",
+            "id_company_data": null,
+            "location": null,
+            "suppliers_select": null,
+            "user_id": "fc3965c3-4530-49f9-94f3-4572ad7ecbdc",
+            "logo_user": null,
+            "schedules": null,
+            "name_company": null,
+            "address_company": null,
+            "country": null,
+            "city": null,
+            "phone_number": null,
+            "network_name": "Facebook",
+            "url": "https://www.facebook.com/marcojhurtadob3",
+            "is_active_network": true,
+            "id_network": "8dd78693-8425-4083-b2ae-d97de8afcc9e",
+            "property_id": "c8d814e1-9290-4859-8c62-6b3e81335b4b"
+        } */

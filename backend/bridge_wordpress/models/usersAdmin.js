@@ -168,7 +168,7 @@ export default class Users {
         suppliers_select: null,
         logo_user: null,
       });
-      return { error: false, message: 'Property created' };
+      return { error: false, message: 'Property created', property };
     } catch (err) {
       return { error: true, message: err.message };
     }
@@ -179,6 +179,28 @@ export default class Users {
       return res[0].id_admin_user;
     } catch (err) {
       return null;
+    }
+  }
+  async createSocials({ property_id  }) {
+    try{
+      try {
+        let names=['Facebook','Instagram','Twitter','Linkedin'];
+        for(let c = 0; c < 4; c++){
+          await knex_user_db('social_networks').insert({
+            id_networks: uuid(),
+            property_id: property_id,
+            network_name: names[c],
+            url: null,
+            is_active_network: false,
+          });
+        }
+        return { error: false, message: 'Social networks added' };
+      } catch (err) {
+        return { error: true, message: err.message };
+      }
+
+    }catch(err){
+      return { error: true, message: err.message };
     }
   }
   async deleteUser() {
@@ -219,12 +241,12 @@ export default class Users {
     try {
       const data = {
         id_company_data: uuid(),
-        schedules,
-        phone_number: phone,
-        address_company: address,
-        city,
-        name_company: name,
-        country
+        schedules: schedules==null?null:schedules,
+        phone_number: phone==null?null:phone,
+        address_company: address==null?null:address,
+        city: city==null?null:city,
+        name_company: name==null?null:name,
+        country: country==null?null:country,
       }
 
       await knex_user_db('company_data').insert(data);
@@ -314,14 +336,15 @@ export default class Users {
       return { error: true, message: err.message };
     }
   }
-  async editSocialNetworks({ id_social_networks, name, is_active_network, url }) {
+  async editSocialNetworks({ name, is_active_network, url,property_id }) {
     try {
       const data = {
         network_name: name,
         is_active_network,
         url: url
       }
-      await knex_user_db('social_networks').where({ id_network: id_social_networks }).update(data);
+      //buscar que coincida el name y el property id
+      await knex_user_db('social_networks').where({ network_name: name, property_id }).update(data);
       return { error: false, message: 'Social networks edited' };
     } catch (err) {
       return { error: true, message: err.message };
@@ -341,10 +364,14 @@ export default class Users {
       const res = await knex_user_db.raw(`
       SELECT  * FROM properties_user
       LEFT JOIN company_data ON properties_user.id_company_data = company_data.id_company_data
-      LEFT JOIN social_networks ON properties_user.id_property = social_networks.property_id
       WHERE properties_user.user_id = '${user_id}'`)
-      console.log(res)
-      return  res.rows ;
+      console.log(res.rows[0].id_property)
+      let social_networks = await knex_user_db.raw(`
+      SELECT * FROM social_networks
+      WHERE social_networks.property_id = '${res.rows[0].id_property}'`)
+      social_networks = social_networks.rows
+
+      return  {data:{...res.rows[0], social_networks} };
 
     }
     catch (err) {

@@ -268,7 +268,7 @@ export class AppService {
       join "public"."price" on "public"."products"."idProducts" = "public"."price"."productId"
       join "public"."categories" on "public"."products"."category_id" = "public"."categories"."id_categorias"
       join "public"."productImages" on "public"."products"."idProducts" = "public"."productImages"."productId"
-      WHERE name_product LIKE '%${data.search}%'`);
+      WHERE name_product ILIKE '%${data.search}%'`);
       return product[0];
     } catch (err) {
       console.log(err);
