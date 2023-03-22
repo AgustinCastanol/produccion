@@ -910,24 +910,67 @@ export class AppController {
 
   @EventPattern('process_csv')
   async processCsv(data: any) {
+    /*  {
+    'sku padre': 'MU',
+    'sku hijo': 'MU-100',
+    nombre: 'prueba',
+    'descripcion corta': 'kdansdonasdon',
+    'precio neto': '0',
+    'precio sugerido': '0',
+    peso: '0',
+    marca: 'no brand',
+    material: '0',
+    talla: '0',
+    color: '0',
+    medidas: '0',
+    coleccion: 'precio sugerido',
+    categoria: 'antiestres',
+    subcategoria: '0',
+    proveedor: 'ProveedorAdministrador(back)',
+    publicado: 'si',
+    'disponible desde': '21/03/2023',
+    imagen: 'http://46.101.159.194/img/01.png',
+    stock: '123',
+    'localizacion del stock': 'total'
+  } */
     try {
-      console.log(data)
       const aux = [{}]
+      const products=[]
+      let product = {}
       for (let c = 0; c < data.length; c++) {
-        const check_product = <any>await this.aphService.getProductByReference({ reference: data['sku padre'] })
+        const check_product = <any>await this.aphService.getProductByReference({ reference: data[c]['sku padre'] })
+        console.log(check_product, "check_product")
         if (check_product.length == 0) {
           console.log("el producto no existe")
           const catergoria = await this.aphService.getCategoryBySlug({ slug: data[c]['categoria'] })
           const collection = await this.aphService.getCollectionsBySlug({slug:data[c]['coleccion']})        
           const supplier = await this.aphService.getProveedorByName({name:data[c]['proveedor']})
-          
+          console.log(catergoria, "categorias")
+          console.log(collection, "coleccion")
+          console.log(supplier, "proveedor")
+           product ={
+            nombre: data[c]['nombre'],
+            referencia: data[c]['sku padre'],
+            description_product: data[c]['descripcion corta'],
+            metadata: {medidas:data[c]['medidas'],material:data[c]['material'],talla:data[c]['talla'],color:data[c]['color'] },
+            channel: data[c]['proveedor'],
+            is_published: data[c]['publicado'] == 'si' ? true : false,
+            peso: data[c]['peso'],
+            category_id: catergoria != undefined ? catergoria[0].id : null,
+            product_class_id:null,
+            collection_id: collection != undefined ? collection[0].idCollection : null,
+            proveedor: supplier != undefined ? supplier[0].id : null,
+            price: data[c]['precio neto'],
+            image: data[c]['imagen'],
+          }
         }
           const check_variant = <any>await this.aphService.getVariantBySku({ sku: data[c]['sku hijo'] })
           if (check_variant.length > 0) {
             console.log("la variante ya existe")
             aux.push({ message: "la variante ya existe", err: check_variant, data: data[c] })
+            continue
           }
-          const product = check_product[0]
+           product =  check_product.length > 0 ? check_product[0] : product
           const productVariant = {
             name_variants: data[c]['nombre'],
             sku: data[c]['sku hijo'],
@@ -936,12 +979,20 @@ export class AppController {
             weight_override: data[c]['peso'],
             brand: data[c]['marca'],
             description_variant: data[c]['descripcion'],
-            product_id: product.id_productos
+            image: data[c]['imagen'],
+            stock:[
+            {
+              location:data[c]['localizacion del stock'],
+              quantity:data[c]['stock']
+            }
+            ]
           }
-          const variant_db = await this.aphService.setVariant(productVariant);
-          console.log(variant_db, "variante_db")
-          await this.aphService.setVariantImage({ variantId: variant_db.id_variant, url: JSON.stringify([data[c].imagen]) })
+          products.push({
+            ...product,
+            variants:[productVariant]
+          })
       }
+      return { message: 'Productos cargados', data: { products, length: aux.length }, error: [] }
     } catch (err) {
       console.log(err)
       return { data: null, error: err.message }

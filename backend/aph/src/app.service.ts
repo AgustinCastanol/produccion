@@ -42,7 +42,7 @@ export class AppService {
         nombre: data.nombre ? data.nombre : data.name_product,
         referencia: data.referencia ? data.referencia : data.reference,
         descripcion: data.description_product ? data.description_product : data.descripcion,
-        metadata: null,
+        metadata:JSON.stringify(data.metadata),
         channel: data.channel,
         disponible: data.disponible ? new Date(data.disponible).toISOString().slice(0, 19).replace('T', ' ') : new Date(data.available_on).toISOString().slice(0, 19).replace('T', ' '),
         is_published: data.is_published,
@@ -624,7 +624,7 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
         return null
       }
       const res = <any>await this.sequelize.query(
-        `SELECT * FROM "public"."categories" WHERE slug_category = '${data}'`,
+        `SELECT * FROM "public"."categories" WHERE slug_category = '${data.slug}'`,
       );
 
       return res[0][0];
@@ -816,7 +816,7 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
   async getCollectionsBySlug({slug}) {
     try{
       const res = await this.sequelize.query(`
-      SELECT * FROM public.collections WHERE slug_collection = '${slug}';`);
+      SELECT * FROM public.collection WHERE slug_collection = '${slug}';`);
       return res[0];
     }catch(e){
       console.log(e);

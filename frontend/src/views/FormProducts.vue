@@ -1,6 +1,6 @@
 <template>
   <div>
-    <TreeTable :value="products" :expandedKeys="expandedKeys">
+    <DataTable :value="products" >
       <template #header>
         <div class="flex justify-content-between">
           <h3>Productos</h3>
@@ -10,14 +10,18 @@
           </div>
         </div>
       </template>
-
-      <Column field="name" header="Nombre" expander></Column>
-      <Column field="price" header="Precio"></Column>
-      <Column field="category" header="Categoria"></Column>
-      <Column field="reference" header="Referencia"></Column>
-      <Column field="collection" header="Colección"></Column>
-      <Column field="suplier" header="Proveedor"></Column>
-      <Column field="description" header="Descripción"></Column>
+      <Column field="nombre" header="Nombre">
+      </Column>
+      <Column field="price" header="Precio">
+        <template #body="slotProps">
+          <div>{{ slotProps.data.price == null?0:slotProps.data.price }}</div>
+        </template>
+      </Column>
+      <Column field="category_id" header="Categoria"></Column>
+      <Column field="referencia" header="Referencia"></Column>
+      <Column field="collection_id" header="Colección"></Column>
+      <Column field="proveedor" header="Proveedor"></Column>
+      <Column field="description_product" header="Descripción"></Column>
       <Column field="is_published" header="Publicado"></Column>
 
       <Column field="actions" header="Acciones">
@@ -26,7 +30,7 @@
           <Button icon="pi pi-trash" class="p-button-rounded p-button-danger h-1" label="Eliminar Producto" @click="deleteProduct(slotProps.index)" />
         </template>
       </Column>
-    </TreeTable>
+    </DataTable>
   </div>
   <Dialog class="card" v-model:visible="dialog" :breakpoints="{ '960px': '75vw', '640px': '90vw' }"
     :style="{ width: '80vw' }">
@@ -36,8 +40,8 @@
         <Button label="Descargar csv de referencia" icon="pi pi-file" class="p-button-rounded p-button-info h-1" @click="download" />
       </div>
     </template>
-    <FileUpload name="csv" accept=".csv" url="http://localhost:48700/csv" 
-    :chooseLabel="Choose" :uploadLabel="Upload" @upload="procesCSV"
+    <FileUpload name="csv" accept=".csv" url="http://46.101.159.194:48700/csv" 
+    :chooseLabel="Choose" :uploadLabel="Upload" @before-upload="procesCSV"
       >
     </FileUpload>
   </Dialog>
@@ -45,6 +49,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import DataTable from 'primevue/datatable';
 import TreeTable from 'primevue/treetable'
 import Column from 'primevue/column'
 import Dialog from 'primevue/dialog';
@@ -54,9 +59,7 @@ const expandedKeys = ref([])
 const dialog = ref(false)
 const addProduct = () => {
   products.value.push(  {
-    key: "0",
-    data: {
-      name: "producto prueba",
+      nombre: "producto prueba",
       price: 100,
       category: "categoria prueba",
       reference: "referencia prueba",
@@ -65,7 +68,6 @@ const addProduct = () => {
       description: "descripción prueba",
       is_published: true,
       actions: "acciones"
-    }
   })
 }
 function openModal() {
@@ -74,13 +76,18 @@ function openModal() {
 function deleteProduct(index) {
   products.value.splice(index, 1)
 }
-function procesCSV(event) {
-  console.log(event)
+async function procesCSV(event) {
+   event.xhr.onload =function () {
+    // console.log(event.xhr.response)
+    let json = JSON.parse(event.xhr.response)
+    console.log(json.data['products'])
+    products.value=json.data['products']
+  }
 }
 async function download(){
   /*sku padre,sku hijo,nombre,descripcion corta,precio neto,precio sugerido,coleccion,categoria,subcategoria,proveedor,publicado,disponible desde,imagen,stock,localizacion del stock
 MU-102,MU-102 N,aca iria el nombre,aca iria la descripcion,1555,0,precio neto,antiestres,,nombre del proveedor,si,20/03/2023,url de la imagen,200,total*/
-  var csv = 'sku padre,sku hijo,nombre,descripcion corta,precio neto,precio sugerido,coleccion,categoria,subcategoria,proveedor,publicado,disponible desde,imagen,stock,localizacion del stock\n';
+  var csv = 'sku padre,sku hijo,nombre,descripcion corta,precio neto,precio sugerido,peso,marca,material,talla,color,medidas,coleccion,categoria,subcategoria,proveedor,publicado,disponible desde,imagen,stock,localizacion del stock\n';
   var hiddenElement = document.createElement('a');
   hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
   hiddenElement.target = '_blank';
