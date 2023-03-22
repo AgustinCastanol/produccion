@@ -211,7 +211,7 @@
                 <div class="p-label">
                   <label for="image">Subir una imagen*</label>
                   <!-- <InputText id="image" v-model="form.image" placeholder="https://example.com"/> -->
-                  <Chip v-if="form.image!= null" :label="form.image.split('http://46.101.159.194/img/products/')[1]" removable @remove="removeImages('product')"/>
+                  <Chip v-if="form.image!= null" :label="form.image.split('http://46.101.159.194/img/products/')[1]" removable @remove="removeImages('product')" @click="openLink(form.image)"/>
                   <FileUpload name="image" mode="basic" accept="image/*" url="http://46.101.159.194:48700/create_image_product"  
                   :maxFileSize="1000000" :auto="true" chooseLabel="Buscar" @before-upload="setProductImage" :disabled="disabled_image"/>
                 </div>
@@ -432,6 +432,9 @@ async function loadSubcategories(event) {
   }
 }
 
+async function openLink(url) {
+  window.open(url, '_blank');
+}
 async function setProductImage(event){
   event.xhr.onload = function () {
     console.log(event.xhr.response)
