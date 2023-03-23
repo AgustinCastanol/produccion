@@ -187,7 +187,7 @@ export default class Users {
         let names=['Facebook','Instagram','Twitter','Linkedin'];
         for(let c = 0; c < 4; c++){
           await knex_user_db('social_networks').insert({
-            id_networks: uuid(),
+            id_network: uuid(),
             property_id: property_id,
             network_name: names[c],
             url: null,
@@ -248,7 +248,7 @@ export default class Users {
         name_company: name==null?null:name,
         country: country==null?null:country,
       }
-
+      console.log(data)
       await knex_user_db('company_data').insert(data);
       await knex_user_db('properties_user').where({ user_id }).update({ id_company_data: data.id_company_data });
       return { error: false, message: 'Company data added' };

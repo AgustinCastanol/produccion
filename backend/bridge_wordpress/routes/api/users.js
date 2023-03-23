@@ -28,7 +28,7 @@ try{
   }
   const users = new Users({ email, password, id_wordpress, user });
   const register = await users.registerUser();
-  console.log(register)
+
   if(register == false){
     next( "Error al crear usuario")
   }
@@ -37,11 +37,12 @@ try{
   if(check_property.error == true){
     return response.status(400).json({error: ["Error set location", check_property.message]})
   }
-  const check_socials = await users.crateSocials({property_id:check_property.property.id_property});
+  console.log(check_property,"property")
+  const check_socials = await users.createSocials({property_id:check_property.property.id_property});
   if(check_socials.error == true){
     return response.status(400).json({error: ["Error set socials", check_socials.message]})
   }
-  const check_company = await users.setCompanyData({user_id:register.user.id_admin_user,schedules:null,phone:null,city:null,name:null,country:null});
+  const check_company = await users.setCompanyData({user_id:register.user.id_admin_user,schedules:'vacio',phone:'vacio',city:'vacio',name:'vacio',country:'vacio',address:'vacio',zip:'vacio',state:'vacio',email:'vacio'});
   if(check_company.error == true){
     return response.status(400).json({error: ["Error set company", check_company.message]})
   }
