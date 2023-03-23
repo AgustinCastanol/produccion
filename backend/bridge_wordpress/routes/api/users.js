@@ -65,7 +65,7 @@ try{
   const password = request.body.password;
   const id_wordpress = request.body.id;
   const user = request.body.user;
-  // console.log(request.body)
+  console.log(request.body)
   if (email == null || email == "" || email == undefined) {
     response.status(400).json({ error: "Email vacio" })
   }
