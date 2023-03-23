@@ -222,6 +222,7 @@ router.post("/set_suppliers", async function (req, res, next) {
 })
 router.post("/edit_company_data", async function (req, res, next) {
   try {
+    console.log("edit_data")
     const { id_wordpress, schedules, phone, address, name, city, country } = req.body;
     if (!id_wordpress || !schedules || !phone || !address || !name || !city || !country) {
       return res.status(400).json({ error: "Missing fields" })
@@ -233,8 +234,8 @@ router.post("/edit_company_data", async function (req, res, next) {
     }
     const user = new AdminUser({ id_wordpress });
     const user_id = await user.getUserId();
-    const property_id = await user.getPropertyId({ user_id });
-    const check_set = await user.editCompanyData({ id_company_data: property_id.data[0].id_company_data, schedules, phone, address, name, city, country });
+    const id_company_data = await user.getCompanyId({ user_id });
+    const check_set = await user.editCompanyData({ id_company_data, schedules, phone, address, name, city, country });
     if (check_set.error == true) {
       return res.status(400).json({ error: ["Error edit company data", check_set.message] })
     }

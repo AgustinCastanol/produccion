@@ -404,6 +404,14 @@ export default class Users {
       return { error: true, message: err.message };
     }
   }
+  async getCompanyId({ user_id }) {
+    try {
+      const res = await knex_user_db('properties_user').where({ user_id }).select('*');
+      return res[0].id_company_data;
+    } catch (err) {
+      return { error: true, message: err.message };
+    }
+  }
   async setLogo({ user_id, logo }) {
     try {
       console.log(user_id, logo);
