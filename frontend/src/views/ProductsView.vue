@@ -15,6 +15,16 @@
           </Button>
         </div>
       </template>
+      <template #empty>
+        <div class="flex  justify-content-center align-content-start">
+          <div class="card shadow-2">
+            <div class="flex flex-column align-items-center justify-content-center">
+              <i class="pi pi-times-circle p-mb-3" style="font-size: 5rem"></i>
+              <span class="p-text-bold">No hay productos</span>
+            </div>
+          </div>
+        </div>
+      </template>
       <Column field="image">
         <template #body="slotProps">
           <img :src="slotProps.data.urlImage" alt="Image" width="100" height="100" />

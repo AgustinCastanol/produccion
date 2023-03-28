@@ -173,3 +173,11 @@ export function deleteVariantsImage(data){
     data
   })
 }
+
+export function procesCsvProducts(data){
+  return request({
+    url: '/procesCsvProducts',
+    method: 'post',
+    data
+  })
+}

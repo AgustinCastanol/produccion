@@ -338,4 +338,10 @@ async processCsv(data: any) {
   const res = await this.clienteLogin.send('process_csv', data).toPromise();
   return res;
 }
+async processCsvProducts(data: any) {
+  const res = await this.clienteLogin
+    .send('process_csv_products', data)
+    .toPromise();
+  return res;
+}
 }

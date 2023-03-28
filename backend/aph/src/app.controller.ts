@@ -8,6 +8,7 @@ import { find, findIndex } from 'rxjs';
 import { CdoService } from './cdo/cdo.service';
 import { MarpicoService } from './marpico/marpico.service';
 import { PromoopcionService } from './promoopcion/promoopcion.service';
+import { json } from 'sequelize';
 @Controller()
 export class AppController {
   constructor(
@@ -142,10 +143,10 @@ export class AppController {
       ]
       const base_url_image = 'https://www.catalogospromocionales.com'
       const categorias = await this.promos.getCategories();
-      for (let i = 0; categorias.length > i; i++) {
+      for (let i = 1; 2 > i; i++) {
         await new Promise((resolve) => setTimeout(resolve, 300));
         const categoriaHomologada = <any>await this.promos.getCategoriasHomologadas(categorias[i]);
-        const categorias_aph = await this.aphService.getCategoryBySlug(categoriaHomologada);
+        const categorias_aph = await this.aphService.getCategoryBySlug({slug:categoriaHomologada});
         if (categorias_aph != undefined && (categorias_aph.id_categorias !== undefined || categorias_aph.id_categorias !== null)) {
           const products = await this.promos.getProductsByCategory(categorias[i]);
           const size = products.length
@@ -159,7 +160,7 @@ export class AppController {
                 const price = producto_promos.descripcionPrecio1 == "precio neto" ? producto_promos.precio1 : 0;
                 await new Promise((resolve) => setTimeout(resolve, 100));
                 const true_category = await this.promos.getCategoryById(producto_promos.idCategoria);
-                const category = await this.aphService.getCategoryBySlug(true_category);
+                const category = await this.aphService.getCategoryBySlug({slug:true_category});
                 const productaux = {
                   nombre: aux.str,
                   referencia: producto_promos.referencia,
@@ -219,7 +220,7 @@ export class AppController {
                 const producto_promos = await this.promos.getProduct({ referencia: products[j].referencia });
                 const true_category = await this.promos.getCategoryById(producto_promos.idCategoria);
                 await new Promise((resolve) => setTimeout(resolve, 150));
-                const category = await this.aphService.getCategoryBySlug(true_category);
+                const category = await this.aphService.getCategoryBySlug({slug:true_category});
                 console.log("category", category)
                 const product_db = checkProduct[0];
                 const price_db = await this.aphService.getPrice({ id: product_db.idProducts });
@@ -377,7 +378,7 @@ export class AppController {
       for (let i = 0; size > i; i++) {
         const categoriaHomologada = await this.cdoService.getCategoriaHomologada(products[i].category);
         if (categoriaHomologada != undefined && categoriaHomologada != '') {
-          const { id_categorias } = await this.aphService.getCategoryBySlug(categoriaHomologada);
+          const { id_categorias } = await this.aphService.getCategoryBySlug({slug:categoriaHomologada});
           if (id_categorias != undefined && id_categorias != '') {
             const checkProduct = await this.aphService.checkProduct(products[i].code)
             if (!(checkProduct.length > 0)) {
@@ -477,7 +478,7 @@ export class AppController {
     for (let i = 0; i < res.results.length; i++) {
       await new Promise((resolve) => setTimeout(resolve, 200));
       const categoriaHomologada = await this.marpicoService.getCategoriaHomologada(res.results[i].subcategoria_1.nombre);
-      const categorias_db = <any>await this.aphService.getCategoryBySlug(categoriaHomologada);
+      const categorias_db = <any>await this.aphService.getCategoryBySlug({slug:categoriaHomologada});
       const checkProduct = await this.aphService.checkProduct(res.results[i].familia);
       if (!(checkProduct.length > 0)) {
         const productObject =
@@ -636,7 +637,7 @@ export class AppController {
         console.log(Stocks.length, "Stocks.length")
         await new Promise((resolve) => setTimeout(resolve, 300));
         const categoriaHomologada = await this.promosOpcion.getCategoriaHomologada(response[i].categorias);
-        const categorias_db = <any>await this.aphService.getCategoryBySlug(categoriaHomologada);
+        const categorias_db = <any>await this.aphService.getCategoryBySlug({slug:categoriaHomologada});
         const checkProduct = await this.aphService.checkProduct(response[i].skuPadre);
         console.log(Stocks.length, "Stocks.length")
 
@@ -852,7 +853,7 @@ export class AppController {
         }
         const variant_db = await this.aphService.setVariant(productVariant);
         console.log(variant_db, "variante_db")
-        await this.aphService.setVariantImage({ variantId: variant_db.id_variant, url: JSON.stringify([variants[i].image]) })
+        await this.aphService.setVariantImage({ variantId: variant_db.id_variant, urlImage: JSON.stringify([variants[i].image]) })
         for (let j = 0; j < variants[i].stock.length; j++) {
           await this.aphService.setStock({ locationId: variants[i].stock[j].name.idStockLocation, quantity: variants[i].stock[j].quantity, variant_id: variant_db.id_variant, quantity_allocated: 0 });
         }
@@ -937,6 +938,7 @@ export class AppController {
       const aux = [{}]
       const products=[]
       let product = {}
+
       for (let c = 0; c < data.length; c++) {
         const check_product = <any>await this.aphService.getProductByReference({ reference: data[c]['sku padre'] })
         console.log(check_product, "check_product")
@@ -1000,4 +1002,245 @@ export class AppController {
       return { data: null, error: err.message }
     }
   }
+  @EventPattern('process_csv_products')//problema con la carga de imagenes
+  async processCsvProducts(data: any) {
+    try{
+      // console.log(data)
+      //agrupar por referencia
+      const locations = [
+        { id: '0994b3d5-becd-401f-983f-47447352ce19', name: 'local' },
+        { id: '9b245cdf-acc8-4655-9738-ee432f654e20', name: 'ZonaFranca' },
+        { id: 'a5db0dfa-2d96-4950-b382-839b3acfd6ae', name: 'transito' },
+        { id: '3b257993-638c-4505-ad1d-5a6dd24d9ac5', name: 'total' },
+      ]
+      let product_db:any = []
+      const products = data.reduce((acc, item) => {
+        const key = item.referencia;
+        if (!acc[key]) {
+          acc[key] = [];
+        }
+        acc[key].push(item);
+        return acc;
+      }
+        , {});
+      for(const key in products){
+        const check_product = <any>await this.aphService.getProductByReference({reference:key})
+        if(check_product.length == 0){
+          const product_aux = {
+            nombre: products[key][0].nombre,
+            referencia: products[key][0].referencia,
+            description_product: products[key][0].description_product,
+            metadata: products[key][0].metadata,
+            channel: products[key][0].channel,
+            is_published: products[key][0].is_published,
+            peso: products[key][0].peso,
+            category_id: products[key][0].category_id.id,
+            collection_id: products[key][0].collection_id.id,
+            proveedor: products[key][0].proveedor.id,
+            price: products[key][0].price,
+            image: products[key][0].imagen,
+            product_class_id: products[key][0].product_class_id
+          }
+          const price_db =await this.aphService.setPrice({
+            metadata:{precioSugerido:products[key][0].collection_id.name == 'precio sugerido'?products[key][0].price:0},
+            price:products[key][0].collection_id.name == 'precio neto'?products[key][0].price:0,
+            product_id:null,
+            currency:products[key][0].currency ==undefined? 'COP':products[key][0].currency,
+            type: "Precio Neto"
+          })
+          product_aux.price = price_db.id_price
+          product_db = await this.aphService.setProduct(product_aux)
+          await this.aphService.updatePrice({...price_db,productId:product_db.id_productos})
+          await this.aphService.setProductImage({productId:product_db.id_productos,url:JSON.stringify([products[key][0].image])})
+        }
+
+        for(let i = 0; i < products[key].length;i++){
+          const check_variant = <any>await this.aphService.getVariantBySku({sku:products[key][i].variants[0].sku})
+          if(check_variant.length == 0){
+            const variant_db = await this.aphService.setVariant({
+              name_variants:products[key][i].variants[0].name_variants,
+              sku:products[key][i].variants[0].sku,
+              price_override:products[key][i].variants[0].price_override,
+              metadata_variants:products[key][i].variants[0].metadata_variants,
+              weight_override:products[key][i].variants[0].weight_override,
+              brand:products[key][i].variants[0].brand,
+              description_variant:JSON.stringify(products[key][i].variants[0].metadata_variants),
+              product_id: check_product.length > 0 ? check_product[0].id_productos : product_db.id_productos,
+            })
+            console.log(variant_db,"variant")
+            await this.aphService.setVariantImage({variantId:variant_db.id_variant,urlImage:JSON.stringify([products[key][i].variants[0].image])})
+            const idStock = locations.find((item)=>item.name.toLowerCase() == products[key][i].variants[0].stock[0].location.toLowerCase())
+            console.log(idStock,"stocl")
+            await this.aphService.setStock({
+              locationId:idStock.id,
+              quantity:products[key][i].variants[0].stock[0].quantity,
+              variant_id:variant_db.id_variant ,
+              quantity_allocated:0
+            })
+          }else{
+            const price_db =await this.aphService.getPrice({id:check_variant[0].idProducts})
+            await this.aphService.updatePrice({
+              id: price_db[0].id,
+              type: 'Precio Neto',
+              metadata: {precioSugerido:products[key][0].collection_id.name == 'precio sugerido'?products[key][0].price:0},
+              currency: 'COP',
+              price: products[key][0].collection_id.name == 'precio neto'?products[key][0].price:0,
+              productId: price_db[0].productId
+          })
+          const stock_update = locations.find((item)=>item.name.toLowerCase() == products[key][i].variants[0].stock[0].location.toLowerCase())
+          const stock_db = await this.aphService.getStockByVariant({id_variant:check_variant[0].id_variant})
+          const check_stock = stock_db.find((item)=>item.location == stock_update.id)
+          if(check_stock){
+            await this.aphService.updateStock({variant_id:check_variant.idVariant,quantity:products[key][i].variants[0].stock[0].quantity,quantity_allocated:0,location:stock_update.id})
+          }else{
+            await this.aphService.setStock({
+              location:stock_update.id,
+              quantity:products[key][i].variants[0].stock[0].quantity,
+              variant_id:check_variant[0].id_variant ,
+              quantity_allocated:0
+            })
+          }
+      }
+    }
+    
+   } 
+    }catch(err){
+      console.log(err)
+      return {error:err.message,message:"productos "}
+    }
+  }
 }
+/* [
+  {
+    nombre: 'TAPON PARA BOTELLA DE\nVINO',
+    referencia: 'BA',
+    description_product: 'TAPON PARA BOTELLA DE\nVINO SOMMELIERE TR',
+    metadata: { medidas: '0', material: 'PVC', talla: '0', color: '0' },
+    channel: 'ProveedorAdministrador(back)',
+    is_published: true,
+    peso: '0',
+    category_id: {
+      id: '61c7680b-d821-4026-9bab-8f8f6dcf0a28',
+      name: 'Bebidas',
+      slug: 'bebidas'
+    },
+    product_class_id: null,
+    collection_id: {
+      name: 'precio sugerido',
+      id: '47ac63e1-42ef-4e49-9ba1-33f1d0050e4d',
+      slug: 'precio-sugerido'
+    },
+    proveedor: {
+      id: '20c2cfda-b7f4-4dea-a15f-8d48cd379db8',
+      name: 'ProveedorAdministrador(back)'
+    },
+    price: '0',
+    image: '0',
+    variants: [
+  {
+    "name_variants": "TAPON PARA BOTELLA DE\nVINO",
+    "sku": "BA11101JSNDJA",
+    "price_override": "350",
+    "metadata_variants": {
+      "color": "0",
+      "talla": "0",
+      "material": "PVC",
+      "medidas": "0"
+    },
+    "weight_override": "0",
+    "brand": "SOMMELIERE TR",
+    "image": "0",
+    "stock": [
+      {
+        "location": "Total",
+        "quantity": "67"
+      }
+    ]
+  }
+],
+    
+  },
+  {
+    nombre: 'prueba',
+    referencia: 'MU',
+    description_product: 'kdansdonasdon',
+    metadata: { medidas: '0', material: '0', talla: '0', color: '0' },
+    channel: 'ProveedorAdministrador(back)',
+    is_published: true,
+    peso: '0',
+    category_id: {
+      id: '77b7817a-3dcf-40cd-a891-84298f43ee7c',
+      name: 'Antiestrés',
+      slug: 'antiestrs'
+    },
+    product_class_id: null,
+    collection_id: {
+      name: 'precio sugerido',
+      id: '47ac63e1-42ef-4e49-9ba1-33f1d0050e4d',
+      slug: 'precio-sugerido'
+    },
+    proveedor: {
+      id: '20c2cfda-b7f4-4dea-a15f-8d48cd379db8',
+      name: 'ProveedorAdministrador(back)'
+    },
+    price: '0',
+    image: 'http://46.101.159.194/img/01.png',
+    variants: [ [Object] ]
+  }
+] products
+[
+  {
+    nombre: 'TAPON PARA BOTELLA DE\nVINO',
+    referencia: 'BA',
+    description_product: 'TAPON PARA BOTELLA DE\nVINO SOMMELIERE TR',
+    metadata: { medidas: '0', material: 'PVC', talla: '0', color: '0' },
+    channel: 'ProveedorAdministrador(back)',
+    is_published: true,
+    peso: '0',
+    category_id: {
+      id: '61c7680b-d821-4026-9bab-8f8f6dcf0a28',
+      name: 'Bebidas',
+      slug: 'bebidas'
+    },
+    product_class_id: null,
+    collection_id: {
+      name: 'precio sugerido',
+      id: '47ac63e1-42ef-4e49-9ba1-33f1d0050e4d',
+      slug: 'precio-sugerido'
+    },
+    proveedor: {
+      id: '20c2cfda-b7f4-4dea-a15f-8d48cd379db8',
+      name: 'ProveedorAdministrador(back)'
+    },
+    price: '0',
+    image: '0',
+    variants: [ [Object] ]
+  },
+  {
+    nombre: 'prueba',
+    referencia: 'MU',
+    description_product: 'kdansdonasdon',
+    metadata: { medidas: '0', material: '0', talla: '0', color: '0' },
+    channel: 'ProveedorAdministrador(back)',
+    is_published: true,
+    peso: '0',
+    category_id: {
+      id: '77b7817a-3dcf-40cd-a891-84298f43ee7c',
+      name: 'Antiestrés',
+      slug: 'antiestrs'
+    },
+    product_class_id: null,
+    collection_id: {
+      name: 'precio sugerido',
+      id: '47ac63e1-42ef-4e49-9ba1-33f1d0050e4d',
+      slug: 'precio-sugerido'
+    },
+    proveedor: {
+      id: '20c2cfda-b7f4-4dea-a15f-8d48cd379db8',
+      name: 'ProveedorAdministrador(back)'
+    },
+    price: '0',
+    image: 'http://46.101.159.194/img/01.png',
+    variants: [ [Object] ]
+  }
+]*/

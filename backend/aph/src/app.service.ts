@@ -144,6 +144,7 @@ export class AppService {
         url: data.url ? data.url : null,
         idImage: uuidv1(),
       };
+      console.log(obj,"imagenes products")
       await this.sequelize.query(`INSERT INTO public."productImages"(
         "idImage", "productId", image, alt, "urlImage")
         VALUES ('${obj.idImage}', '${obj.id_productos}', ${obj.image ? `'${obj.image}'` : null}, '${obj.alt}', ${obj.url ? `'${obj.url}'` : null});`)

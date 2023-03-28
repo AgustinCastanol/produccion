@@ -211,4 +211,9 @@ export class AppController {
     const res = await this.appService.processCsv(body);
     return res;
   }
+  @Post('/procesCsvProducts')
+  async processCsvProducts(@Body() body: any): Promise<any> {
+    const res = await this.appService.processCsvProducts(body);
+    return res;
+  }
 }
