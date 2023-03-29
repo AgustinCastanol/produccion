@@ -369,8 +369,19 @@ export default class Users {
       SELECT * FROM social_networks
       WHERE social_networks.property_id = '${res.rows[0].id_property}'`)
       social_networks = social_networks.rows
+      let company = await knex_user_db.raw(`
+      SELECT * FROM company_data
+      WHERE company_data.id_company_data = '${res.rows[0].id_company_data}'`)
+      company = company.rows[0]
 
-      return  {data:{...res.rows[0], social_networks} };
+      return  {
+        data:
+        {
+          ...res.rows[0], 
+          social_networks,
+          company
+        }
+       };
 
     }
     catch (err) {
@@ -391,7 +402,7 @@ export default class Users {
       SELECT * FROM users_admin
       INNER JOIN user ON users_admin.id_user = user.id_user
       WHERE users_admin.id_admin_user = '${id_user}'`)
-      return { error: false, message: 'Users', data: res };
+      return { error: false, message: 'Users', data: res.rows[0] };
     }catch(err){
       return { error: true, message: err.message };
     }

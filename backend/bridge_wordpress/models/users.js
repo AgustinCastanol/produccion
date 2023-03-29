@@ -16,7 +16,35 @@ export default class User {
   }
     static async hashPassword(password) {}
     static async comparePassword(password, hash) {}
-    static async generateToken(user) {}
+    static async generateToken(user) {
+      try {
+        console.log("this.generateToken")
+        const res = await knex_user_db.raw(`SELECT * FROM "public"."role" WHERE "id_role" = '${user.role}'`)
+        console.log(res)
+        console.log(user)
+        if(res.rows.length > 0){
+          this.role = res.rows[0].id_role;
+          console.log(res.rows[0])
+        }
+        
+        const token = jwt.sign(
+          {
+            id: this.id_wordpress,
+            email: this.email,
+            role: this.role,
+          },
+          process.env.SECRET,
+          {
+            expiresIn: process.env.JWT_EXPIRES_IN || "1d",
+          }
+        );
+        return token;
+      } catch (err) {
+        console.log(err)
+  
+        return null;
+      }
+    }
     static async verifyToken(token) {}
     async setPassword(password) {
       console.log("hola")
@@ -47,6 +75,24 @@ export default class User {
         return;
       }
       this.role = null;
+    }
+    async login(){
+      const user = await this.getUser();
+      if(user == null){
+        return {token: false, role: null}
+      }
+      const check_password = await bcrypt.compare(this.password, user.password_user);
+      if(!check_password){
+        return {token: false, role: null}
+      }
+      if(user.role == null){
+        return {token: false, role: null}
+      }
+      if(user.email_user != this.email){
+        return {token: false, role: null}
+      }
+      const token = await User.generateToken(user);
+      return {token, role: user.role}
     }
     async registerUser(){
       await this.setPassword(this.password);
@@ -113,7 +159,9 @@ export default class User {
       try{
         const res = await knex_user_db.raw(`SELECT * FROM "public"."role" WHERE "name" = '${role}'`)
         if(res.rows.length > 0){
+          this.role = res.rows[0].id_role;
           return res.rows[0].id_role;
+
         }
         return null;
       }catch(err){

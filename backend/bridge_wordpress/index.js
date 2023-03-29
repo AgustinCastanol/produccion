@@ -14,6 +14,7 @@ import knex from "knex";
 import verifLogin from "./middleware/verifLogin.js";
 import redis from 'redis';
 import adminUsers from "./routes/admin/users.js";
+import client_dis from "./routes/api/client.js";
 // CONFIG DOTENV
 var config = dotenv.config();
 global.config = config.parsed;
@@ -171,6 +172,7 @@ try{
 app.use(api_key_proxy);
 //
 
+app.use("/",client_dis)
 app.use("/bgwp", users);
 //de aca no pasa sin tokens
 
@@ -181,8 +183,6 @@ app.use("/bgwp", products);
 
 //
 app.use("/bgwp/admin", adminUsers);
-
-
 
 ///Si llega aca hubo un error
 app.use(handlerError)

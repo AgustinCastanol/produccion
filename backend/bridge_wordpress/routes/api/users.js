@@ -1,5 +1,6 @@
 import express from "express";
 import Users from "../../models/usersAdmin.js";
+import childrenUser from "../../models/users.js"
 var router = express.Router();
 
 
@@ -74,10 +75,54 @@ try{
   }
   const users = new Users({ email, password, id_wordpress: id_wordpress, user: user });
   const {token,role} = await users.login();
-  if(token == false || token == null){
+  const children = new childrenUser({ email, password, id_wordpress: id_wordpress, name: user });
+  console.log("hasta aca llegue")
+  if(token == false || token == null || token == undefined){
+    console.log("hasta aca lleguemno es admin")
 
-    response.status(401).json({error:"Unauthorized"})
+    const {token:token_child} = await children.login();
+    console.log("hasta aca llegue2")
+    console.log(token_child,"token_child")
+    if(token_child == false || token_child == null || token_child == undefined){
+      return response.status(400).json({error: "Error al iniciar sesion"})
+    }
+    const res_redis = await global.redis.get(`${email}`, (err, reply) => {
+      if (err) {
+        console.error(err);
+      } else {
+        console.log(reply,"reply");
+      }
+    });
+   
+    if(res_redis == null){
+      await global.redis.set(`${email}`, token_child, 'EX', 86400, (err, reply) => {
+        if (err) {
+          console.error(err);
+        } else {
+          console.log(reply);
+        }
+      });
+    }
+    if(res_redis != null && res_redis != token_child){
+      await global.redis.del(`${email}`, (err, reply) => {
+        if (err) {
+          console.error(err);
+        } else {
+          console.log(reply);
+        }
+      });
+      await global.redis.set(`${email}`, token_child, 'EX', 86400, (err, reply) => {
+        if (err) {
+          console.error(err);
+        } else {
+          console.log(reply);
+        }
+      });
+    }
+  response.status(200).json({ message: "Login con exito",token_child, error:[] })
+  return;
   }
+  console.log("hasta aca llegue, es admin")
 
     const res_redis = await global.redis.get(`${email}`, (err, reply) => {
       if (err) {
