@@ -172,7 +172,7 @@ async function uploadProducts(){
   }
   const res = await API.procesCsvProducts(products.value)
   console.log(res)
-  // products.value=[]
+  products.value=[]
 }
 
 async function procesCSV(event) {
