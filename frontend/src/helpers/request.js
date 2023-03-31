@@ -1,12 +1,14 @@
 import axios from "axios";
 
 const service = axios.create({
-  baseURL: 'http://localhost:3001',
+  baseURL: 'http://46.101.159.194:3001',
   withCredentials: false,
   timeout: 5000,
   headers: {
     'allow-origin': '*',
     'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE,PATCH,OPTIONS',
+
   }
 })
 
