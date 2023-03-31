@@ -4,6 +4,10 @@ const service = axios.create({
   baseURL: 'https://46.101.159.194:3001',
   withCredentials: false,
   timeout: 5000,
+  headers: {
+    'allow-origin': '*',
+    'Access-Control-Allow-Origin': '*',
+  }
 })
 
 service.interceptors.request.use(
