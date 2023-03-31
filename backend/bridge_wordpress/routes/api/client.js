@@ -40,7 +40,10 @@ router.post("/get_users",async function (request, response,next) {
 
 router.post("/get_CSV",async function (request, response,next) {
   try{
-    response.status(200).send({CSV:"CSV"})
+    const count = await knex_products_db("products").count("idProducts as total");
+    const total = count[0].total;
+    // quiero las veces que tengo que hacer la peticion de 1000 y el resto de la division 
+    
   }catch(err){
     console.log(err);
     next(err.message);

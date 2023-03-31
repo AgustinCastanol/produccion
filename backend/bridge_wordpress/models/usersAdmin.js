@@ -396,17 +396,29 @@ export default class Users {
       return { error: true, message: err.message };
     }
   }
-  async getFullUsers({id_user}){
+  async getFullUsers(){
     try{
       const res = await knex_user_db.raw(`
-      SELECT * FROM users_admin
-      INNER JOIN user ON users_admin.id_user = user.id_user
-      WHERE users_admin.id_admin_user = '${id_user}'`)
-      return { error: false, message: 'Users', data: res.rows[0] };
+      SELECT * FROM user_admin
+      JOIN properties_user ON properties_user.user_id = user_admin.id_admin_user;`)
+      const users = await knex_user_db.raw(`
+      SELECT * FROM user`)
+      return { error: false, message: 'Users', data: {admins:res.rows,users} };
     }catch(err){
       return { error: true, message: err.message };
     }
   }
+  // async getFullUsers({id_user}){
+  //   try{
+  //     const res = await knex_user_db.raw(`
+  //     SELECT * FROM users_admin
+  //     INNER JOIN user ON users_admin.id_user = user.id_user
+  //     WHERE users_admin.id_admin_user = '${id_user}'`)
+  //     return { error: false, message: 'Users', data: res.rows[0] };
+  //   }catch(err){
+  //     return { error: true, message: err.message };
+  //   }
+  // }
   async getPropertyId({ user_id }) {
     try {
       const res = await knex_user_db('properties_user').where({ user_id }).select('*');

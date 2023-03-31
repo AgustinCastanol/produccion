@@ -1,5 +1,6 @@
 import request from './request.js';
 import request_product_image from './request_logos.js';
+import requestBGWP from './requestBGWP.js';
 export function login(data) {
   return request({
     url: '/login',
@@ -38,7 +39,7 @@ export function getProveedor (data){
   })
 }
 export function getUsers (data){
-  return request({
+  return requestBGWP({
     url: '/get_users',
     method: 'post',
     data

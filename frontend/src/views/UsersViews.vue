@@ -7,43 +7,33 @@
             <i class="pi pi-search" />
             <InputText placeholder="Buscar Usuario" v-model="key_search" @change="search($event)" />
           </span>
-        <Button >
+        <Button disabled="true">
                 <i class="pi pi-plus px-2"></i>
                 <span class="px-3">Nuevo Usuario</span>
             </Button>
       </div>
     </template>
-    <Column field="img" header="Image">
+    <Column field="logo_user" header="Image">
       <template #body="slotProps">
-        <img :src="slotProps.data.img.src" :alt="slotProps.data.img.alt" width="100" height="100" />
+        <img :src="slotProps.data.logo_user" :alt="slotProps.data.user" width="100" height="100" />
       </template>
     </Column>
     <Column field="user" header="Nombre" />
     <Column field="email" header="Email" />
     <Column field="role" header="Rol" />
-    <Column field="status" header="Status">
-      <template #body="slotProps">
-        <span>Pago: {{ slotProps.data.status.pago }}</span>
-      </template>
-    </Column>
-    <Column field="tipoDeCuenta" header="Tipo de cuenta">
-      <template #body="slotProps">
-        <span>{{ slotProps.data.status.tipoDeCuenta }}</span>
-      </template>
-    </Column>
     <Column field="tipoDeUsuario" header="Tipo de usuario">
       <template #body="slotProps">
-        <span>{{ slotProps.data.tipoDeUsuario }}</span>
+        <span>Administrador</span>
       </template>
     </Column>
     <Column field="date" header="Fecha de creacion">
       <template #body="slotProps">
-        <span>{{ slotProps.data.date }}</span>
+        <span>{{ new Date().toISOString().split('T')[0] }}</span>
       </template>
     </Column>
     <Column field="action" header="Actions">
       <template #body="slotProps">
-        <Button icon="pi pi-pencil" class="p-button-rounded p-button bg-purple-600 p-mr-2"
+        <Button icon="pi pi-eye" class="p-button-rounded p-button bg-blue-600 p-mr-2"
           @click="openModal(slotProps.data)" />
         <Button icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="deleteUser(slotProps.data)" />
       </template>
@@ -151,7 +141,7 @@ async function search (event) {
   }else{
     const res = await API.getUsers()
     if (res.data !== undefined) {
-      console.log(res.data)
+      console.log(res.data.users.data)
       users.value = res.data
       totalRows.value = res.data.length
     }
@@ -160,12 +150,12 @@ async function search (event) {
 onMounted(async () => {
   try {
     const res = await API.getUsers()
-    if (res.data !== undefined) {
-      console.log(res.data)
-      users.value = res.data
-      totalRows.value = res.data.length
+    if (res.users !== undefined) {
+      console.log(res.users.data,"data")
+      users.value = res.users.data.admins
+      totalRows.value = res.users.data.admins.length
     } else {
-      console.log(res)
+      console.log(res,"data")
     }
   } catch (error) {
     console.log(error)
