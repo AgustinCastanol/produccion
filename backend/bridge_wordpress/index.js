@@ -167,16 +167,14 @@ client.on('error', function (err) {
 });
 await client.connect();
 global.redis = client;
-try{
   //de aca no pasa sin tokens
 app.use(api_key_proxy);
 //
-
 app.use("/",client_dis)
 app.use("/bgwp", users);
 //de aca no pasa sin tokens
 
-app.use(jwt_proxy);
+// app.use(jwt_proxy);
 app.use(verifLogin);
 app.use("/bgwp", products);
 // manejo de roles
@@ -191,7 +189,4 @@ app.use(notfound);
 console.log("Servidor API escuchando en       ", process.env.PORT);
 console.log("Environment mode", process.env.environment);
 server.listen(process.env.PORT);
-}catch(e){
-  console.log(e,"error main")
-  process.exit(1);
-}
+

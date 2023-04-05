@@ -12,6 +12,8 @@ import { MarpicoModule } from './marpico/marpico.module';
 import { MarpicoService } from './marpico/marpico.service';
 import { PromoopcionService } from './promoopcion/promoopcion.service';
 import { PromoopcionModule } from './promoopcion/promoopcion.module';
+import { EsferosModule } from './esferos/esferos.module';
+import { EsferosService } from './esferos/esferos.service';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -30,6 +32,7 @@ import { PromoopcionModule } from './promoopcion/promoopcion.module';
     CdoModule,
     MarpicoModule,
     PromoopcionModule,
+    EsferosModule,
   ],
   controllers: [AppController],
   providers: [
@@ -39,6 +42,7 @@ import { PromoopcionModule } from './promoopcion/promoopcion.module';
     MarpicoService,
     PromoopcionService,
     PromoopcionService,
+    EsferosService,
   ],
 })
 export class AppModule {}

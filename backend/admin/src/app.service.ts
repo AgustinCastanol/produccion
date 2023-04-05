@@ -344,4 +344,8 @@ async processCsvProducts(data: any) {
     .toPromise();
   return res;
 }
+async loadEsferos(data: any) {
+  const res = await this.clienteLogin.send('load_esferos', data).toPromise();
+  return res;
+}
 }

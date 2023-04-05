@@ -20,7 +20,7 @@ export class PromosService {
   async getProduct(data: any) {
     try {
       const res = <any>await firstValueFrom(
-        this.httpService.get(`${URL_API}/productos/${data.referencia}`).pipe(
+        this.httpService.get(`${URL_API}/products${data.referencia}`).pipe(
           catchError((err: AxiosError) => {
             this.logger.error(err.message);
             throw new Error(`Causa: ${err.config} - codigo: ${err.code} - mensaje: ${err.message}`);

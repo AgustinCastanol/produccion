@@ -24,6 +24,7 @@
     "@nestjs/common": "^9.0.0",
     "@nestjs/core": "^9.0.0",
     "@nestjs/platform-express": "^9.0.0",
+    "@xmldom/xmldom": "^0.8.7",
     "csv-parser": "^3.0.0",
     "nestjs-soap": "^3.0.1",
     "reflect-metadata": "^0.1.13",

@@ -2,6 +2,7 @@ import "dotenv"
 import jwt from "jsonwebtoken";
 export default function auth(req, res, next) {
 try{
+  console.log("Api _path:", process.env.SECRET);
   const auth = req.get("authorization-token");
   let token = null;
   console.log(auth)

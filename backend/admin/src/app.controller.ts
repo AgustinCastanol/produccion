@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Body, Post, Query, UseGuards, Res, Req } from '@nestjs/common';
+import { Controller, Body, Post, UseGuards, Req } from '@nestjs/common';
 import { AppService } from './app.service';
 import { CorsGuard } from './guards/corsGuard';
 @Controller()
@@ -248,4 +248,11 @@ export class AppController {
     const res = await this.appService.processCsvProducts(body);
     return res;
   }
+  @UseGuards(CorsGuard)
+  @Post('/loadEsferos')
+  async loadEsferos(@Body() body: any): Promise<any> {
+    const res = await this.appService.loadEsferos(body);
+    return res;
+  }
+  
 }

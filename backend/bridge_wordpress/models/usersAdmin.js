@@ -184,7 +184,7 @@ export default class Users {
   async createSocials({ property_id  }) {
     try{
       try {
-        let names=['Facebook','Instagram','Twitter','Linkedin'];
+        let names=['Facebook','Instagram','Twitter','Linkedin','YouTube'];
         for(let c = 0; c < 4; c++){
           await knex_user_db('social_networks').insert({
             id_network: uuid(),

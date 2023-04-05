@@ -5,7 +5,7 @@ const API_KEY_WP = 'API-KEY' + ' ' +  process.env.API_KEY_WP;
 
 export default function (request, response, next) {
 try{
-  // console.log("Api _path:", API_KEY_WP);
+  console.log("Api _path:", API_KEY_WP);
   const auth = request.get("Authorization");
   // console.log(auth, "auth")
   if (auth === undefined) {

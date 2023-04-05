@@ -8,7 +8,8 @@ import { find, findIndex } from 'rxjs';
 import { CdoService } from './cdo/cdo.service';
 import { MarpicoService } from './marpico/marpico.service';
 import { PromoopcionService } from './promoopcion/promoopcion.service';
-import { json } from 'sequelize';
+import { EsferosService } from './esferos/esferos.service';
+import { DOMParser } from '@xmldom/xmldom';
 @Controller()
 export class AppController {
   constructor(
@@ -17,6 +18,7 @@ export class AppController {
     private readonly cdoService: CdoService,
     private readonly marpicoService: MarpicoService,
     private readonly promosOpcion: PromoopcionService,
+    private readonly esferosService: EsferosService,
   ) { }
   @EventPattern('home')
   async handleHome(data: any) {
@@ -146,7 +148,7 @@ export class AppController {
       for (let i = 1; 2 > i; i++) {
         await new Promise((resolve) => setTimeout(resolve, 300));
         const categoriaHomologada = <any>await this.promos.getCategoriasHomologadas(categorias[i]);
-        const categorias_aph = await this.aphService.getCategoryBySlug({slug:categoriaHomologada});
+        const categorias_aph = await this.aphService.getCategoryBySlug({ slug: categoriaHomologada });
         if (categorias_aph != undefined && (categorias_aph.id_categorias !== undefined || categorias_aph.id_categorias !== null)) {
           const products = await this.promos.getProductsByCategory(categorias[i]);
           const size = products.length
@@ -160,7 +162,7 @@ export class AppController {
                 const price = producto_promos.descripcionPrecio1 == "precio neto" ? producto_promos.precio1 : 0;
                 await new Promise((resolve) => setTimeout(resolve, 100));
                 const true_category = await this.promos.getCategoryById(producto_promos.idCategoria);
-                const category = await this.aphService.getCategoryBySlug({slug:true_category});
+                const category = await this.aphService.getCategoryBySlug({ slug: true_category });
                 const productaux = {
                   nombre: aux.str,
                   referencia: producto_promos.referencia,
@@ -220,7 +222,7 @@ export class AppController {
                 const producto_promos = await this.promos.getProduct({ referencia: products[j].referencia });
                 const true_category = await this.promos.getCategoryById(producto_promos.idCategoria);
                 await new Promise((resolve) => setTimeout(resolve, 150));
-                const category = await this.aphService.getCategoryBySlug({slug:true_category});
+                const category = await this.aphService.getCategoryBySlug({ slug: true_category });
                 console.log("category", category)
                 const product_db = checkProduct[0];
                 const price_db = await this.aphService.getPrice({ id: product_db.idProducts });
@@ -378,7 +380,7 @@ export class AppController {
       for (let i = 0; size > i; i++) {
         const categoriaHomologada = await this.cdoService.getCategoriaHomologada(products[i].category);
         if (categoriaHomologada != undefined && categoriaHomologada != '') {
-          const { id_categorias } = await this.aphService.getCategoryBySlug({slug:categoriaHomologada});
+          const { id_categorias } = await this.aphService.getCategoryBySlug({ slug: categoriaHomologada });
           if (id_categorias != undefined && id_categorias != '') {
             const checkProduct = await this.aphService.checkProduct(products[i].code)
             if (!(checkProduct.length > 0)) {
@@ -478,7 +480,7 @@ export class AppController {
     for (let i = 0; i < res.results.length; i++) {
       await new Promise((resolve) => setTimeout(resolve, 200));
       const categoriaHomologada = await this.marpicoService.getCategoriaHomologada(res.results[i].subcategoria_1.nombre);
-      const categorias_db = <any>await this.aphService.getCategoryBySlug({slug:categoriaHomologada});
+      const categorias_db = <any>await this.aphService.getCategoryBySlug({ slug: categoriaHomologada });
       const checkProduct = await this.aphService.checkProduct(res.results[i].familia);
       if (!(checkProduct.length > 0)) {
         const productObject =
@@ -637,7 +639,7 @@ export class AppController {
         console.log(Stocks.length, "Stocks.length")
         await new Promise((resolve) => setTimeout(resolve, 300));
         const categoriaHomologada = await this.promosOpcion.getCategoriaHomologada(response[i].categorias);
-        const categorias_db = <any>await this.aphService.getCategoryBySlug({slug:categoriaHomologada});
+        const categorias_db = <any>await this.aphService.getCategoryBySlug({ slug: categoriaHomologada });
         const checkProduct = await this.aphService.checkProduct(response[i].skuPadre);
         console.log(Stocks.length, "Stocks.length")
 
@@ -936,7 +938,7 @@ export class AppController {
   } */
     try {
       const aux = [{}]
-      const products=[]
+      const products = []
       let product = {}
 
       for (let c = 0; c < data.length; c++) {
@@ -945,55 +947,55 @@ export class AppController {
         if (check_product.length == 0) {
           console.log("el producto no existe")
           const catergoria = await this.aphService.getCategoryBySlug({ slug: data[c]['categoria'] })
-          const collection = await this.aphService.getCollectionsBySlug({slug:data[c]['coleccion']})        
-          const supplier = await this.aphService.getProveedorByName({name:data[c]['proveedor']})
+          const collection = await this.aphService.getCollectionsBySlug({ slug: data[c]['coleccion'] })
+          const supplier = await this.aphService.getProveedorByName({ name: data[c]['proveedor'] })
           console.log(catergoria, "categorias")
           console.log(collection, "coleccion")
           console.log(supplier, "proveedor")
-           product ={
+          product = {
             nombre: data[c]['nombre'],
             referencia: data[c]['sku padre'],
             description_product: data[c]['descripcion corta'],
-            metadata: {medidas:data[c]['medidas'],material:data[c]['material'],talla:data[c]['talla'],color:data[c]['color'] },
+            metadata: { medidas: data[c]['medidas'], material: data[c]['material'], talla: data[c]['talla'], color: data[c]['color'] },
             channel: data[c]['proveedor'],
             is_published: data[c]['publicado'] == 'si' ? true : false,
             peso: data[c]['peso'],
-            category_id: catergoria != undefined ? {id:catergoria.id_categorias,name:catergoria.name_category ,slug:catergoria.slug_category}: {name:null,id:null},
-            product_class_id:null,
-            collection_id: collection != undefined ? {name:collection[0].name_collection,id:collection[0].idCollection,slug:collection[0].slug_collection} : {name:null,id:null},
-            proveedor: supplier != undefined ? {id:supplier[0].id,name:supplier[0].name_supplier} : {name:null,id:null},
+            category_id: catergoria != undefined ? { id: catergoria.id_categorias, name: catergoria.name_category, slug: catergoria.slug_category } : { name: null, id: null },
+            product_class_id: null,
+            collection_id: collection != undefined ? { name: collection[0].name_collection, id: collection[0].idCollection, slug: collection[0].slug_collection } : { name: null, id: null },
+            proveedor: supplier != undefined ? { id: supplier[0].id, name: supplier[0].name_supplier } : { name: null, id: null },
             price: data[c]['precio neto'],
             image: data[c]['imagen'],
           }
           console.log(product, "product")
         }
-          const check_variant = <any>await this.aphService.getVariantBySku({ sku: data[c]['sku hijo'] })
-          if (check_variant.length > 0) {
-            console.log("la variante ya existe")
-            aux.push({ message: "la variante ya existe", err: check_variant, data: data[c] })
-            continue
-          }
-           product =  check_product.length > 0 ? check_product[0] : product
-          const productVariant = {
-            name_variants: data[c]['nombre'],
-            sku: data[c]['sku hijo'],
-            price_override: data[c]['precio sugerido'],
-            metadata_variants: {color:data[c]['color'],talla:data[c]['talla'],material:data[c]['material'],medidas:data[c]['medidas']},
-            weight_override: data[c]['peso'],
-            brand: data[c]['marca'],
-            description_variant: data[c]['descripcion'],
-            image: data[c]['imagen'],
-            stock:[
+        const check_variant = <any>await this.aphService.getVariantBySku({ sku: data[c]['sku hijo'] })
+        if (check_variant.length > 0) {
+          console.log("la variante ya existe")
+          aux.push({ message: "la variante ya existe", err: check_variant, data: data[c] })
+          continue
+        }
+        product = check_product.length > 0 ? check_product[0] : product
+        const productVariant = {
+          name_variants: data[c]['nombre'],
+          sku: data[c]['sku hijo'],
+          price_override: data[c]['precio sugerido'],
+          metadata_variants: { color: data[c]['color'], talla: data[c]['talla'], material: data[c]['material'], medidas: data[c]['medidas'] },
+          weight_override: data[c]['peso'],
+          brand: data[c]['marca'],
+          description_variant: data[c]['descripcion'],
+          image: data[c]['imagen'],
+          stock: [
             {
-              location:data[c]['localizacion del stock'],
-              quantity:data[c]['stock']
+              location: data[c]['localizacion del stock'],
+              quantity: data[c]['stock']
             }
-            ]
-          }
-          products.push({
-            ...product,
-            variants:[productVariant]
-          })
+          ]
+        }
+        products.push({
+          ...product,
+          variants: [productVariant]
+        })
       }
       console.log(products, "products")
       return { message: 'Productos cargados', data: { products, length: aux.length }, error: [] }
@@ -1004,7 +1006,7 @@ export class AppController {
   }
   @EventPattern('process_csv_products')//problema con la carga de imagenes
   async processCsvProducts(data: any) {
-    try{
+    try {
       // console.log(data)
       //agrupar por referencia
       const locations = [
@@ -1013,7 +1015,7 @@ export class AppController {
         { id: 'a5db0dfa-2d96-4950-b382-839b3acfd6ae', name: 'transito' },
         { id: '3b257993-638c-4505-ad1d-5a6dd24d9ac5', name: 'total' },
       ]
-      let product_db:any = []
+      let product_db: any = []
       const products = data.reduce((acc, item) => {
         const key = item.referencia;
         if (!acc[key]) {
@@ -1023,9 +1025,9 @@ export class AppController {
         return acc;
       }
         , {});
-      for(const key in products){
-        const check_product = <any>await this.aphService.getProductByReference({reference:key})
-        if(check_product.length == 0){
+      for (const key in products) {
+        const check_product = <any>await this.aphService.getProductByReference({ reference: key })
+        if (check_product.length == 0) {
           const product_aux = {
             nombre: products[key][0].nombre,
             referencia: products[key][0].referencia,
@@ -1041,72 +1043,120 @@ export class AppController {
             image: products[key][0].imagen,
             product_class_id: products[key][0].product_class_id
           }
-          const price_db =await this.aphService.setPrice({
-            metadata:{precioSugerido:products[key][0].collection_id.name == 'precio sugerido'?products[key][0].price:0},
-            price:products[key][0].collection_id.name == 'precio neto'?products[key][0].price:0,
-            product_id:null,
-            currency:products[key][0].currency ==undefined? 'COP':products[key][0].currency,
+          const price_db = await this.aphService.setPrice({
+            metadata: { precioSugerido: products[key][0].collection_id.name == 'precio sugerido' ? products[key][0].price : 0 },
+            price: products[key][0].collection_id.name == 'precio neto' ? products[key][0].price : 0,
+            product_id: null,
+            currency: products[key][0].currency == undefined ? 'COP' : products[key][0].currency,
             type: "Precio Neto"
           })
           product_aux.price = price_db.id_price
           product_db = await this.aphService.setProduct(product_aux)
-          await this.aphService.updatePrice({...price_db,productId:product_db.id_productos})
-          await this.aphService.setProductImage({productId:product_db.id_productos,url:JSON.stringify([products[key][0].image])})
+          await this.aphService.updatePrice({ ...price_db, productId: product_db.id_productos })
+          await this.aphService.setProductImage({ productId: product_db.id_productos, url: JSON.stringify([products[key][0].image]) })
         }
 
-        for(let i = 0; i < products[key].length;i++){
-          const check_variant = <any>await this.aphService.getVariantBySku({sku:products[key][i].variants[0].sku})
-          if(check_variant.length == 0){
+        for (let i = 0; i < products[key].length; i++) {
+          const check_variant = <any>await this.aphService.getVariantBySku({ sku: products[key][i].variants[0].sku })
+          if (check_variant.length == 0) {
             const variant_db = await this.aphService.setVariant({
-              name_variants:products[key][i].variants[0].name_variants,
-              sku:products[key][i].variants[0].sku,
-              price_override:products[key][i].variants[0].price_override,
-              metadata_variants:products[key][i].variants[0].metadata_variants,
-              weight_override:products[key][i].variants[0].weight_override,
-              brand:products[key][i].variants[0].brand,
-              description_variant:JSON.stringify(products[key][i].variants[0].metadata_variants),
+              name_variants: products[key][i].variants[0].name_variants,
+              sku: products[key][i].variants[0].sku,
+              price_override: products[key][i].variants[0].price_override,
+              metadata_variants: products[key][i].variants[0].metadata_variants,
+              weight_override: products[key][i].variants[0].weight_override,
+              brand: products[key][i].variants[0].brand,
+              description_variant: JSON.stringify(products[key][i].variants[0].metadata_variants),
               product_id: check_product.length > 0 ? check_product[0].id_productos : product_db.id_productos,
             })
-            console.log(variant_db,"variant")
-            await this.aphService.setVariantImage({variantId:variant_db.id_variant,urlImage:JSON.stringify([products[key][i].variants[0].image])})
-            const idStock = locations.find((item)=>item.name.toLowerCase() == products[key][i].variants[0].stock[0].location.toLowerCase())
-            console.log(idStock,"stocl")
+            console.log(variant_db, "variant")
+            await this.aphService.setVariantImage({ variantId: variant_db.id_variant, urlImage: JSON.stringify([products[key][i].variants[0].image]) })
+            const idStock = locations.find((item) => item.name.toLowerCase() == products[key][i].variants[0].stock[0].location.toLowerCase())
+            console.log(idStock, "stocl")
             await this.aphService.setStock({
-              locationId:idStock.id,
-              quantity:products[key][i].variants[0].stock[0].quantity,
-              variant_id:variant_db.id_variant ,
-              quantity_allocated:0
+              locationId: idStock.id,
+              quantity: products[key][i].variants[0].stock[0].quantity,
+              variant_id: variant_db.id_variant,
+              quantity_allocated: 0
             })
-          }else{
-            const price_db =await this.aphService.getPrice({id:check_variant[0].idProducts})
+          } else {
+            const price_db = await this.aphService.getPrice({ id: check_variant[0].idProducts })
             await this.aphService.updatePrice({
               id: price_db[0].id,
               type: 'Precio Neto',
-              metadata: {precioSugerido:products[key][0].collection_id.name == 'precio sugerido'?products[key][0].price:0},
+              metadata: { precioSugerido: products[key][0].collection_id.name == 'precio sugerido' ? products[key][0].price : 0 },
               currency: 'COP',
-              price: products[key][0].collection_id.name == 'precio neto'?products[key][0].price:0,
+              price: products[key][0].collection_id.name == 'precio neto' ? products[key][0].price : 0,
               productId: price_db[0].productId
-          })
-          const stock_update = locations.find((item)=>item.name.toLowerCase() == products[key][i].variants[0].stock[0].location.toLowerCase())
-          const stock_db = await this.aphService.getStockByVariant({id_variant:check_variant[0].id_variant})
-          const check_stock = stock_db.find((item)=>item.location == stock_update.id)
-          if(check_stock){
-            await this.aphService.updateStock({variant_id:check_variant.idVariant,quantity:products[key][i].variants[0].stock[0].quantity,quantity_allocated:0,location:stock_update.id})
-          }else{
-            await this.aphService.setStock({
-              location:stock_update.id,
-              quantity:products[key][i].variants[0].stock[0].quantity,
-              variant_id:check_variant[0].id_variant ,
-              quantity_allocated:0
             })
+            const stock_update = locations.find((item) => item.name.toLowerCase() == products[key][i].variants[0].stock[0].location.toLowerCase())
+            const stock_db = await this.aphService.getStockByVariant({ id_variant: check_variant[0].id_variant })
+            const check_stock = stock_db.find((item) => item.location == stock_update.id)
+            if (check_stock) {
+              await this.aphService.updateStock({ variant_id: check_variant.idVariant, quantity: products[key][i].variants[0].stock[0].quantity, quantity_allocated: 0, location: stock_update.id })
+            } else {
+              await this.aphService.setStock({
+                location: stock_update.id,
+                quantity: products[key][i].variants[0].stock[0].quantity,
+                variant_id: check_variant[0].id_variant,
+                quantity_allocated: 0
+              })
+            }
           }
+        }
+
       }
-    }
-    
-   } 
-    }catch(err){
+    } catch (err) {
       console.log(err)
-      return {error:err.message,message:"productos "}
+      return { error: err.message, message: "productos " }
+    }
+  }
+  @EventPattern('load_esferos')
+  async loadEsferos(data: any) {
+    try {
+      const jsonProducts = []
+      const products = await this.esferosService.getProducts()
+      const parser = new DOMParser();
+      // console.log(products)
+      const xmlDoc = parser.parseFromString(products, 'text/xml');
+
+      const productElements = xmlDoc.getElementsByTagName('product');
+      const productIds = [];
+
+      for (let i = 0; i < productElements.length; i++) {
+        const productId = productElements[i].getAttribute('id');
+        productIds.push(productId);
+      }
+      for (let i = 0; i < productIds.length; i++) {
+        console.log(i, productIds[i],"product")
+        await new Promise(resolve => setTimeout(resolve, 300));
+        const product = await this.esferosService.getProductById(productIds[i])
+        const xmlAux = parser.parseFromString(product, 'text/xml');
+        const productElement = xmlAux.getElementsByTagName("product")[0];
+        const id = productElement.getAttribute("id");
+        const categoryName = productElement.getElementsByTagName("id_category_default")[0].textContent;
+        const price = productElement.getElementsByTagName("price")[0].textContent;
+        const weight = productElement.getElementsByTagName("weight")[0].textContent;
+        const height = productElement.getElementsByTagName("height")[0].textContent;
+        const width = productElement.getElementsByTagName("width")[0].textContent;
+        const name = productElement.getElementsByTagName("name")[0].getElementsByTagName("language")[0].textContent;
+        const description = productElement.getElementsByTagName("description_short")[0].getElementsByTagName("language")[0].textContent;
+        const aux = {
+          id,
+          categoryName,
+          price,
+          weight,
+          height,
+          width,
+          name,
+          description
+        }
+        jsonProducts.push(aux)
+      }
+
+      return { message: 'ok', data: jsonProducts }
+    } catch (error) {
+      return { error: error }
     }
   }
 }
