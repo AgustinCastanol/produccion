@@ -10,6 +10,7 @@ import { MarpicoService } from './marpico/marpico.service';
 import { PromoopcionService } from './promoopcion/promoopcion.service';
 import { EsferosService } from './esferos/esferos.service';
 import { DOMParser } from '@xmldom/xmldom';
+import fs, { readFileSync, writeFileSync } from 'fs';
 @Controller()
 export class AppController {
   constructor(
@@ -601,15 +602,15 @@ export class AppController {
           }
           if (priceChange) {
             await this.aphService.updateVariant({
-              name_variant: variant_db.name_variant,
-              sku: variant_db.sku,
+              name_variant: variant_db[0].name_variant,
+              sku: variant_db[0].sku,
               price_override: res.results[i].materiales[c].precio,
               metadata_variant: { descuento: res.results[i].materiales[c].descuento, estado: res.results[i].materiales[c].estado },
               weight_override: 0,
               brand: 'not-brand',
               description_variant: '',
-              product_id: variant_db.product_id,
-              idVariant: variant_db.idVariant
+              product_id: variant_db[0].product_id,
+              idVariant: variant_db[0].idVariant
             })
           }
         }
@@ -1111,7 +1112,7 @@ export class AppController {
       return { error: err.message, message: "productos " }
     }
   }
-  @EventPattern('load_esferos')
+  @EventPattern('load_esferos_products')
   async loadEsferos(data: any) {
     try {
       const jsonProducts = []
@@ -1128,169 +1129,283 @@ export class AppController {
         productIds.push(productId);
       }
       for (let i = 0; i < productIds.length; i++) {
-        console.log(i, productIds[i],"product")
-        await new Promise(resolve => setTimeout(resolve, 300));
+        console.log(i, productIds[i], "product")
+        await new Promise(resolve => setTimeout(resolve, 400));
+
+        //obtener productos y sus categorias
         const product = await this.esferosService.getProductById(productIds[i])
         const xmlAux = parser.parseFromString(product, 'text/xml');
         const productElement = xmlAux.getElementsByTagName("product")[0];
-        const id = productElement.getAttribute("id");
+        const id = productElement.getElementsByTagName("reference")[0].textContent;
         const categoryName = productElement.getElementsByTagName("id_category_default")[0].textContent;
         const price = productElement.getElementsByTagName("price")[0].textContent;
         const weight = productElement.getElementsByTagName("weight")[0].textContent;
         const height = productElement.getElementsByTagName("height")[0].textContent;
         const width = productElement.getElementsByTagName("width")[0].textContent;
         const name = productElement.getElementsByTagName("name")[0].getElementsByTagName("language")[0].textContent;
+        let image = <any>productElement.getElementsByTagName("image")
+        if (image.length == 0) {
+          continue
+        }
+        image = image[0].getAttribute('xlink:href');
         const description = productElement.getElementsByTagName("description_short")[0].getElementsByTagName("language")[0].textContent;
+        const stock = productElement.getElementsByTagName("stock_availables")[0].getElementsByTagName("stock_available")[0].getElementsByTagName("id")[0].textContent;
+        console.log("hasta aca 1")
+        //stock
+        const stock_quantity = await this.esferosService.getStockById(stock)
+        const auxStock = parser.parseFromString(stock_quantity, 'text/xml');
+        const stockAvailable = auxStock.getElementsByTagName("stock_available")[0];
+        const quantity = stockAvailable.getElementsByTagName("quantity")[0].textContent;
+        console.log("hasta aca 2")
+
+        //categoria
+        const category_name = await this.esferosService.getCategoryById(categoryName)
+        const auxCategory = parser.parseFromString(category_name, 'text/xml');
+        const nameElement = auxCategory.getElementsByTagName("name")[0].getElementsByTagName("language")[0].textContent;
+        console.log("hasta aca 3")
+
+
+        //cargar aux
         const aux = {
-          id,
-          categoryName,
+          id: productIds[i],
+          reference: id,
+          categorie: nameElement,
           price,
           weight,
           height,
           width,
           name,
-          description
+          description,
+          image,
+          stock: quantity,
+          variants: []
         }
+
+
+        //Variantes
+        const combinaciones = productElement.getElementsByTagName("combination");
+        const idCombination = []
+        // Recorrer los elementos <combination> y obtener los IDs
+        for (let i = 0; i < combinaciones.length; i++) {
+          const combinacion = combinaciones[i];
+          const idElement = combinacion.getElementsByTagName("id")[0];
+
+          // Verificar si el elemento <id> está presente y no está vacío
+          if (idElement && idElement.textContent) {
+            const id = idElement.textContent;
+            idCombination.push(id)
+            console.log("ID de la combinacion " + (i + 1) + ": " + id);
+          } else {
+            console.log("La combinacion " + (i + 1) + " está vacía.");
+          }
+        }
+        console.log("hasta aca 4")
+        for (let i = 0; i < idCombination.length; i++) {
+          await new Promise(resolve => setTimeout(resolve, 200));
+          const combination = await this.esferosService.getCombinatiosById(idCombination[i])
+          const auxCombination = parser.parseFromString(combination, 'text/xml');
+          const combinationElement = auxCombination.getElementsByTagName("combination")[0];
+          const reference = combinationElement.getElementsByTagName("reference")[0].textContent;
+          const price = combinationElement.getElementsByTagName("price")[0].textContent;
+          const weight = combinationElement.getElementsByTagName("weight")[0].textContent;
+          const stock = combinationElement.getElementsByTagName("quantity")[0].textContent;
+          const imagenes = combinationElement.getElementsByTagName("image");
+          const images = []
+          // Recorrer los elementos <image> y obtener los atributos xlink:href y <id>
+          for (let i = 0; i < imagenes.length; i++) {
+            const imagen = imagenes[i];
+            const href = imagen.getAttribute("xlink:href");
+            images.push(href)
+          }
+          // obtener atributos
+          const atributId = combinationElement.getElementsByTagName("product_option_value")[0].getElementsByTagName("id")[0].textContent;
+          const atrib = await this.esferosService.getPropsById(atributId)
+          const atribAux = parser.parseFromString(atrib, 'text/xml');
+          const atribElement = atribAux.getElementsByTagName("name")[0].getElementsByTagName("language")[0].textContent;
+          aux.variants.push({
+            id: productIds[i],
+            sku: reference,
+            categorie: nameElement,
+            price,
+            weight,
+            height,
+            width,
+            name,
+            description,
+            images,
+            stock,
+            atribut: atribElement
+          })
+        }
+
+
         jsonProducts.push(aux)
       }
+      //crear un archivo json
+      const json = JSON.stringify(jsonProducts);
+      writeFileSync('products.json', json);
 
-      return { message: 'ok', data: jsonProducts }
+      return { message: 'ok', data: json }
     } catch (error) {
+      console.log(error)
       return { error: error }
     }
   }
-}
-/* [
-  {
-    nombre: 'TAPON PARA BOTELLA DE\nVINO',
-    referencia: 'BA',
-    description_product: 'TAPON PARA BOTELLA DE\nVINO SOMMELIERE TR',
-    metadata: { medidas: '0', material: 'PVC', talla: '0', color: '0' },
-    channel: 'ProveedorAdministrador(back)',
-    is_published: true,
-    peso: '0',
-    category_id: {
-      id: '61c7680b-d821-4026-9bab-8f8f6dcf0a28',
-      name: 'Bebidas',
-      slug: 'bebidas'
-    },
-    product_class_id: null,
-    collection_id: {
-      name: 'precio sugerido',
-      id: '47ac63e1-42ef-4e49-9ba1-33f1d0050e4d',
-      slug: 'precio-sugerido'
-    },
-    proveedor: {
-      id: '20c2cfda-b7f4-4dea-a15f-8d48cd379db8',
-      name: 'ProveedorAdministrador(back)'
-    },
-    price: '0',
-    image: '0',
-    variants: [
-  {
-    "name_variants": "TAPON PARA BOTELLA DE\nVINO",
-    "sku": "BA11101JSNDJA",
-    "price_override": "350",
-    "metadata_variants": {
-      "color": "0",
-      "talla": "0",
-      "material": "PVC",
-      "medidas": "0"
-    },
-    "weight_override": "0",
-    "brand": "SOMMELIERE TR",
-    "image": "0",
-    "stock": [
-      {
-        "location": "Total",
-        "quantity": "67"
+  @EventPattern('load_esferos')
+  async loadProductsEsferos(data: any) {
+    try {
+      const location = '3b257993-638c-4505-ad1d-5a6dd24d9ac5'
+      const proveedor = '9c124ac9-ceaa-4ccb-b026-8906d75fc430'
+      const collection = 'b4995e35-2373-4b36-a3f8-d147f6833a5a'
+      const products = JSON.parse(readFileSync('products.json', 'utf8'))
+      const aux = []
+      for (let i = 0; i < products.length; i++) {
+        await new Promise(resolve => setTimeout(resolve, 200));
+        const categoria = await this.esferosService.getCategoriasHomologadas(products[i].categorie)
+        console.log(categoria, "homo")
+        if (categoria.error !== '') {
+          continue
+        }
+        const category = await this.aphService.getCategoryBySlug({ slug: categoria.ave })
+        console.log(category, "aph")
+        let slug_aux = products[i].name.split(' ')
+        slug_aux = slug_aux.join('-')
+        slug_aux = slug_aux.toLowerCase()
+        slug_aux = products[i].id + '-' + slug_aux.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        const reference = products[i].reference === '' ? slug_aux : products[i].reference
+        const check_product = await this.aphService.checkProduct(reference)
+        console.log(check_product)
+        if (check_product.length == 0) {
+          const descripcion = await this.esferosService.clearTagsHtml(products[i].description);
+          const productaux = {
+            nombre: products[i].name,
+            referencia: reference,
+            description_product: descripcion,
+            metadata: null,
+            precio: null,
+            channel: 'esferos',
+            disponible: true,
+            is_published: true,
+            peso: 0,
+            category_id: category.id_categorias,
+            product_class_id: null,
+            proveedor: proveedor,
+            price: null,
+            collection_id: collection
+          }
+          const price = products[i].price.split('.')[0]
+          const price_db = await this.aphService.setPrice({
+            price,
+            currency: 'COP',
+            type: 'Precio Neto',
+            metadata: { precioSugerido: price * 3 / 5 },
+            productId: null
+          })
+          productaux.price = price_db.id_price
+          await new Promise(resolve => setTimeout(resolve, 100));
+          const product_db = await this.aphService.setProduct(productaux)
+          price_db.productId = product_db.id_productos;
+          await this.aphService.updatePrice(price_db);
+          await this.aphService.setProductImage({
+            productId: product_db.id_productos,
+            image: null,
+            url: JSON.stringify([products[i].image])
+          })
+          if (products[i].variants.length > 0) {
+            for (let j = 0; j < products[i].variants.length; j++) {
+              await new Promise(resolve => setTimeout(resolve, 200));
+              const variant = products[i].variants[j];
+              const variantaux = {
+                name_variants: reference + '-' + variant.atribut,
+                metadata_variants: {},
+                price_override: variant.price.split('.')[0] * 3 / 5,
+                weight_override: variant.weight.split('.')[0],
+                sku: variant.sku + '-' + variant.atribut,
+                description_variant: descripcion,
+                brand: 'not-brand',
+                product_id: product_db.id_productos,
+              }
+              const variant_db = await this.aphService.setVariant(variantaux)
+              await this.aphService.setStock({
+                location: location,
+                quantity: variant.stock,
+                variantId: variant_db.id_variant,
+                quantity_allocated: 0
+              })
+              await this.aphService.setVariantImage({
+                variantId: variant_db.id_variant,
+                image: null,
+                urlImage: JSON.stringify(variant.images)
+              })
+            }
+          } else {
+            const variantaux = {
+              name_variants: reference,
+              metadata_variants: {},
+              price_override: 0,
+              weight_override: 0,
+              sku: reference + '-' + 'default',
+              description_variant: descripcion,
+              brand: 'not-brand',
+              product_id: product_db.id_productos,
+            }
+            const variant_db = await this.aphService.setVariant(variantaux)
+            await this.aphService.setStock({
+              location: location,
+              quantity: products[i].stock,
+              variantId: variant_db.id_variant,
+              quantity_allocated: 0
+            })
+            await this.aphService.setVariantImage({
+              variantId: variant_db.id_variant,
+              image: null,
+              urlImage: JSON.stringify(products[i].image)
+            })
+          }
+        } else {
+          const product_db = check_product[0];
+          const variant_db = await this.aphService.getVariants({ idProducts: product_db.idProducts });
+          const price_db = await this.aphService.getPrice({ id: product_db.idProducts });
+          await this.aphService.updatePrice(
+            {
+              id: price_db[0].id,
+              type: 'Precio Neto',
+              metadata: JSON.stringify({ precioSugerido: price_db[0].price * 3 / 5 }),
+              currency: 'COP',
+              price: 0,
+              productId: price_db[0].productId
+            })
+          for (let c = 0; products[i].variants[c].length > c; c++) {
+            await new Promise(resolve => setTimeout(resolve, 200));
+            const variant = <any>await this.aphService.getVariantBySku({ sku: variant_db[c].sku });
+            const stock_db = <any>await this.aphService.getStockByVariant({ id_variant: variant[0].id_variant });
+            await this.aphService.updateStock({
+              locationId: location,
+              quantity: products[i].variants[c].stock,
+              id_variant: variant[0].id_variant,
+            })
+            await this.aphService.updateVariant({
+              name_variant:variant[0].name_variant,
+              metadata_variant:variant[0].metadata_variant,
+              price_override:products[i].variants[c].price.split('.')[0] * 3 / 5,
+              weight_override:0,
+              sku:variant[0].sku,
+              description_variant:variant[0].description_variant,
+              brand:variant[0].brand,
+              product_id:variant[0].product_id,
+            })
+          }
+        }
+        aux.push(products[i])
+
       }
-    ]
+      return { message: 'ok', data: aux }
+    } catch (err) {
+      return { error: err }
+    }
   }
-],
-    
-  },
-  {
-    nombre: 'prueba',
-    referencia: 'MU',
-    description_product: 'kdansdonasdon',
-    metadata: { medidas: '0', material: '0', talla: '0', color: '0' },
-    channel: 'ProveedorAdministrador(back)',
-    is_published: true,
-    peso: '0',
-    category_id: {
-      id: '77b7817a-3dcf-40cd-a891-84298f43ee7c',
-      name: 'Antiestrés',
-      slug: 'antiestrs'
-    },
-    product_class_id: null,
-    collection_id: {
-      name: 'precio sugerido',
-      id: '47ac63e1-42ef-4e49-9ba1-33f1d0050e4d',
-      slug: 'precio-sugerido'
-    },
-    proveedor: {
-      id: '20c2cfda-b7f4-4dea-a15f-8d48cd379db8',
-      name: 'ProveedorAdministrador(back)'
-    },
-    price: '0',
-    image: 'http://46.101.159.194/img/01.png',
-    variants: [ [Object] ]
-  }
-] products
-[
-  {
-    nombre: 'TAPON PARA BOTELLA DE\nVINO',
-    referencia: 'BA',
-    description_product: 'TAPON PARA BOTELLA DE\nVINO SOMMELIERE TR',
-    metadata: { medidas: '0', material: 'PVC', talla: '0', color: '0' },
-    channel: 'ProveedorAdministrador(back)',
-    is_published: true,
-    peso: '0',
-    category_id: {
-      id: '61c7680b-d821-4026-9bab-8f8f6dcf0a28',
-      name: 'Bebidas',
-      slug: 'bebidas'
-    },
-    product_class_id: null,
-    collection_id: {
-      name: 'precio sugerido',
-      id: '47ac63e1-42ef-4e49-9ba1-33f1d0050e4d',
-      slug: 'precio-sugerido'
-    },
-    proveedor: {
-      id: '20c2cfda-b7f4-4dea-a15f-8d48cd379db8',
-      name: 'ProveedorAdministrador(back)'
-    },
-    price: '0',
-    image: '0',
-    variants: [ [Object] ]
-  },
-  {
-    nombre: 'prueba',
-    referencia: 'MU',
-    description_product: 'kdansdonasdon',
-    metadata: { medidas: '0', material: '0', talla: '0', color: '0' },
-    channel: 'ProveedorAdministrador(back)',
-    is_published: true,
-    peso: '0',
-    category_id: {
-      id: '77b7817a-3dcf-40cd-a891-84298f43ee7c',
-      name: 'Antiestrés',
-      slug: 'antiestrs'
-    },
-    product_class_id: null,
-    collection_id: {
-      name: 'precio sugerido',
-      id: '47ac63e1-42ef-4e49-9ba1-33f1d0050e4d',
-      slug: 'precio-sugerido'
-    },
-    proveedor: {
-      id: '20c2cfda-b7f4-4dea-a15f-8d48cd379db8',
-      name: 'ProveedorAdministrador(back)'
-    },
-    price: '0',
-    image: 'http://46.101.159.194/img/01.png',
-    variants: [ [Object] ]
-  }
+}
+/* 
+  multiplicar el precio neto por 3/5
+
 ]*/

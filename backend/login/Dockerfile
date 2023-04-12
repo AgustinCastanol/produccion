@@ -1,10 +1,9 @@
 FROM node:latest
 
-WORKDIR /app
+WORKDIR /app/backend/login
 COPY package*.json ./
 RUN npm install
 COPY . .
 
-EXPOSE 3002
 
 CMD ["npm", "run", "start:prod"]
