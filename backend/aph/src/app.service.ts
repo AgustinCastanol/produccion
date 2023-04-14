@@ -88,6 +88,7 @@ export class AppService {
   name_product, reference, description_product, metadata, channel, available_on, is_published, weight, category_id, product_class_id, "idProducts", supplier, price_base)
   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?); */
     try {
+      console.log(data)
       if (
         data.nombre == null ||
         data.referencia == null ||

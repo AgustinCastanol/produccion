@@ -40,18 +40,21 @@ export class AppController {
   @EventPattern('api_promos_products')
   async handleApiPromosProducts(data: any) {
 
-    const categorias = await this.promos.getCategories();
+    // const categorias = await this.promos.getCategories();
 
-    let count = 0;
-    for (let i = 0; i < categorias.length; i++) {
-      const productos = await this.promos.getProductsByCategory(categorias[i]);
-      await new Promise((resolve) => setTimeout(resolve, 200));
-      categorias[i].productos = productos;
-      count += productos.length;
-      console.log(count, categorias[i].nombre + " : " + productos.length);
-    }
+    // let count = 0;
+    // for (let i = 0; i < categorias.length; i++) {
+    //   const productos = await this.promos.getProductsByCategory(categorias[i]);
+    //   await new Promise((resolve) => setTimeout(resolve, 200));
+    //   categorias[i].productos = productos;
+    //   count += productos.length;
+    //   console.log(count, categorias[i].nombre + " : " + productos.length);
+    // }
 
-    return { count };
+    // return { count };
+    const products = await this.promos.getProductsByCategory({id:71});
+    const references = products[1659];
+    return references;
   }
 
   @EventPattern('get_stocks')
@@ -153,17 +156,19 @@ export class AppController {
         if (categorias_aph != undefined && (categorias_aph.id_categorias !== undefined || categorias_aph.id_categorias !== null)) {
           const products = await this.promos.getProductsByCategory(categorias[i]);
           const size = products.length
-          for (let j = 0; size > j; j++) {
+          for (let j = 1659; 1660 > j; j++) {
             try {
               await new Promise((resolve) => setTimeout(resolve, 300));
               const checkProduct = await this.aphService.checkProduct(products[j].referencia)
               if (!(checkProduct.length > 0)) {
                 const producto_promos = await this.promos.getProduct({ referencia: products[j].referencia });
+                console.log(producto_promos)
                 const aux = await this.promos.clearName(producto_promos.nombre);
                 const price = producto_promos.descripcionPrecio1 == "precio neto" ? producto_promos.precio1 : 0;
                 await new Promise((resolve) => setTimeout(resolve, 100));
                 const true_category = await this.promos.getCategoryById(producto_promos.idCategoria);
                 const category = await this.aphService.getCategoryBySlug({ slug: true_category });
+               
                 const productaux = {
                   nombre: aux.str,
                   referencia: producto_promos.referencia,
@@ -174,13 +179,13 @@ export class AppController {
                   disponible: true,
                   is_published: true,
                   peso: 0,
-                  category_id: category,
+                  category_id: category || categorias_aph.id_categorias,
                   product_class_id: null,
                   proveedor: proveedor,
                   price: null,
                   collection_id: aux.collection
                 }
-
+                console.log("setear precio")
                 const price_db = await this.aphService.setPrice({
                   price,
                   currency: 'COP',
@@ -189,9 +194,12 @@ export class AppController {
                   productId: null
                 });
                 productaux.price = price_db.id_price;
+                console.log("setear producto")
                 const productDB = await this.aphService.setProduct(productaux);
+                console.log(productDB)
                 await new Promise((resolve) => setTimeout(resolve, 100));
                 price_db.productId = productDB.id_productos;
+                console.log("setear precio actualizado")
                 await this.aphService.updatePrice(price_db);
                 const images_array = producto_promos.imagenes.map((e: string) => 'https:' + e)
                 images_array.push(base_url_image + producto_promos.imageUrl)

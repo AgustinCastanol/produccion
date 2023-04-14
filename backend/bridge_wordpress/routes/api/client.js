@@ -142,7 +142,7 @@ router.post("/get_CSV", async function (request, response, next) {
           console.log("space", space)
           space = space.join(",");
         }
-        let father_product = `variable;${products[i].reference};${products[i].name_product};${description_product};${description_product};0;;${products[i].weight};${(metadata != null && metadata.medidas_largo != undefined) ? metadata.medidas_largo : ''};${(metadata != null && metadata.medidas_ancho != undefined) ? metadata.medidas_ancho : ''};${(metadata != null && metadata.medidas_alto) ? metadata.medidas_alto : ''};;${precio_sugerido};${products[i].price};${products[i].parent == null ? products[i].name_category : `${products[i].parent} > ${products[i].name_category}`};${products[i].slug_category + ',' + products[i].slug_collection + ',' + products[i].reference + ',', name_product_slug};${imagenes};;0;${products[i].name_supplier};`;
+        let father_product = `variable;${products[i].reference};${products[i].name_product};${description_product};${description_product};1;;${products[i].weight};${(metadata != null && metadata.medidas_largo != undefined) ? metadata.medidas_largo : ''};${(metadata != null && metadata.medidas_ancho != undefined) ? metadata.medidas_ancho : ''};${(metadata != null && metadata.medidas_alto) ? metadata.medidas_alto : ''};;${precio_sugerido};${products[i].price};${products[i].parent == null ? products[i].name_category : `${products[i].parent} > ${products[i].name_category}`};${products[i].slug_category + ',' + products[i].slug_collection + ',' + products[i].reference + ',', name_product_slug};${imagenes};;0;${products[i].name_supplier};`;
         if(colors != "" && space == ""){
           father_product += `Color;${colors};1;1\n`;
         }
@@ -175,7 +175,7 @@ router.post("/get_CSV", async function (request, response, next) {
           }else{
             img_variant = '';
           }
-          let variant=`variation;${variation.sku};${variation.name_variant};;${description_product};1;${stock==undefined?0:stock.quantity};${variation.weight_override>0?variation.weight_override:''};;;;;${variation.price_override >0?variation.price_override:''};${products[i].price};;variante;${img_variant};${products[i].reference};${c+1};;`;
+          let variant=`variation;${variation.sku};${variation.name_variant};;${description_product};${stock==undefined || stock.quantity == 0?0:1};${stock==undefined?0:stock.quantity};${variation.weight_override>0?variation.weight_override:''};;;;;${variation.price_override >0?variation.price_override:products[i].price};${products[i].price};;variante;${img_variant};${products[i].reference};${c+1};;`;
           if(color != null && space == null){
             variant += `Color;${color};1;1\n`;
           }
