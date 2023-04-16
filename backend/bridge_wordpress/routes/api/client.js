@@ -175,7 +175,7 @@ router.post("/get_CSV", async function (request, response, next) {
           }else{
             img_variant = '';
           }
-          let variant=`variation;${variation.sku};${variation.name_variant};;${description_product};${stock==undefined || stock.quantity == 0?0:1};${stock==undefined?0:stock.quantity};${variation.weight_override>0?variation.weight_override:''};;;;;${variation.price_override >0?variation.price_override:products[i].price};${products[i].price};;variante;${img_variant};${products[i].reference};${c+1};;`;
+          let variant=`variation;${variation.sku};${variation.name_variant};;${description_product};${stock==undefined || stock.quantity == 0?0:1};${stock==undefined?0:stock.quantity};${variation.weight_override>0?variation.weight_override:''};;;;;${variation.price_override >0?variation.price_override:precio_sugerido>0?precio_sugerido:products[i].price};${products[i].price};;variante;${img_variant};${products[i].reference};${c+1};;`;
           if(color != null && space == null){
             variant += `Color;${color};1;1\n`;
           }
