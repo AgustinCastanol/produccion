@@ -26,6 +26,12 @@ import { EsferosService } from './esferos/esferos.service';
       database: `products`,
       autoLoadModels: true,
       synchronize: true,
+      dialectOptions: {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false,
+        },
+      },
     }),
     HttpModule,
     PromosModule,
