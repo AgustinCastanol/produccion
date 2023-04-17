@@ -19,7 +19,7 @@ import { EsferosService } from './esferos/esferos.service';
     ConfigModule.forRoot(),
     SequelizeModule.forRoot({
       dialect: 'postgres',
-      host: 'localhost',
+      host: `${process.env.db_postgres_host}`,
       port: parseInt(process.env.db_postgres_port) || 5321,
       username: `${process.env.db_postgres_user}`,
       password: `${process.env.db_postgres_pass}`,
