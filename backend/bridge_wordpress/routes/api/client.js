@@ -51,7 +51,15 @@ router.post("/load_CSV", async function (request, response, next) {
     const limit = 1000;
     const offset = 1000;
     let products = [];
-    for (let i = 0; i <= 0; i++) {
+    let proveedores ={
+      "Promos":0,
+      "cdo":0,
+      "marpico":0,
+      "promoopcion":0,
+
+    }
+    let errors = [];
+    for (let i = 0; i <= times; i++) {
       await new Promise((resolve) => setTimeout(resolve, 300));
       const products_db = await knex_products_db("products").select("*")
         .join("collection", "products.collection_id", "=", "collection.idCollection")
@@ -61,26 +69,44 @@ router.post("/load_CSV", async function (request, response, next) {
         .join("price", "products.idProducts", "=", "price.productId")
         .limit(limit).offset(i * offset);
       for (let c = 0; c < products_db.length; c++) {
-        if (products_db[c].parent != null) {
-          await new Promise((resolve) => setTimeout(resolve, 100));
-          const parent_category = await knex_products_db("categories").select("name_category").where("id_categorias", products_db[c].parent);
-          products_db[c].parent = parent_category[0].name_category;
-
+        if(products_db[c].name_supplier == 'Promos'){
+          proveedores.Promos++;
         }
-        const variants = await knex_products_db("variants").select("*").where("product_id", products_db[c].idProducts)
-        products_db[c].variants = variants;
-        for (let v = 0; v < variants.length; v++) {
-          await new Promise((resolve) => setTimeout(resolve, 100));
-          const variant_images = await knex_products_db.raw(`SELECT * FROM public."productVariantImage" WHERE "variantId" = '${variants[v].id_variant}'`)
-          const variant_stock = await knex_products_db("stock").select("*")
-            .join("stockLocation", "stockLocation.idStockLocation", "=", "stock.locationId")
-            .where("variant_id", variants[v].id_variant);
-          variants[v].images = variant_images.rows;
-          variants[v].stock = variant_stock;
+        if(products_db[c].name_supplier == 'CDO'){
+          proveedores.cdo++;
         }
-
+        if(products_db[c].name_supplier == 'Marpico'){
+          proveedores.marpico++;
+        }
+        if(products_db[c].name_supplier == 'PromoOpcion'){
+          proveedores.promoopcion++;
+        }
+        console.log(products_db[c].name_supplier)
+        try{
+          if (products_db[c].parent != null) {
+            await new Promise((resolve) => setTimeout(resolve, 200));
+            const parent_category = await knex_products_db("categories").select("name_category").where("id_categorias", products_db[c].parent);
+            products_db[c].parent = parent_category[0].name_category;
+  
+          }
+          const variants = await knex_products_db("variants").select("*").where("product_id", products_db[c].idProducts)
+          products_db[c].variants = variants;
+          for (let v = 0; v < variants.length; v++) {
+            await new Promise((resolve) => setTimeout(resolve, 200));
+            const variant_images = await knex_products_db.raw(`SELECT * FROM public."productVariantImage" WHERE "variantId" = '${variants[v].id_variant}'`)
+            const variant_stock = await knex_products_db("stock").select("*")
+              .join("stockLocation", "stockLocation.idStockLocation", "=", "stock.locationId")
+              .where("variant_id", variants[v].id_variant);
+            variants[v].images = variant_images.rows;
+            variants[v].stock = variant_stock;
+          }
+        }catch(err){
+          console.log(err)
+          errors += err;
+          continue;
+        }
       }
-      products = [...products, ...products_db];
+      products = [...products, ...products_db,errors];
     }
     //convertirlo en un archivo json a los datos obtenidos y guardarlos en la carpeta temp
     const json = JSON.stringify(products);
@@ -92,7 +118,7 @@ router.post("/load_CSV", async function (request, response, next) {
       console.log("JSON file has been saved.");
     });
 
-    response.status(200).send({ total: total, length: products.length, times: times, products })
+    response.status(200).send({proveedores, total: total, length: products.length, times: times, products })
   } catch (err) {
     console.log(err);
     next(err.message);
@@ -100,7 +126,15 @@ router.post("/load_CSV", async function (request, response, next) {
 })
 router.post("/get_CSV", async function (request, response, next) {
   try {
+    let error=[]
     //leer el archivo que esta en la carpeta temp
+    let proveedores ={
+      "Promos":0,
+      "cdo":0,
+      "marpico":0,
+      "promoopcion":0,
+
+    }
     fs.readFile('temp/products.json', 'utf8', async function (err, data) {
       if (err) {
         console.log("An error occured while reading JSON Object from File.");
@@ -109,6 +143,22 @@ router.post("/get_CSV", async function (request, response, next) {
       const products = JSON.parse(data);
       let products_csv = `Tipo;SKU;Nombre;Descripción corta;Descripción;¿Existencias?;Inventario;Peso (kg);Longitud (cm);Anchura (cm);Altura (cm);Precio rebajado;Precio normal;Precio neto;Categorías;Etiquetas;Imágenes;Superior;Posición;Brands;Nombre del atributo 1;Valor(es) del atributo 1;Atributo visible 1;Atributo global 1\n`;
       for (let i = 0; i < products.length; i++) {
+      if(products[i].variants == undefined){
+        error.push(products[i])
+        continue;
+      }
+      if(products[i].name_supplier == 'Promos'){
+        proveedores.Promos++;
+      }
+      if(products[i].name_supplier == 'CDO'){
+        proveedores.cdo++;
+      }
+      if(products[i].name_supplier == 'Marpico'){
+        proveedores.marpico++;
+      }
+      if(products[i].name_supplier == 'PromoOpcion'){
+        proveedores.promoopcion++;
+      }
       let metadata = null;
       //reemplazar los . y los ; de las descripciones si lo tienen
       let description_product = products[i].description_product.replace(/;/g, " ").replace(/\./g, " ")
@@ -135,6 +185,8 @@ router.post("/get_CSV", async function (request, response, next) {
         }
         let colors = await utils.get_colors_at_sku(products[i].variants)
         if(colors.length > 0){
+          colors = await utils.homologationcolor(colors);
+          console.log(colors,"salio asi")
           colors = colors.join(",");
         }
         let space = await utils.get_space_at_sku(products[i].variants)
@@ -155,25 +207,40 @@ router.post("/get_CSV", async function (request, response, next) {
         }
         products_csv += father_product;
         // console.log("precio_sugerido", precio_sugerido, JSON.parse(products[i].metadata_price),i)
+
+        
         for (let c = 0; c < products[i].variants.length; c++) {
           let variation = products[i].variants[c];
-          let stock = variation.stock.find((stock) => {
-            return stock.name == "Total"
-          })
+
+          let stock = {}
+          if(variation.stock != undefined){
+            stock = variation.stock.find((stock) => {
+              return stock.name == "Total"
+            })
+          }else{
+            stock = {
+              quantity:0
+            }
+          }
           let color= await utils.get_color(variation.sku);
+          color = utils.homologationcolor(color);
           let space=await utils.get_space(variation.sku);
           let img_variant =variation.images
-          if(img_variant.length > 0){
-            img_variant = img_variant.map(e=>{
-              if(e.urlImage == 'empty' || e.urlImage == '' || e.urlImage === 'undefined'){
-                console.log("entre")
-                return ''
-              }
-              return JSON.parse(e.urlImage).join(",")
-            })
-            img_variant = img_variant.join(",");
-          }else{
+          if(img_variant == undefined){
             img_variant = '';
+          }else{
+            if(img_variant.length > 0){
+              img_variant = img_variant.map(e=>{
+                if(e.urlImage == 'empty' || e.urlImage == '' || e.urlImage === 'undefined'){
+                  console.log("entre")
+                  return ''
+                }
+                return JSON.parse(e.urlImage).join(",")
+              })
+              img_variant = img_variant.join(",");
+            }else{
+              img_variant = '';
+            }
           }
           let variant=`variation;${variation.sku};${variation.name_variant};;${description_product};${stock==undefined || stock.quantity == 0?0:1};${stock==undefined?0:stock.quantity};${variation.weight_override>0?variation.weight_override:''};;;;;${variation.price_override >0?variation.price_override:precio_sugerido>0?precio_sugerido:products[i].price};${products[i].price};;variante;${img_variant};${products[i].reference};${c+1};;`;
           if(color != null && space == null){
@@ -201,7 +268,7 @@ router.post("/get_CSV", async function (request, response, next) {
           return console.log(err);
         }
         console.log("JSON file has been saved.");
-        response.status(200).send({ products })
+        response.status(200).send({ proveedores,error })
       });
       
     }
