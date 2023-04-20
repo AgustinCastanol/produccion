@@ -1,5 +1,6 @@
 import request from './request.js';
-
+import request_product_image from './request_logos.js';
+import requestBGWP from './requestBGWP.js';
 export function login(data) {
   return request({
     url: '/login',
@@ -38,7 +39,7 @@ export function getProveedor (data){
   })
 }
 export function getUsers (data){
-  return request({
+  return requestBGWP({
     url: '/get_users',
     method: 'post',
     data
@@ -143,6 +144,40 @@ export function setProductForm(data){
 export function setSupplier(data){
   return request({
     url: '/set_supplier',
+    method: 'post',
+    data
+  })
+}
+export function setProductImage(data){
+  return request({
+    url: '/setProductImage',
+    method: 'post',
+    data,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
+}
+
+export function deleteImage(data){
+  return request_product_image({
+    url: '/delete_image_product',
+    method: 'post',
+    data
+  })
+}
+
+export function deleteVariantsImage(data){
+  return request_product_image({
+    url:'/delete_image_variant_product',
+    method: 'post',
+    data
+  })
+}
+
+export function procesCsvProducts(data){
+  return request({
+    url: '/procesCsvProducts',
     method: 'post',
     data
   })

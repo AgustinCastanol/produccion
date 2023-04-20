@@ -19,5 +19,15 @@ try{
 }
 })
 
+router.get("/suppliers", async function (request, response,next) {
+  try{
+    const suppliers = await knex_products_db.raw(`SELECT * FROM "public"."supplier"`)
+    response.status(200).json({ suppliers: suppliers.rows, error:[] })
+  }catch(err){
+    console.log(err)
+    next(err.message);
+  }
+});
+
 
 export default router;

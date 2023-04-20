@@ -11,6 +11,10 @@ import handlerError from "./middleware/errors.js";
 import notfound from "./middleware/notfound.js";
 import products from "./routes/products/products.js";
 import knex from "knex";
+import verifLogin from "./middleware/verifLogin.js";
+import redis from 'redis';
+import adminUsers from "./routes/admin/users.js";
+import client_dis from "./routes/api/client.js";
 // CONFIG DOTENV
 var config = dotenv.config();
 global.config = config.parsed;
@@ -150,18 +154,33 @@ const products_db = knex({
 console.log("----------- CONECTED TO USERS DB");
 
 global.knex_products_db = products_db;
-try{
+// Crea una instancia del cliente Redis
+const client = redis.createClient({
+  url: 'redis://46.101.159.194:6379',
+  password:'_dir$to-easy./'
+});
+ client.on('connect', function() {
+    console.log('Redis client connected');
+});
+client.on('error', function (err) {
+    console.log('Something went wrong ' + err);
+});
+await client.connect();
+global.redis = client;
   //de aca no pasa sin tokens
 app.use(api_key_proxy);
 //
-
+app.use("/",client_dis)
 app.use("/bgwp", users);
 //de aca no pasa sin tokens
 
-app.use(jwt_proxy);
+// app.use(jwt_proxy);
+app.use(verifLogin);
 app.use("/bgwp", products);
-//
+// manejo de roles
 
+//
+app.use("/bgwp/admin", adminUsers);
 
 ///Si llega aca hubo un error
 app.use(handlerError)
@@ -170,7 +189,4 @@ app.use(notfound);
 console.log("Servidor API escuchando en       ", process.env.PORT);
 console.log("Environment mode", process.env.environment);
 server.listen(process.env.PORT);
-}catch(e){
-  console.log(e,"error main")
-  process.exit(1);
-}
+

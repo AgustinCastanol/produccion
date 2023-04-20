@@ -1,13 +1,19 @@
 <template>
- <Toast/>
- <DataTable :value="categories" stipedRows editMode="cell" :rowEditor="true" :paginator="true" :rows="rows"
+  <Toast />
+  <DataTable :value="categories" stipedRows editMode="cell" :rowEditor="true" :paginator="true" :rows="rows"
     :totalRecords="totalRows">
     <template #header>
-      <div class="flex justify-content-end">
+      <div class="flex justify-content-between">
+
+        <div class="p-input-icon-left">
+          <i class="pi pi-search" />
+          <InputText v-model="filters" placeholder="Buscar categoria" @change="searchCategory" />
+        </div>
+
         <Button @click="createNewCategoryModal">
-                <i class="pi pi-plus px-2"></i>
-                <span class="px-3">Nueva Categoria</span>
-            </Button>
+          <i class="pi pi-plus px-2"></i>
+          <span class="px-3">Nueva Categoria</span>
+        </Button>
       </div>
     </template>
     <Column field="name_category" header="Nombre" />
@@ -34,7 +40,7 @@
   <Dialog v-model:visible="dialog['display']" :breakpoints="{ '960px': '75vw', '640px': '90vw' }"
     :style="{ width: '80vw' }">
     <section>
-      <DataTable :value="dialog.data" :rowEditor="true" :loading="loading" editMode="cell" 
+      <DataTable :value="dialog.data" :rowEditor="true" :loading="loading" editMode="cell"
         @cell-edit-complete="onCellEditComplete">
         <Column field="name_category" header="Nombre">
           <template #editor="{ data, field }">
@@ -62,11 +68,11 @@
   <Dialog v-model:visible="dialogNew['display']" :breakpoints="{ '960px': '75vw', '640px': '90vw' }"
     :style="{ width: '80vw' }">
     <section>
-      <DataTable :value="dialogNew.data" :rowEditor="true" :loading="loading" editMode="cell" 
+      <DataTable :value="dialogNew.data" :rowEditor="true" :loading="loading" editMode="cell"
         @cell-edit-complete="onCellEditCompleteNew">
         <Column field="name_category" header="Nombre">
           <template #editor="{ data, field }">
-            <InputText class="border-300" v-model="data[field]" autofocus placeholder="Ingrese un nombre"/>
+            <InputText class="border-300" v-model="data[field]" autofocus placeholder="Ingrese un nombre" />
           </template>
         </Column>
         <Column field="slug_category" header="Slug">
@@ -78,7 +84,7 @@
         </Column>
         <Column field="metadata_category" header="Descripcion">
           <template #editor="{ data, field }">
-            <Textarea autoResize="true" v-model="data[field]" autofocus placeholder="Ingrese una descripcion breve"/>
+            <Textarea autoResize="true" v-model="data[field]" autofocus placeholder="Ingrese una descripcion breve" />
           </template>
         </Column>
       </DataTable>
@@ -132,33 +138,43 @@ function deleteCategory(data) {
     }
   })
 }
-async function createNewCategory({name_category, metadata_category, slug_category}) {
-  try{
-    if(!name_category|| name_category=='-' || !metadata_category || !slug_category){
-      alerta.add({severity:'error', summary: 'Error', detail: 'Debe llenar todos los campos', life: 3000});
+async function createNewCategory({ name_category, metadata_category, slug_category }) {
+  try {
+    if (!name_category || name_category == '-' || !metadata_category || !slug_category) {
+      alerta.add({ severity: 'error', summary: 'Error', detail: 'Debe llenar todos los campos', life: 3000 });
       return
     }
-    const res = await API.createCategory({name_category, metadata_category, slug_category,parent:dropdown.value})
-    if(res.data == undefined){
-      alerta.add({severity:'error', summary: 'Error', detail: 'Error al crear la categoria', life: 3000});
+    const res = await API.createCategory({ name_category, metadata_category, slug_category, parent: dropdown.value })
+    if (res.data == undefined) {
+      alerta.add({ severity: 'error', summary: 'Error', detail: 'Error al crear la categoria', life: 3000 });
       return
     }
-    alerta.add({severity:'success', summary: 'Success', detail: 'Categoria creada', life: 3000});
+    alerta.add({ severity: 'success', summary: 'Success', detail: 'Categoria creada', life: 3000 });
     dialogNew.value['display'] = false
     dropdown.value = null
     reload()
-    
-  }catch(e){
+
+  } catch (e) {
     console.log(e)
-    alerta.add({severity:'error', summary: 'Error', detail: 'Error al crear la categoria', life: 3000});
+    alerta.add({ severity: 'error', summary: 'Error', detail: 'Error al crear la categoria', life: 3000 });
   }
 }
-function reload() {
+async function searchCategory(event) {
+  if (event.target.value.length > 3) {
+    await reload();
+    categories.value = categories.value.filter((category) => {
+      return category.name_category.toLowerCase().includes(event.target.value.toLowerCase())
+    })
+  } else {
+    await reload()
+  }
+}
+async function reload() {
   loading.value = true
-  API.getCategories().then((response) => {
-    categories.value = response.data
-    loading.value = false
-  })
+  const response = await API.getCategories()
+  categories.value = response.data
+  loading.value = false
+
 }
 function createNewCategoryModal() {
   dialogNew.value['display'] = true
@@ -170,7 +186,7 @@ function createNewCategoryModal() {
     name_category: '-',
     slug_category: '-',
     metadata_category: '-',
-    parent:'Sin padre'
+    parent: 'Sin padre'
   }]
   categories.value.map((category) => {
     categoriesParent.value.push({
@@ -186,20 +202,20 @@ function openModal(data) {
   console.log(data)
 }
 async function save(data) {
-  try{
+  try {
     const res = await API.updateCategory(data[0])
-    if(res.data == undefined){
-      alerta.add({severity:'error', summary: 'Error', detail: 'Error al actualizar la categoria', life: 3000});
+    if (res.data == undefined) {
+      alerta.add({ severity: 'error', summary: 'Error', detail: 'Error al actualizar la categoria', life: 3000 });
       return
     }
-    alerta.add({severity:'success', summary: 'Success', detail: 'Categoria actualizada', life: 3000});
+    alerta.add({ severity: 'success', summary: 'Success', detail: 'Categoria actualizada', life: 3000 });
     dialog.value['display'] = false
     reload()
   }
-  catch(e){
+  catch (e) {
     console.log(e)
-    alerta.add({severity:'error', summary: 'Error', detail: 'Error al actualizar la categoria', life: 3000});
-}
+    alerta.add({ severity: 'error', summary: 'Error', detail: 'Error al actualizar la categoria', life: 3000 });
+  }
 }
 async function onCellEditComplete(event) {
   try {
@@ -211,10 +227,10 @@ async function onCellEditComplete(event) {
 async function onCellEditCompleteNew(event) {
   try {
     dialogNew.value.data[0][event.field] = event.newValue
-    if(event.field==='parent'){
+    if (event.field === 'parent') {
       console.log(event.newValue)
     }
-    if(event.field==='name_category'){
+    if (event.field === 'name_category') {
       dialogNew.value.data[0]['slug_category'] = event.newValue.toLowerCase().replace(/ /g, "-").replace(/[^\w-]+/g, '');
     }
   } catch (e) {
@@ -240,7 +256,7 @@ onMounted(async () => {
 </script>
 <style scoped lang="scss">
 .template .p-button.edit i {
-    background-color: var(--purple-700);
+  background-color: var(--purple-700);
 }
 
 table {
@@ -298,5 +314,4 @@ a {
   border-width: 1px 1px 1px 1px;
   font-weight: 700;
 }
-
 </style>

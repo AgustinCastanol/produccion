@@ -11,9 +11,10 @@ export class AppService {
     const res = await this.clienteLogin.send('home', user).toPromise();
     return res;
   }
-  async setFormProduct (product: any) {
-    console.log('setFormProduct', product);
-    return {data: 'producto cargado'};
+  async setFormProduct (form: any) {
+    console.log('setFormProduct', form);
+    const res = await this.clienteLogin.send('set_form_product', form).toPromise();
+    return res;
   }
 
   async login(user: any) {
@@ -325,6 +326,26 @@ async loadApiPromoOpcion(data: any) {
   const res = await this.clienteLogin
     .send('load_api_promoopcion', data)
     .toPromise();
+  return res;
+}
+async loadPricePromoOpcion(data: any) {
+  const res = await this.clienteLogin
+    .send('load_price_promoopcion', data)
+    .toPromise();
+  return res;
+  }
+async processCsv(data: any) {
+  const res = await this.clienteLogin.send('process_csv', data).toPromise();
+  return res;
+}
+async processCsvProducts(data: any) {
+  const res = await this.clienteLogin
+    .send('process_csv_products', data)
+    .toPromise();
+  return res;
+}
+async loadEsferos(data: any) {
+  const res = await this.clienteLogin.send('load_esferos', data).toPromise();
   return res;
 }
 }

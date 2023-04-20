@@ -1,57 +1,46 @@
-version: '3.8'
+version: '3.9'
 
+networks:
+  main:
+    driver: bridge
 
 services:
-  db:
-    image: postgres
-    restart: always
-    environment:
-      POSTGRES_PASSWORD: docker
-      POSTGRES_USER: docker
-      POSTGRES_DB: products
-      POSTGRES_HOST_AUTH_METHOD: trust
-    ports:
-      - "5432:5432"
-    volumes:
-      - ./database:/var/lib/postgresql/data
-  pgAdmin:
-    image: dpage/pgadmin4
-    restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-    ports:
-      - "5051:80"
-    depends_on:
-      - db
   nats:
     image: nats:latest
+    command: -c nats-server.conf -DV
     ports:
-      - "4222:4222"
+      - "127.0.0.1:4222:4222"
+      - "127.0.0.1:6222:6222"
+      - "127.0.0.1:8222:8222"
+    restart: always
+    tty: true
     networks:
-      - nats-net
+      - main
   admin:
+    container_name: nestjs-nats-admin
     build: ./backend/admin
     restart: always
     ports:
       - "3001:3001"
       - "3000:3000"
-    networks:
-      - nats-net
     volumes:
-      - .:/app/backend/admin
+      - ./backend/admin:/app/backend/admin
+    networks:
+      - main
   login:
+    container_name: nestjs-nats-login
     build: ./backend/login
     volumes:
-      - .:/app/backend/login
-  backoffice:
-    build: ./frontend
-    ports:
-      - "8080:8080"
-      - "5173:5173"
-    depends_on:
-      - admin
+      - ./backend/login:/app/backend/login
+    networks:
+      - main
+  aph:
+    container_name: nestjs-nats-aph
+    build: ./backend/aph
+    volumes:
+      - ./backend/aph:/app/backend/aph
+    networks:
+      - main
+    
 
-      
-networks:
-  nats-net:
+

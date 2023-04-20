@@ -42,7 +42,7 @@ export class AppService {
         nombre: data.nombre ? data.nombre : data.name_product,
         referencia: data.referencia ? data.referencia : data.reference,
         descripcion: data.description_product ? data.description_product : data.descripcion,
-        metadata: null,
+        metadata:JSON.stringify(data.metadata),
         channel: data.channel,
         disponible: data.disponible ? new Date(data.disponible).toISOString().slice(0, 19).replace('T', ' ') : new Date(data.available_on).toISOString().slice(0, 19).replace('T', ' '),
         is_published: data.is_published,
@@ -88,6 +88,7 @@ export class AppService {
   name_product, reference, description_product, metadata, channel, available_on, is_published, weight, category_id, product_class_id, "idProducts", supplier, price_base)
   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?); */
     try {
+      console.log(data)
       if (
         data.nombre == null ||
         data.referencia == null ||
@@ -144,6 +145,7 @@ export class AppService {
         url: data.url ? data.url : null,
         idImage: uuidv1(),
       };
+      console.log(obj,"imagenes products")
       await this.sequelize.query(`INSERT INTO public."productImages"(
         "idImage", "productId", image, alt, "urlImage")
         VALUES ('${obj.idImage}', '${obj.id_productos}', ${obj.image ? `'${obj.image}'` : null}, '${obj.alt}', ${obj.url ? `'${obj.url}'` : null});`)
@@ -237,6 +239,22 @@ export class AppService {
       console.log(err);
     }
   }
+  async getProductByReferenceAndSupplier({reference, supplier}: any) {
+    try {
+      if (reference == null) {
+        return {
+          data: null,
+          message: 'missing reference',
+        };
+      }
+      const product = await this.sequelize.query(`
+      SELECT * FROM public.products
+      WHERE reference = '${reference}' and supplier = '${supplier}'`);
+      return product[0];
+    } catch (err) {
+      console.log(err);
+    }
+  }
   async searchProduct(data: any) {
     try {
       if (data.search == null) {
@@ -252,7 +270,7 @@ export class AppService {
       join "public"."price" on "public"."products"."idProducts" = "public"."price"."productId"
       join "public"."categories" on "public"."products"."category_id" = "public"."categories"."id_categorias"
       join "public"."productImages" on "public"."products"."idProducts" = "public"."productImages"."productId"
-      WHERE name_product LIKE '%${data.search}%'`);
+      WHERE name_product ILIKE '%${data.search}%'`);
       return product[0];
     } catch (err) {
       console.log(err);
@@ -504,6 +522,22 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
       console.log(err)
     }
   }
+  async getProveedorByName(data: any) {
+    try{
+      if(data.name == null){
+        return {
+          data: null,
+          message: 'missing name',
+        }
+      }
+      const res = await this.sequelize.query(`
+      SELECT * FROM public."supplier" WHERE name_supplier = '${data.name}'`);
+      return res[0]
+    }catch(err){
+      console.log(err)
+      return err;
+    }
+  }
   async getstockLocation() {
     /*SELECT "idStockLocation", name
     FROM public."stockLocation"; */
@@ -525,6 +559,9 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
         quantity: data.quantity,
         quantity_allocated: data.quantity_allocated,
       }
+      console.log(obj,"obj")
+      console.log(data,"daya")
+
       await this.sequelize.query(`
       INSERT INTO public.stock(
         "idStock", "locationId", variant_id, quantity, quantity_allocated)
@@ -589,7 +626,7 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
         return null
       }
       const res = <any>await this.sequelize.query(
-        `SELECT * FROM "public"."categories" WHERE slug_category = '${data}'`,
+        `SELECT * FROM "public"."categories" WHERE slug_category = '${data.slug}'`,
       );
 
       return res[0][0];
@@ -742,13 +779,13 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
         id_price: uuidv1(),
         price: price.price,
         currency: price.currency,
-        type: price.type,
+        type: price.type==undefined?'no type':price.type,
         metadata: JSON.stringify(price.metadata),
         productId: price.productId,
       };
       await this.sequelize.query(`
     INSERT INTO public.price(
-      id, price, currency, type, metadata, "productId")
+      id, price, currency, type, metadata_price, "productId")
       VALUES ('${obj.id_price}', ${obj.price}, '${obj.currency}', '${obj.type}', '${obj.metadata}', ${obj.productId == null ? null : `'${obj.productId}'`});`);
       return obj;
     } catch (e) {
@@ -767,6 +804,7 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
         metadata: price.metadata,
         productId: price.productId,
       };
+      console.log(obj, 'obj price')
       await this.sequelize.query(`
       UPDATE public.price
       SET price=${obj.price}, currency='${obj.currency}', type='${obj.type}', metadata_price='${obj.metadata}', "productId"='${obj.productId}'
@@ -777,11 +815,31 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
       return e;
     }
   }
+  async getCollectionsBySlug({slug}) {
+    try{
+      const res = await this.sequelize.query(`
+      SELECT * FROM public.collection WHERE slug_collection = '${slug}';`);
+      return res[0];
+    }catch(e){
+      console.log(e);
+      return e;
+    }
+  }
   async getPrice({ id }: any) {
     try {
 
       const res = await this.sequelize.query(`
       SELECT * FROM public.price WHERE "productId" = '${id}';`);
+      return res[0];
+    } catch (e) {
+      console.log(e);
+      return e;
+    }
+  }
+  async getPriceById({ id }: any) {
+    try {
+      const res = await this.sequelize.query(`
+      SELECT * FROM public.price WHERE id = '${id}';`);
       return res[0];
     } catch (e) {
       console.log(e);

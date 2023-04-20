@@ -12,24 +12,33 @@ import { MarpicoModule } from './marpico/marpico.module';
 import { MarpicoService } from './marpico/marpico.service';
 import { PromoopcionService } from './promoopcion/promoopcion.service';
 import { PromoopcionModule } from './promoopcion/promoopcion.module';
+import { EsferosModule } from './esferos/esferos.module';
+import { EsferosService } from './esferos/esferos.service';
 @Module({
   imports: [
     ConfigModule.forRoot(),
     SequelizeModule.forRoot({
       dialect: 'postgres',
       host: `${process.env.db_postgres_host}`,
-      port: parseInt(`${process.env.db_postgres_port}`),
+      port: parseInt(process.env.db_postgres_port) || 5321,
       username: `${process.env.db_postgres_user}`,
       password: `${process.env.db_postgres_pass}`,
-      database: `${process.env.db_postgres_db}`,
+      database: `products`,
       autoLoadModels: true,
       synchronize: true,
+      dialectOptions: {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false,
+        },
+      },
     }),
     HttpModule,
     PromosModule,
     CdoModule,
     MarpicoModule,
     PromoopcionModule,
+    EsferosModule,
   ],
   controllers: [AppController],
   providers: [
@@ -39,6 +48,7 @@ import { PromoopcionModule } from './promoopcion/promoopcion.module';
     MarpicoService,
     PromoopcionService,
     PromoopcionService,
+    EsferosService,
   ],
 })
 export class AppModule {}

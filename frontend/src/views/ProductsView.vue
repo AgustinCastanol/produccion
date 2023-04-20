@@ -15,6 +15,16 @@
           </Button>
         </div>
       </template>
+      <template #empty>
+        <div class="flex  justify-content-center align-content-start">
+          <div class="card shadow-2">
+            <div class="flex flex-column align-items-center justify-content-center">
+              <i class="pi pi-times-circle p-mb-3" style="font-size: 5rem"></i>
+              <span class="p-text-bold">No hay productos</span>
+            </div>
+          </div>
+        </div>
+      </template>
       <Column field="image">
         <template #body="slotProps">
           <img :src="slotProps.data.urlImage" alt="Image" width="100" height="100" />
@@ -189,7 +199,7 @@
               </div>
               <div class="field">
                 <div class="p-float-label">
-                  <Dropdown id="currency" v-model="form.collecion" :options="dropdownForm['collecion']"
+                  <Dropdown id="currency" v-model="form.collection" :options="dropdownForm['collecion']"
                     optionLabel="name_collection" />
                   <label for="Colleciones">Colleciones*</label>
                 </div>
@@ -209,9 +219,11 @@
               </div>
               <div class="field">
                 <div class="p-label">
-                  <label for="disponible">Subir una imagen*</label>
-                  <FileUpload mode="basic" name="demo[]" url="./upload" accept="image/*" :maxFileSize="1000000"
-                    @upload="onUpload" :auto="true" chooseLabel="Browse" />
+                  <label for="image">Subir una imagen*</label>
+                  <!-- <InputText id="image" v-model="form.image" placeholder="https://example.com"/> -->
+                  <Chip v-if="form.image!= null" :label="form.image.split('http://46.101.159.194/img/products/')[1]" removable @remove="removeImages('product')" @click.ctrl="openLink(form.image)"/>
+                  <FileUpload name="image" mode="basic" accept="image/*" url="http://46.101.159.194:48700/create_image_product"  
+                  :maxFileSize="1000000" :auto="true" chooseLabel="Buscar" @before-upload="setProductImage" :disabled="disabled_image"/>
                 </div>
               </div>
             </div>
@@ -291,8 +303,8 @@
               <div class="field">
                 <div class="flex flex-column align-items-center justify-content-center">
                   <div v-for="(stock, index) in variantsForm[indexVariant].stock" class="flex flex-wrap">
-                    <InputText class="w-4" id="stock" v-model="stock[index]" placeholder="Cantidad de stock" />
-                    <Dropdown class="w-6" id="stockLocation" v-model="stock[index]" placeholder="Ubicacion"
+                    <InputText class="w-4" id="stock" v-model="variantsForm[indexVariant].stock[index]['quantity']" placeholder="Cantidad de stock" />
+                    <Dropdown class="w-6" id="stockLocation" v-model="variantsForm[indexVariant].stock[index]['name']" placeholder="Ubicacion"
                       :options="dropdownForm['stockLocation']" optionLabel="name" />
                     <Button class="pi pi-trash w-2 p-button-danger align-self-start" @click="deleteStock(index)" />
                   </div>
@@ -320,8 +332,10 @@
               <div class="field">
                 <div class="p-label">
                   <label for="disponible">Subir una imagen de la variante*</label>
-                  <FileUpload mode="basic" name="demo[]" url="./upload" accept="image/*" :maxFileSize="1000000"
-                    @upload="onUpload" :auto="true" chooseLabel="Browse" />
+                  <!-- <InputText id="disponible" v-model="variantsForm[indexVariant].image" /> -->
+                  <Chip v-if="variantsForm[indexVariant].image" :label="variantsForm[indexVariant].image.split('http://46.101.159.194/img/variants')[1]" removable @remove="removeImages('')" @click.ctrl="openLink(variantsForm[indexVariant].image)" />
+                  <FileUpload name="image" mode="basic" accept="image/*" url="http://46.101.159.194:48700/create_image_variant_product"  
+                  :maxFileSize="1000000" :auto="true" chooseLabel="Buscar" @before-upload="setVariantImage" :disabled="disabled_image_variant[indexVariant]['disabled']"/>
                 </div>
               </div>
             </div>
@@ -340,6 +354,7 @@ import DataTable from 'primevue/datatable'
 import Toast from 'primevue/toast'
 import Dropdown from 'primevue/dropdown'
 import OverlayPanel from 'primevue/overlaypanel';
+import Chip from 'primevue/chip';
 import Column from 'primevue/column'
 import * as API from '../helpers/api.js'
 import { useToast } from "primevue/usetoast";
@@ -384,7 +399,8 @@ const dropdownForm = ref({
   stockLocation: []
 
 })
-
+const disabled_image = ref(false)
+const disabled_image_variant = ref([{disabled: false}])
 const dialogNewProduct = ref({
   visible: false,
   data: {},
@@ -409,7 +425,7 @@ const form = ref({
   collection: '',
   is_published: '',
   raiting: '',
-  subCategory: ''
+  subCategory: 'no-subcategory'
 })
 const toast = useToast()
 const api_suppliers = ['promos', 'cdo', 'marpico', 'promoopcion']
@@ -425,12 +441,40 @@ async function loadSubcategories(event) {
 
   }
 }
-async function foundCategoryFather(category_id) {
-  const res = await API.getCategory({ id: category_id })
-  console.log(res)
-  return "hola"
-}
 
+async function openLink(url) {
+  window.open(url, '_blank');
+}
+async function setProductImage(event){
+  event.xhr.onload = function () {
+    console.log(event.xhr.response)
+    const res = JSON.parse(event.xhr.response)
+    console.log(res.data.path)
+    form.value.image = res.data.path
+    disabled_image.value = true
+  }
+}
+async function setVariantImage(event){
+  event.xhr.onload = function () {
+    console.log(event.xhr.response)
+    const res = JSON.parse(event.xhr.response)
+    console.log(res.data.path)
+    variantsForm.value[indexVariant.value].image = res.data.path
+    disabled_image_variant.value[indexVariant.value]['disabled'] = true
+  }
+}
+async function removeImages(type){
+  if(type == 'product'){
+    await API.deleteImage({path:form.value.image.split('http://46.101.159.194/img/products/')[1]})
+    form.value.image = ''
+    disabled_image.value = false
+  }else{
+    await API.deleteVariantsImage({path:variantsForm.value[indexVariant.value].image.split('http://46.101.159.194/img/variants')[1]})
+    variantsForm.value[indexVariant.value].image = ''
+    disabled_image_variant.value[indexVariant.value]['disabled'] = false
+    
+  }
+}
 
 async function openModalNewProduct() {
   dialogNewProduct.value.visible = true
@@ -471,6 +515,7 @@ async function addVariant() {
       name: '-'
     }]
   })
+  disabled_image_variant.value.push({disabled: false})
 }
 async function addStock() {
   variantsForm.value[indexVariant.value].stock.push({
@@ -529,7 +574,7 @@ async function onPageChange(event) {
     loading.value = false
   }
 }
-function handleSubmit() {
+async function handleSubmit() {
   if (variantsForm.value.length < 1) {
     toast.add({ severity: 'warn', summary: 'Warning', detail: 'Producto sin variantes', life: 3000 });
     return;
@@ -542,8 +587,15 @@ function handleSubmit() {
       return;
     }
   }
-  dialogNewProduct.value.visible = false
-  toast.add({ severity: 'success', summary: 'Success', detail: 'Producto creado', life: 3000 });
+  const res = await API.setProductForm({product:form.value,variants:variantsForm.value})
+  if(res.data !== undefined || res.data !== null){
+    toast.add({ severity: 'success', summary: 'Success', detail: 'Producto creado', life: 3000 });
+    dialogNewProduct.value.visible = false
+    return;
+  }
+
+  toast.add({ severity: 'error', summary: 'Error', detail: 'Ocurrio un error al crear el producto', life: 3000 });
+
 }
 
 async function search(data) {
@@ -555,6 +607,9 @@ async function search(data) {
       products.value.map(async (item) => {
         const aux = JSON.parse(item["urlImage"])
         item.metadata_price = JSON.parse(item.metadata_price)
+        if(typeof item.metadata_price == 'string'){
+          item.metadata_price = JSON.parse(item.metadata_price)
+        }
         item["urlImage"] = aux[0] == undefined ? item["urlImage"] : aux[0]
         if (item.parent !== null) {
           const cparent = await API.getCategory({ id: item.parent })
@@ -572,9 +627,7 @@ async function search(data) {
     await loadProducts({ offset: 0, limit: 10 })
   }
 }
-async function onUpload(event) {
-  console.log(event)
-}
+
 async function redirect() {
   router.push({ name: 'loadProducts' })
 }
