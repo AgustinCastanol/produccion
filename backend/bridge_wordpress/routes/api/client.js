@@ -186,25 +186,34 @@ router.post("/get_CSV", async function (request, response, next) {
         let colors = await utils.get_colors_at_sku(products[i].variants)
         if(colors.length > 0){
           colors = await utils.homologationcolor(colors);
-          console.log(colors,"salio asi")
           colors = colors.join(",");
+        }else{
+          colors = null;
         }
-        let space = await utils.get_space_at_sku(products[i].variants)
-        if(space.length > 0){
-          console.log("space", space)
-          space = space.join(",");
+        let spaces = await utils.get_space_at_sku(products[i].variants)
+        if(spaces.length > 0){
+          spaces = spaces.join(",");
+        }else{
+          spaces = null;
         }
         let father_product = `variable;${products[i].reference};${products[i].name_product};${description_product};${description_product};1;;${products[i].weight};${(metadata != null && metadata.medidas_largo != undefined) ? metadata.medidas_largo : ''};${(metadata != null && metadata.medidas_ancho != undefined) ? metadata.medidas_ancho : ''};${(metadata != null && metadata.medidas_alto) ? metadata.medidas_alto : ''};;${precio_sugerido};${products[i].price};${products[i].parent == null ? products[i].name_category : `${products[i].parent} > ${products[i].name_category}`};${products[i].slug_category + ',' + products[i].slug_collection + ',' + products[i].reference + ',', name_product_slug};${imagenes};;0;${products[i].name_supplier};`;
-        if(colors != "" && space == ""){
-          father_product += `Color;${colors};1;1\n`;
+        if(colors != null && spaces == null){
+          // console.log("son color")
+          // console.log("space", spaces)
+          father_product += `Color;${colors};1;1`;
         }
-        if(space != "" && colors == ""){
-          father_product += `Espacio;${space};1;1\n`;
+        if(spaces != null && colors == null){
+          // console.log("son space")
+          father_product += `Espacio;${spaces};1;1`;
         }
-        if(space != "" && colors != ""){
+        if(spaces != null && colors != null){
+          console.log("son dos")
+          // console.log("colors", colors)
+          // console.log("space", spaces)
           father_product += `Color;${colors};1;1;`;
-          father_product += `Espacio;${space};2;2\n`;
+          father_product += `Espacio;${spaces};2;2`;
         }
+        father_product += '\n'
         products_csv += father_product;
         // console.log("precio_sugerido", precio_sugerido, JSON.parse(products[i].metadata_price),i)
 
@@ -223,7 +232,7 @@ router.post("/get_CSV", async function (request, response, next) {
             }
           }
           let color= await utils.get_color(variation.sku);
-          color = utils.homologationcolor(color);
+          color = await utils.homologationcolor(color);
           let space=await utils.get_space(variation.sku);
           let img_variant =variation.images
           if(img_variant == undefined){
@@ -232,7 +241,6 @@ router.post("/get_CSV", async function (request, response, next) {
             if(img_variant.length > 0){
               img_variant = img_variant.map(e=>{
                 if(e.urlImage == 'empty' || e.urlImage == '' || e.urlImage === 'undefined'){
-                  console.log("entre")
                   return ''
                 }
                 return JSON.parse(e.urlImage).join(",")
@@ -244,19 +252,17 @@ router.post("/get_CSV", async function (request, response, next) {
           }
           let variant=`variation;${variation.sku};${variation.name_variant};;${description_product};${stock==undefined || stock.quantity == 0?0:1};${stock==undefined?0:stock.quantity};${variation.weight_override>0?variation.weight_override:''};;;;;${variation.price_override >0?variation.price_override:precio_sugerido>0?precio_sugerido:products[i].price};${products[i].price};;variante;${img_variant};${products[i].reference};${c+1};;`;
           if(color != null && space == null){
-            variant += `Color;${color};1;1\n`;
+            variant += `Color;${color};1;1`;
           }
           if(space != null && color == null){
-            variant += `Espacio;${space};1;1\n`;
+            variant += `Espacio;${space};1;1`;
           }
           if(space != null && color != null){
             variant += `Color;${color};1;1;`;
-            variant += `Espacio;${space};2;2\n`;
+            variant += `Espacio;${space};2;2`;
             console.log(space,"space")
           }
-          if(color == null && space == null){
-            variant += `\n`;
-          }
+          variant += `\n`;
           products_csv += variant;
         }
       }

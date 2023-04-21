@@ -149,14 +149,14 @@ export class AppController {
       ]
       const base_url_image = 'https://www.catalogospromocionales.com'
       const categorias = await this.promos.getCategories();
-      for (let i = 1; 2 > i; i++) {
+      for (let i = 0; categorias.length > i; i++) {
         await new Promise((resolve) => setTimeout(resolve, 300));
         const categoriaHomologada = <any>await this.promos.getCategoriasHomologadas(categorias[i]);
         const categorias_aph = await this.aphService.getCategoryBySlug({ slug: categoriaHomologada });
         if (categorias_aph != undefined && (categorias_aph.id_categorias !== undefined || categorias_aph.id_categorias !== null)) {
           const products = await this.promos.getProductsByCategory(categorias[i]);
           const size = products.length
-          for (let j = 1659; 1660 > j; j++) {
+          for (let j = 0; size > j; j++) {
             try {
               await new Promise((resolve) => setTimeout(resolve, 300));
               const checkProduct = await this.aphService.checkProduct(products[j].referencia)
@@ -232,7 +232,7 @@ export class AppController {
                 const true_category = await this.promos.getCategoryById(producto_promos.idCategoria);
                 await new Promise((resolve) => setTimeout(resolve, 150));
                 const category = await this.aphService.getCategoryBySlug({ slug: true_category });
-                console.log("category", category)
+                // console.log("category", category)
                 const product_db = checkProduct[0];
                 const price_db = await this.aphService.getPrice({ id: product_db.idProducts });
                 await this.aphService.updatePrice(
@@ -244,8 +244,9 @@ export class AppController {
                     price: producto_promos.descripcionPrecio1 == "precio neto" ? producto_promos.precio1 : 0,
                     productId: price_db[0].productId
                   })
-                console.log(category, "category")
-                product_db.category_id = category == undefined ? categorias_aph.id_categorias : category.id_categorias;
+                  console.log(category, "category")
+                  product_db.category_id = category == undefined ? categorias_aph.id_categorias : category.id_categorias;   
+                  product_db.description_product= producto_promos.descripcionProducto.replace(/(\r\n|\n|\r)/igm, "").replace(/"/ig, '\\"').replace(/(<([^>]+)>)/ig, "");
                 await this.aphService.updateProduct(product_db)
                 await new Promise((resolve) => setTimeout(resolve, 300));
                 const variants = await this.promos.getStock(products[j]);

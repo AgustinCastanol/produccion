@@ -1,6 +1,5 @@
 <template>
   <section class="card">
-    <Chart type="line" :data="data" :options="options" />
     <Chart type="bar" :data="dataSupplier" :options="options" />
     <Chart type="pie" :data="dataPie" :options="options" />
   </section>
@@ -44,8 +43,8 @@ const dataSupplier= {
       label: 'Suppliers Products',
       data: [1700,136,691,481],
       fill: false,
-      backgroundColor: ["#66BB6A","#42A5F5","#72BB6A","#21BB6A"],
-      hoverBackgroundColor: ["#81C784","#64B5F6","#72BB6A","#21BB6A"]
+      backgroundColor: ["#77dd77","#64B5F6","#fdfd96","#fdcae1"],
+      hoverBackgroundColor: ["#77dd77","#64B5F6","#72BB6A","#fdcae1"]
     },
   ],
   lightOptions: {
@@ -65,7 +64,7 @@ const dataPie= ref({
       label: 'Suppliers Products',
       data: [1700,136,691,481],
       fill: false,
-      backgroundColor: ["#66BB6A","#42A5F5","#72BB6A","#21BB6A"],
+      backgroundColor: ["#77dd77","#64B5F6","#fdfd96","#fdcae1"],
       hoverBackgroundColor: ["#81C784","#64B5F6","#72BB6A","#21BB6A"]
     },
   ],
@@ -82,8 +81,9 @@ const dataPie= ref({
 
 onMounted(async () => {
   const response = await API.getProveedores()
-  console.log(response.count[0].count, 'response')
+  console.log(response.count, 'response')
   dataPie.value.datasets.data = [parseInt(response.count[0].count), response.count[1].count, response.count[2].count, response.count[3].count]
+  
 })
 </script>
 <style scoped lang="scss">
@@ -109,7 +109,10 @@ a {
   border-radius: 1px;
   box-shadow: 1px 3px 5px rgba(0, 0, 0, .02), 0px 0px 2px rgba(0, 0, 0, .05), 0px 1px 4px rgba(0, 0, 0, .08) !important;
   background-color: #fafaf6;
-  color: rgba(144, 35, 239, 0.737)
+  color: rgba(144, 35, 239, 0.737);
+  display:flex;
+  flex-direction:column;
+
 }
 
 .card-w-title {

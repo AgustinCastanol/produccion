@@ -16,17 +16,15 @@ async function get_colors_at_sku(variantes) {
   return colors;
 }
 async function get_space_at_sku(variantes) {
-  var spaces = [];
-  if (variantes == undefined) return spaces;
+  let aux = [];
+  if (variantes == undefined) return aux;
   for (let i = 0; i < variantes.length; i++) {
-    let variants_array = variantes[i].sku.toLowerCase().replace(/\s/g, '');
-    const espacioEncontrado = spaces.find(espacio => variants_array.includes(espacio.toLowerCase()));
+    let espacioEncontrado = await get_space(variantes[i].sku);
     if (espacioEncontrado != null) {
-      spaces.push(aux);
+      aux.push(espacioEncontrado);
     }
   }
-
-  return spaces;
+  return aux ;
 }
 async function get_space(sku) {
   let variants_array = sku.toLowerCase().replace(/\s/g, '');
@@ -82,7 +80,6 @@ async function homologationcolor(data) {
         data[i] = "rosa"
       }
     }
-    console.log(data,"homologation")
     return data;
   }
   return null;
