@@ -1,46 +1,26 @@
 version: '3.9'
 
-networks:
-  main:
-    driver: bridge
 
 services:
-  nats:
-    image: nats:latest
-    command: -c nats-server.conf -DV
-    ports:
-      - "127.0.0.1:4222:4222"
-      - "127.0.0.1:6222:6222"
-      - "127.0.0.1:8222:8222"
-    restart: always
-    tty: true
-    networks:
-      - main
   admin:
     container_name: nestjs-nats-admin
     build: ./backend/admin
     restart: always
     ports:
       - "3001:3001"
-      - "3000:3000"
+      
     volumes:
       - ./backend/admin:/app/backend/admin
-    networks:
-      - main
-  login:
-    container_name: nestjs-nats-login
-    build: ./backend/login
-    volumes:
-      - ./backend/login:/app/backend/login
-    networks:
-      - main
+    network_mode: aph-network
   aph:
     container_name: nestjs-nats-aph
     build: ./backend/aph
     volumes:
       - ./backend/aph:/app/backend/aph
-    networks:
-      - main
+    ports:
+      - "3000:3000"
+    network_mode: aph-network
+    
     
 
 

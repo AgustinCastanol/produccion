@@ -58,6 +58,7 @@ async function homologationcolor(data) {
     if (data.toLowerCase() == "rosado" || data.toLowerCase() == "rosada"){
       return "rosa"
     }
+    return data;
   }
   if (typeof data == "object") {
     for(let i = 0; data.length > i;i++){

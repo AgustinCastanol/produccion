@@ -128,6 +128,7 @@ export class AppController {
   }
   @EventPattern('get_category')
   async handleGetCategory(data: any) {
+    console.log(data)
     const res = await this.aphService.getCategory(data);
     return res;
   }
@@ -1311,7 +1312,7 @@ export class AppController {
             productId: null
           })
           productaux.price = price_db.id_price
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise(resolve => setTimeout(resolve, 200));
           const product_db = await this.aphService.setProduct(productaux)
           price_db.productId = product_db.id_productos;
           await this.aphService.updatePrice(price_db);
@@ -1335,6 +1336,8 @@ export class AppController {
                 product_id: product_db.id_productos,
               }
               const variant_db = await this.aphService.setVariant(variantaux)
+              console.log(variant_db, "variant")
+              console.log(variant, "images")
               await this.aphService.setStock({
                 location: location,
                 quantity: variant.stock,
@@ -1375,16 +1378,32 @@ export class AppController {
           const product_db = check_product[0];
           const variant_db = await this.aphService.getVariants({ idProducts: product_db.idProducts });
           const price_db = await this.aphService.getPrice({ id: product_db.idProducts });
-          await this.aphService.updatePrice(
-            {
-              id: price_db[0].id,
-              type: 'Precio Neto',
-              metadata: JSON.stringify({ precioSugerido: price_db[0].price * 3 / 5 }),
+          const price = products[i].price.split('.')[0]
+          if(price_db.length == 0){
+            const price_db = await this.aphService.setPrice({
+              price,
               currency: 'COP',
-              price: 0,
-              productId: price_db[0].productId
+              type: 'Precio Neto',
+              metadata: { precioSugerido: price * 3 / 5 },
+              productId: null
             })
-          for (let c = 0; products[i].variants[c].length > c; c++) {
+            product_db.price = price_db.id_price
+            await this.aphService.updateProduct(product_db)
+          }else{
+            await this.aphService.updatePrice(
+              {
+                id: price_db[0].id,
+                type: 'Precio Neto',
+                metadata: JSON.stringify({ precioSugerido:price * 3 / 5 }),
+                currency: 'COP',
+                price: 0,
+                productId: price_db[0].productId
+              })
+          }
+          if(products[i].variants.length == 0){
+            continue;
+          }
+          for (let c = 0; products[i].variants.length > c; c++) {
             await new Promise(resolve => setTimeout(resolve, 200));
             const variant = <any>await this.aphService.getVariantBySku({ sku: variant_db[c].sku });
             const stock_db = <any>await this.aphService.getStockByVariant({ id_variant: variant[0].id_variant });
@@ -1410,6 +1429,7 @@ export class AppController {
       }
       return { message: 'ok', data: aux }
     } catch (err) {
+      console.log(err)
       return { error: err }
     }
   }
