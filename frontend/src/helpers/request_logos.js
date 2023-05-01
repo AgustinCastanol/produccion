@@ -1,7 +1,9 @@
 import axios from "axios";
 
 const service = axios.create({
-  baseURL: 'http://15.228.12.139/img_api',
+
+  baseURL: 'http://46.101.159.194/img_api',
+
   withCredentials: false,
   timeout: 5000,
   headers: {

@@ -153,9 +153,58 @@ export default {
       "name":"Esferos Ecológicos",
       "ave":"boligrafos-ecolgicos"
     },
+    {
+      "name":"Insumos",
+      "ave":"artculos-hogar"
+    },
+    {
+      "name":"Cocina - Hogar+",
+      "ave":"artculos-cocina"
+    },
+    {
+      "name":"Hogar - Hogar +",
+      "ave":"artculos-hogar"
+    },
+    {
+      "name":"Cuidado Personal - Hogar+",
+      "ave":"salud-y-cuidado-personal"
+    },
+    {
+      "name":"Aseo - Hogar +",
+      "ave":"artculos-hogar"
+    },
+    {
+      "name":"Mascotas - Hogar +",
+      "ave":"mascotas"
+    },
+    {
+      "name":"Morrales - Hogar +",
+      "ave":"bolsos-maletines-y-morrales"
+    },
+    {
+      "name":"Bicicletas - Hogar +",
+      "ave":"deportes-y-juegos"
+    },
+    {
+      "name":"Herramientas - Hogar +",
+      "ave":"herramientas-e-iluminacin"
+    },
+    {
+      "name":"Automóvil - Hogar +",
+      "ave":"automvil"
+    },
+    {
+      "name":"Tecnología - Hogar +",
+      "ave":"tecnologa"
+    },
+    {
+      "name":"Botilitos - Hogar +",
+      "ave":"	botilitos-y-mugs-sublimacion"
+    },
     // {
     //   "name":"",
     //   "ave":""
     // },
+
   ]
 }

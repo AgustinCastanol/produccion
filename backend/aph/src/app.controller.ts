@@ -128,6 +128,7 @@ export class AppController {
   }
   @EventPattern('get_category')
   async handleGetCategory(data: any) {
+    console.log(data)
     const res = await this.aphService.getCategory(data);
     return res;
   }
@@ -149,14 +150,14 @@ export class AppController {
       ]
       const base_url_image = 'https://www.catalogospromocionales.com'
       const categorias = await this.promos.getCategories();
-      for (let i = 1; 2 > i; i++) {
+      for (let i = 0; categorias.length > i; i++) {
         await new Promise((resolve) => setTimeout(resolve, 300));
         const categoriaHomologada = <any>await this.promos.getCategoriasHomologadas(categorias[i]);
         const categorias_aph = await this.aphService.getCategoryBySlug({ slug: categoriaHomologada });
         if (categorias_aph != undefined && (categorias_aph.id_categorias !== undefined || categorias_aph.id_categorias !== null)) {
           const products = await this.promos.getProductsByCategory(categorias[i]);
           const size = products.length
-          for (let j = 1659; 1660 > j; j++) {
+          for (let j = 0; size > j; j++) {
             try {
               await new Promise((resolve) => setTimeout(resolve, 300));
               const checkProduct = await this.aphService.checkProduct(products[j].referencia)
@@ -232,7 +233,7 @@ export class AppController {
                 const true_category = await this.promos.getCategoryById(producto_promos.idCategoria);
                 await new Promise((resolve) => setTimeout(resolve, 150));
                 const category = await this.aphService.getCategoryBySlug({ slug: true_category });
-                console.log("category", category)
+                // console.log("category", category)
                 const product_db = checkProduct[0];
                 const price_db = await this.aphService.getPrice({ id: product_db.idProducts });
                 await this.aphService.updatePrice(
@@ -244,8 +245,9 @@ export class AppController {
                     price: producto_promos.descripcionPrecio1 == "precio neto" ? producto_promos.precio1 : 0,
                     productId: price_db[0].productId
                   })
-                console.log(category, "category")
-                product_db.category_id = category == undefined ? categorias_aph.id_categorias : category.id_categorias;
+                  console.log(category, "category")
+                  product_db.category_id = category == undefined ? categorias_aph.id_categorias : category.id_categorias;   
+                  product_db.description_product= producto_promos.descripcionProducto.replace(/(\r\n|\n|\r)/igm, "").replace(/"/ig, '\\"').replace(/(<([^>]+)>)/ig, "");
                 await this.aphService.updateProduct(product_db)
                 await new Promise((resolve) => setTimeout(resolve, 300));
                 const variants = await this.promos.getStock(products[j]);
@@ -1310,7 +1312,7 @@ export class AppController {
             productId: null
           })
           productaux.price = price_db.id_price
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise(resolve => setTimeout(resolve, 200));
           const product_db = await this.aphService.setProduct(productaux)
           price_db.productId = product_db.id_productos;
           await this.aphService.updatePrice(price_db);
@@ -1334,6 +1336,8 @@ export class AppController {
                 product_id: product_db.id_productos,
               }
               const variant_db = await this.aphService.setVariant(variantaux)
+              console.log(variant_db, "variant")
+              console.log(variant, "images")
               await this.aphService.setStock({
                 location: location,
                 quantity: variant.stock,
@@ -1374,16 +1378,32 @@ export class AppController {
           const product_db = check_product[0];
           const variant_db = await this.aphService.getVariants({ idProducts: product_db.idProducts });
           const price_db = await this.aphService.getPrice({ id: product_db.idProducts });
-          await this.aphService.updatePrice(
-            {
-              id: price_db[0].id,
-              type: 'Precio Neto',
-              metadata: JSON.stringify({ precioSugerido: price_db[0].price * 3 / 5 }),
+          const price = products[i].price.split('.')[0]
+          if(price_db.length == 0){
+            const price_db = await this.aphService.setPrice({
+              price,
               currency: 'COP',
-              price: 0,
-              productId: price_db[0].productId
+              type: 'Precio Neto',
+              metadata: { precioSugerido: price * 3 / 5 },
+              productId: null
             })
-          for (let c = 0; products[i].variants[c].length > c; c++) {
+            product_db.price = price_db.id_price
+            await this.aphService.updateProduct(product_db)
+          }else{
+            await this.aphService.updatePrice(
+              {
+                id: price_db[0].id,
+                type: 'Precio Neto',
+                metadata: JSON.stringify({ precioSugerido:price * 3 / 5 }),
+                currency: 'COP',
+                price: 0,
+                productId: price_db[0].productId
+              })
+          }
+          if(products[i].variants.length == 0){
+            continue;
+          }
+          for (let c = 0; products[i].variants.length > c; c++) {
             await new Promise(resolve => setTimeout(resolve, 200));
             const variant = <any>await this.aphService.getVariantBySku({ sku: variant_db[c].sku });
             const stock_db = <any>await this.aphService.getStockByVariant({ id_variant: variant[0].id_variant });
@@ -1409,6 +1429,7 @@ export class AppController {
       }
       return { message: 'ok', data: aux }
     } catch (err) {
+      console.log(err)
       return { error: err }
     }
   }

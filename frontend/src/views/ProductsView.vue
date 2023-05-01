@@ -3,19 +3,29 @@
   <section>
     <DataTable :value="products" responsiveLayout="scroll" :loading="loading" editMode="cell" :lazy="true"
       :rowEditor="true" :paginator="true" :rows="rows" :totalRecords="totalRows" stripedRows @page="onPageChange($event)">
+      <template #loading>
+        <div class="flex justify-content-center align-items-center bg-blue-50  ">
+            <Spinner strokeWidth="8" fill="var(--surface-ground)"  animationDuration=".5s" aria-label="Custom ProgressSpinner"></Spinner>
+        </div>
+      </template>
       <template #header>
         <div class="flex justify-content-between align-items-center">
-          <span class="p-input-icon-left">
+          <div class="flex gap-3">
+            <span class="p-input-icon-left">
             <i class="pi pi-search" />
             <InputText placeholder="Buscar Producto" v-model="key_search" @change="search($event)" />
           </span>
+          <Dropdown placeholder="Categorias" :loading="loadingDropdowns" v-model="filters['category']" :options="filterCategories" optionLabel="name_category" optionValue="id_categorias" @change="loadSubcategoriesFilter"/>
+          <Dropdown placeholder="Subcategorias" :loading="loadingDropdowns" v-if="filterSubcategories.length>0" v-model="filters['subcategory']" :options="filterSubcategories" optionLabel="name_category" optionValue="id_categorias" />
+          <Dropdown placeholder="Proveedores" :loading="loadingDropdowns" v-model="filters['supplier']" :options="filterSuppliers" optionLabel="name_supplier" optionValue="id" />
+          </div>
           <Button @click="openModalOptions" aria-haspopup="true" aria-controls="overlay_panel">
             <i class="pi pi-plus px-2"></i>
             <span class="px-3">Agregar producto</span>
           </Button>
         </div>
       </template>
-      <template #empty>
+      <template #empty v-if="loading == false">
         <div class="flex  justify-content-center align-content-start">
           <div class="card shadow-2">
             <div class="flex flex-column align-items-center justify-content-center">
@@ -364,15 +374,28 @@ import Rating from 'primevue/rating';
 import Textarea from 'primevue/textarea';
 import FileUpload from 'primevue/fileupload';
 import { useRouter, useRoute } from "vue-router";
+import Spinner from 'primevue/progressspinner';
 const products = ref([])
 const categorySelected = ref(null)
 const key_search = ref('')
 const indexVariant = ref(0)
 const hideVariantsFrom = ref(true)
 const loading = ref(false)
+const loadingDropdowns= ref(false)
 const bounce = ref(0)
 const newProduct = ref(false)
 const router = useRouter()
+const filterCategories = ref([])
+const filterSubcategories = ref([])
+const filterSuppliers = ref([])
+const filters = ref({
+  category: '',
+  collection: '',
+  supplier: '',
+  is_published: '',
+  currency: '',
+  search: ''
+})
 const variantsForm = ref([{
   name_variant: '',
   sku: '',
@@ -667,9 +690,30 @@ async function loadProducts({ offset, limit }) {
 
   }
 }
+async function loadSubcategoriesFilter(event){
+console.log(event)
+}
+async function loadAdvancedFilter (){
+  loadingDropdowns.value = true
+  const values = await API.getCategories()
+  filterCategories.value = values.data.map((item) => item.parent == null ? item : null)
+  filterCategories.value = filterCategories.value.filter((item) => item != null)
+
+  filterCategories.value.forEach((item) => {
+      item['subCategory'] = values.data.map((subItem) => (item.id_categorias == subItem.parent) ? subItem : null)
+      item['subCategory'] = item['subCategory'].filter((subItem) => subItem != null)
+
+    })
+  const supplier = await API.getProveedores()
+  filterSuppliers.value = supplier.res.data
+  loadingDropdowns.value = false
+}
 onMounted(async () => {
   try {
+    loading.value = true
     await loadProducts({ offset: 0, limit: 10 })
+    loading.value = false
+    await loadAdvancedFilter();
   } catch (e) {
     console.log(e)
     toast.add({ severity: 'error', summary: 'Error', detail: 'Ocurrio un error al obtener los campos', life: 3000 });
