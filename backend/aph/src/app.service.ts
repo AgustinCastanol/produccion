@@ -77,7 +77,11 @@ export class AppService {
   }
   async home(data: any) {
     try {
-      return [{ message: 'hello world' }]
+      const res = await this.sequelize.query(`SELECT pv.name_supplier, ARRAY_AGG(p.reference) AS referencias
+      FROM products p
+      INNER JOIN supplier pv ON p.supplier = pv.id
+      GROUP BY pv.name_supplier;`);
+      return { data: res[0] };
     } catch (err) {
       console.log('err', err);
       return err;
