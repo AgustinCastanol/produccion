@@ -2,7 +2,7 @@ import axios from "axios";
 
 const service = axios.create({
 
-  baseURL: 'http://46.101.159.194/img_api',
+  baseURL: 'https://back.soyave.com/img_api',
 
   withCredentials: false,
   timeout: 5000,
