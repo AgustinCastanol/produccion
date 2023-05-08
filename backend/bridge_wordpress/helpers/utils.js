@@ -85,4 +85,21 @@ async function homologationcolor(data) {
   }
   return null;
 }
-export default { get_colors_at_sku, get_space_at_sku, get_space, get_color, homologationcolor };
+function corregirTexto(texto) {
+  // Corregir caracteres especiales
+  texto = texto
+  .replace(/&aacute;|&aacute/g, "a")
+  .replace(/&eacute;|&eacute/g, "e")
+  .replace(/&iacute;|&iacute/g, "i")
+  .replace(/&oacute;|&oacute/g, "o")
+  .replace(/&uacute;|&uacute/g, "u")
+  .replace(/&ntilde;/g, "n")
+  .replace(/&uuml;|&uuml/g, "u")
+  .replace(/&Uuml;/g, "U")
+  .replace(/&nbsp;/g, " ")
+  .replace(/[^\w\s]/gi, '');
+  // Devolver texto corregido
+  return texto;
+}
+
+export default { get_colors_at_sku, get_space_at_sku, get_space, get_color, homologationcolor,corregirTexto };

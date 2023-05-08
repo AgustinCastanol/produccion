@@ -1,6 +1,8 @@
 import request from './request.js';
 import request_product_image from './request_logos.js';
 import requestBGWP from './requestBGWP.js';
+
+
 export function login(data) {
   return request({
     url: '/login',
@@ -8,7 +10,13 @@ export function login(data) {
     data
   })
 }
-
+export function getvalidateCSV(data){
+  return requestBGWP({
+    url: '/validate_CSV',
+    method: 'post',
+    data
+  })
+}
 
 export function getProducts(data) {
   return request({
@@ -24,6 +32,14 @@ export function getProveedores (data){
     data
   })
 }
+export function home(data) {
+  return request({
+    url: '/',
+    method: 'post',
+    data
+  })
+}
+
 export function getCategory (data){
   return request({
     url: '/get_category',

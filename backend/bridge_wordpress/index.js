@@ -97,6 +97,7 @@ const conn_obj_users = {
   database: process.env.pg_users_database,
   supportBigNumbers: true,
   bigNumberStrings: true,
+  ssl: { rejectUnauthorized: false ,require:true},
 };
 var user_db = knex({
   //debug: true,
@@ -129,6 +130,7 @@ const conn_obj_products = {
   database: process.env.pg_products_database,
   supportBigNumbers: true,
   bigNumberStrings: true,
+  // ssl: { rejectUnauthorized: false ,require:true},
 };
 
 const products_db = knex({
@@ -156,7 +158,7 @@ console.log("----------- CONECTED TO USERS DB");
 global.knex_products_db = products_db;
 // Crea una instancia del cliente Redis
 const client = redis.createClient({
-  url: 'redis://46.101.159.194:6379',
+  url: 'redis://157.230.11.89:6379',
   password:'_dir$to-easy./'
 });
  client.on('connect', function() {

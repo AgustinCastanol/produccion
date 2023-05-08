@@ -25,7 +25,7 @@ export class AppController {
   async handleHome(data: any) {
     const res = await this.aphService.home(data);
     const count = await this.aphService.getCountPRoveedores(data);
-    return { res, countProductsSuppliers: count };
+    return { res, countProductsSuppliers: count};
   }
   @EventPattern('get_logs')
   async handleGetLogs(data: any) {
@@ -583,32 +583,53 @@ export class AppController {
         })
         // await this.aphService.setProductImage({ productId: product_db[0].idProducts, url: JSON.stringify(arrayUrls) })
         const price_db = await this.aphService.getPrice({ id: product_db.idProducts });
-        await this.aphService.updatePrice(
-          {
-            id: price_db[0].id,
-            type: 'Precio Neto',
-            metadata: JSON.stringify({ precioSugerido: res.results[i].materiales[0].precio }),
-            currency: 'COP',
-            price: 0,
-            productId: price_db[0].productId
-          })
-
-        if (price_db == null || price_db == undefined) {
+        if (price_db == null || price_db == undefined || price_db.length== 0) {
           priceChange = true;
-          const newPrice = await this.aphService.setPrice({ price: res.results[i].materiales[0].precio, currency: 'COP', type: null, metadata: null, productId: product_db[0].idProducts });
-          await this.aphService.updateProductPrice({ id: product_db[0].idProducts, price: newPrice[0].id_price });
+          const newPrice = await this.aphService.setPrice({ price: res.results[i].materiales[0].precio, currency: 'COP', type: null, metadata: null, productId: product_db.idProducts });
+          // await this.aphService.updateProductPrice({ id: product_db[0].idProducts, price: newPrice[0].id_price });
+        }else{
+          await this.aphService.updatePrice(
+            {
+              id: price_db[0].id,
+              type: 'Precio Neto',
+              metadata: JSON.stringify({ precioSugerido: res.results[i].materiales[0].precio }),
+              currency: 'COP',
+              price: 0,
+              productId: price_db[0].productId
+            })
+  
         }
 
         /*checkeo el stock */
         for (let c = 0; c < res.results[i].materiales.length; c++) {
+          await new Promise((resolve) => setTimeout(resolve, 300));
           const variant_db = <any>await this.aphService.getVariantBySku({ sku: res.results[i].familia + '-' + res.results[i].materiales[c].color_nombre + '-' + res.results[i].materiales[c].codigo });
+          console.log(variant_db, 'variant_db')
+          if(variant_db == undefined || variant_db.length == 0){
+            const variante = {
+              name_variants: res.results[i].familia + '-' + res.results[i].materiales[c].color_nombre,
+              sku: res.results[i].familia + '-' + res.results[i].materiales[c].color_nombre + '-' + res.results[i].materiales[c].codigo,
+              price_override: res.results[i].materiales[c].precio,
+              metadata_variants: { descuento: res.results[i].materiales[c].descuento, estado: res.results[i].materiales[c].estado },
+              weight_override: 0,
+              brand: 'not-brand',
+              description_variant: '',
+              product_id: product_db.id_productos
+            }
+            const variant_db = await this.aphService.setVariant(variante);
+            console.log(variant_db, 'variant_db')
+            await this.aphService.setStock({ locationId: locations[0].id, quantity: res.results[i].materiales[c].inventario, variant_id: variant_db.id_variant, quantity_allocated: 0 });
+            await this.aphService.setStock({ locationId: locations[1].id, quantity: 0, variant_id: variant_db.id_variant, quantity_allocated: 0 });
+            await this.aphService.setStock({ locationId: locations[3].id, quantity: res.results[i].materiales[c].inventario, variant_id: variant_db.id_variant, quantity_allocated: 0 });
+            const variantImage_db = await this.aphService.setVariantImage({ variantId: variant_db.id_variant, url: JSON.stringify([arrayUrls]) })
+          }else{
           const stock_db = <any>await this.aphService.getStockByVariant({ id_variant: variant_db[0].id_variant });
-          console.log(stock_db, 'stock_db')
+          // console.log(stock_db, 'stock_db')
           if (stock_db[0].quantity != res.results[i].materiales[c].inventario) {
             console.log("actualizo stock")
-            await this.aphService.updateStock({ locationId: locations[0].id, quantity: res.results[i].materiales[c].inventario, variant_id: variant_db.idVariant, quantity_allocated: 0 });
-            await this.aphService.updateStock({ locationId: locations[1].id, quantity: 0, variant_id: variant_db.idVariant, quantity_allocated: 0 });
-            await this.aphService.updateStock({ locationId: locations[3].id, quantity: res.results[i].materiales[c].inventario, variant_id: variant_db.idVariant, quantity_allocated: 0 });
+            await this.aphService.updateStock({ locationId: locations[0].id, quantity: res.results[i].materiales[c].inventario, variant_id: variant_db[0].id_variant, quantity_allocated: 0 });
+            await this.aphService.updateStock({ locationId: locations[1].id, quantity: 0, variant_id: variant_db[0].id_variant, quantity_allocated: 0 });
+            await this.aphService.updateStock({ locationId: locations[3].id, quantity: res.results[i].materiales[c].inventario, variant_id: variant_db[0].id_variant, quantity_allocated: 0 });
           }
           if (priceChange) {
             await this.aphService.updateVariant({
@@ -620,9 +641,10 @@ export class AppController {
               brand: 'not-brand',
               description_variant: '',
               product_id: variant_db[0].product_id,
-              idVariant: variant_db[0].idVariant
+              id_variant: variant_db[0].id_variant
             })
           }
+        }
         }
       }
 
