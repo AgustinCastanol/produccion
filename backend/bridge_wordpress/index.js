@@ -97,7 +97,7 @@ const conn_obj_users = {
   database: process.env.pg_users_database,
   supportBigNumbers: true,
   bigNumberStrings: true,
-  ssl: { rejectUnauthorized: false ,require:true},
+  // ssl: { rejectUnauthorized: false ,require:true},
 };
 var user_db = knex({
   //debug: true,
