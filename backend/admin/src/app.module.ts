@@ -10,10 +10,10 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     ClientsModule.register([
       {
         name: 'LOGIN_SERVICE',
-        transport: Transport.TCP,
-        // options: {
-        //   servers: [process.env.NATS_URL || 'nats://localhost:4222'],
-        // },
+        transport: Transport.NATS,
+        options: {
+          servers: [process.env.NATS_URL || 'nats://localhost:4222'],
+        },
       },
     ]),
   ],
