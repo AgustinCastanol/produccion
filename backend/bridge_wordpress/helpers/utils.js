@@ -88,17 +88,15 @@ async function homologationcolor(data) {
 function corregirTexto(texto) {
   // Corregir caracteres especiales
   texto = texto
-  .replace(/&aacute;|&aacute/g, "a")
-  .replace(/&eacute;|&eacute/g, "e")
-  .replace(/&iacute;|&iacute/g, "i")
-  .replace(/&oacute;|&oacute/g, "o")
-  .replace(/&uacute;|&uacute/g, "u")
-  .replace(/&ntilde;/g, "n")
-  .replace(/&uuml;|&uuml/g, "u")
-  .replace(/&Uuml;/g, "U")
-  .replace(/&nbsp;/g, " ")
+  .replace(/&aacute/gi,"a")
+  .replace(/&eacute/gi, "e")
+  .replace(/&iacute/gi, 'i')
+  .replace(/&oacute/, 'o')
+  .replace(/&uacute/gi,'u')
+  .replace(/&uuml/gi, "u")
+  .replace(/&nbsp;/gi, " ")
   .replace(/[^\w\s]/gi, '');
-  // Devolver texto corregido
+
   return texto;
 }
 

@@ -282,7 +282,7 @@ export class AppService {
     }
   }
   async getVariants(data: any) {
-    console.log("getVariants1")
+    console.log("getVariants1",data.idProducts)
     try {
       if (data.idProducts == undefined || data.idProducts == null) {
         return { message: 'missing idProducts' }
@@ -291,6 +291,7 @@ export class AppService {
         `SELECT * FROM "public"."variants" 
     where product_id = '${data.idProducts}'`,
       );
+      console.log(res[0], 'res')
       return res[0];
     } catch (err) {
       console.log(err)
@@ -321,6 +322,7 @@ export class AppService {
         `SELECT * FROM "public"."variants"
         where sku = '${data.sku}'`,
       );
+
       return res[0];
     } catch (err) {
       console.log(err)

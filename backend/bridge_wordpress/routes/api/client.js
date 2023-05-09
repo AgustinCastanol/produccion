@@ -340,11 +340,11 @@ router.post("/get_CSV", async function (request, response, next) {
         // console.log(products[i].description_product)
         let description_product = '';
         if (products[i].description_product != 'undefined' || products[i].description_product != undefined || products[i].description_product != null) {
-          description_product = products[i].description_product.replace(/;/g, " ").replace(/\./g, " ")
+          description_product = products[i].description_product.replace(/;/g, "").replace(/\./g, " ")
           //quietar los saltos de linea
           description_product = description_product.replace(/(\r\n|\n|\r)/gm, " ");
           description_product = utils.corregirTexto(description_product);
-          // console.log(description_product)
+          console.log(description_product)
         } else {
           description_product = '';
         }
