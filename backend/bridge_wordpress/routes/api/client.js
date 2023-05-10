@@ -218,8 +218,6 @@ router.post("/load_CSV", async function (request, response, next) {
 
     }
     let errors = [];
-    for (let i = 0; i <= times; i++) {
-      await new Promise((resolve) => setTimeout(resolve, 400));
       // const products_db = await knex_products_db("products").select("*")
       //   .join("collection", "products.collection_id", "=", "collection.idCollection")
       //   .join("categories", "products.category_id", "=", "categories.id_categorias")
@@ -234,9 +232,9 @@ router.post("/load_CSV", async function (request, response, next) {
       LEFT JOIN public."productImages" ON "products"."idProducts" = "productImages"."productId"
       LEFT JOIN public."supplier" ON "products"."supplier" = "supplier"."id"
       LEFT JOIN public."price" ON "products"."idProducts" = "price"."productId"
-      LIMIT ${limit} OFFSET ${i * offset}
       `);
       const products_db = rows;
+
       for (let c = 0; c < products_db.length; c++) {
         if (products_db[c].name_supplier == 'Promos') {
           proveedores.Promos++;
@@ -253,18 +251,19 @@ router.post("/load_CSV", async function (request, response, next) {
         if (products_db[c].name_supplier == 'ProveedorAdministrador(back)') {
           continue;
         }
-        console.log(products_db[c].name_supplier)
+        if(products_db[c].name_supplier == 'esferos'){
+        continue;
+        }
+        console.log(products_db[c].reference)
         try {
           if (products_db[c].parent != null) {
-            await new Promise((resolve) => setTimeout(resolve, 200));
             const parent_category = await knex_products_db("categories").select("name_category").where("id_categorias", products_db[c].parent);
             products_db[c].parent = parent_category[0].name_category;
-
           }
           const variants = await knex_products_db("variants").select("*").where("product_id", products_db[c].idProducts)
           products_db[c].variants = variants;
           for (let v = 0; v < variants.length; v++) {
-            await new Promise((resolve) => setTimeout(resolve, 300));
+            await new Promise((resolve) => setTimeout(resolve, 100));
             const variant_images = await knex_products_db.raw(`SELECT * FROM public."productVariantImage" WHERE "variantId" = '${variants[v].id_variant}'`)
             const variant_stock = await knex_products_db("stock").select("*")
               .join("stockLocation", "stockLocation.idStockLocation", "=", "stock.locationId")
@@ -279,7 +278,6 @@ router.post("/load_CSV", async function (request, response, next) {
         }
       }
       products = [...products, ...products_db, errors];
-    }
     // convertirlo en un archivo json a los datos obtenidos y guardarlos en la carpeta temp
     const json = JSON.stringify(products);
     fs.writeFile('temp/products.json', json, 'utf8', function (err) {
@@ -290,7 +288,7 @@ router.post("/load_CSV", async function (request, response, next) {
       console.log("JSON file has been saved.");
     });
 
-    response.status(200).send({ proveedores, total: total, length: products.length, times: times, products })
+    response.status(200).send({ proveedores, total: total, length: products.length, times: times, errors })
   } catch (err) {
     console.log(err);
     next(err.message);
@@ -402,78 +400,126 @@ router.post("/get_CSV", async function (request, response, next) {
           father_product += `Espacio;${spaces};2;2`;
         }
         father_product += '\n'
-        products_csv += father_product;
         // console.log("precio_sugerido", precio_sugerido, JSON.parse(products[i].metadata_price),i)
+if(products[i].variants.length == 1){
+  const variation = products[i].variants[0];
+  
+  let stock = {
+    local: {},
+    zonaFranca: {},
+    total: {}
+  }
+  if (variation.stock != undefined && variation.stock.length > 0) {
+    // console.log("variation.stock", variation.stock)
+    let total = variation.stock.find((stock) => {
+      return stock.name == "Total"
+    })
+    let local = variation.stock.find((stock) => {
+      return stock.name == "Local"
+    })
+    let zonaFranca = variation.stock.find((stock) => {
+      return stock.name == "ZonaFranca"
+    })
+    stock.total = total || { quantity: 0 };
+    stock.local = local || { quantity: 0 };
+    stock.zonaFranca = zonaFranca || { quantity: 0 };
+  } else {
+    stock = {
+      local: { quantity: 0 },
+      zonaFranca: { quantity: 0 },
+      total: { quantity: 0 }
+    }
+  }
+  let sum = stock.total.quantity + stock.local.quantity + stock.zonaFranca.quantity;
+father_product=`simple;${products[i].reference};${products[i].name_product};${description_product};${description_product};${stock.total.quantity == undefined || stock.total.quantity == 0 ? "outofstock" : "instock"};${stock.total.quantity == 0 ? sum : stock.total.quantity == undefined ? 0 : stock.total.quantity};${stock.local.quantity};${stock.zonaFranca.quantity};0;${variation.weight_override > 0 ? variation.weight_override : ''};;;;;${variation.price_override > 0 ? variation.price_override : precio_sugerido > 0 ? precio_sugerido : products[i].price};${products[i].price};;${products[i].slug_category + ',' + products[i].slug_collection + ',' + products[i].reference + ',', name_product_slug};${imagenes};${products[i].reference};0;;No;`
+if (colors != null && spaces == null) {
+  // console.log("son color")
+  // console.log("space", spaces)
+  father_product += `Color;${colors};1;1`;
+}
+if (spaces != null && colors == null) {
+  // console.log("son space")
+  father_product += `Espacio;${spaces};1;1`;
+}
+if (spaces != null && colors != null) {
+  // console.log("colors", colors)
+  // console.log("space", spaces)
+  father_product += `Color;${colors};1;1;`;
+  father_product += `Espacio;${spaces};2;2`;
+}
+father_product += '\n'
+products_csv += father_product;
+}else{
+  products_csv += father_product;
+  for (let c = 0; c < products[i].variants.length; c++) {
+    let variation = products[i].variants[c];
 
-
-        for (let c = 0; c < products[i].variants.length; c++) {
-          let variation = products[i].variants[c];
-
-          let stock = {
-            local: {},
-            zonaFranca: {},
-            total: {}
+    let stock = {
+      local: {},
+      zonaFranca: {},
+      total: {}
+    }
+    if (variation.stock != undefined && variation.stock.length > 0) {
+      // console.log("variation.stock", variation.stock)
+      let total = variation.stock.find((stock) => {
+        return stock.name == "Total"
+      })
+      let local = variation.stock.find((stock) => {
+        return stock.name == "Local"
+      })
+      let zonaFranca = variation.stock.find((stock) => {
+        return stock.name == "ZonaFranca"
+      })
+      stock.total = total || { quantity: 0 };
+      stock.local = local || { quantity: 0 };
+      stock.zonaFranca = zonaFranca || { quantity: 0 };
+    } else {
+      stock = {
+        local: { quantity: 0 },
+        zonaFranca: { quantity: 0 },
+        total: { quantity: 0 }
+      }
+    }
+    let color = await utils.get_color(variation.sku);
+    color = await utils.homologationcolor(color);
+    let space = await utils.get_space(variation.sku);
+    let img_variant = variation.images
+    if (img_variant == undefined) {
+      img_variant = '';
+    } else {
+      if (img_variant.length > 0) {
+        img_variant = img_variant.map(e => {
+          if (e.urlImage == 'empty' || e.urlImage == '' || e.urlImage === 'undefined') {
+            return ''
           }
-          if (variation.stock != undefined && variation.stock.length > 0) {
-            // console.log("variation.stock", variation.stock)
-            let total = variation.stock.find((stock) => {
-              return stock.name == "Total"
-            })
-            let local = variation.stock.find((stock) => {
-              return stock.name == "Local"
-            })
-            let zonaFranca = variation.stock.find((stock) => {
-              return stock.name == "ZonaFranca"
-            })
-            stock.total = total || { quantity: 0 };
-            stock.local = local || { quantity: 0 };
-            stock.zonaFranca = zonaFranca || { quantity: 0 };
-          } else {
-            stock = {
-              local: { quantity: 0 },
-              zonaFranca: { quantity: 0 },
-              total: { quantity: 0 }
-            }
-          }
-          let color = await utils.get_color(variation.sku);
-          color = await utils.homologationcolor(color);
-          let space = await utils.get_space(variation.sku);
-          let img_variant = variation.images
-          if (img_variant == undefined) {
-            img_variant = '';
-          } else {
-            if (img_variant.length > 0) {
-              img_variant = img_variant.map(e => {
-                if (e.urlImage == 'empty' || e.urlImage == '' || e.urlImage === 'undefined') {
-                  return ''
-                }
-                return JSON.parse(e.urlImage).join(",")
-              })
-              img_variant = img_variant.join(",");
-              //quiero validar si las imagenes de las variantes son distintas que la del padre, si son iguales las dejo vacias
-              if(imagenes.includes(img_variant) && imagenes == img_variant){
-                img_variant = '';
-                console.log("iguales")
-              }
-            } else {
-              img_variant = '';
-            }
-          }
-          let sum = stock.total.quantity + stock.local.quantity + stock.zonaFranca.quantity;
-          let variant = `variation;${variation.sku};${variation.name_variant};;${description_product};${stock.total.quantity == undefined || stock.total.quantity == 0 ? "outofstock" : "instock"};${stock.total.quantity == 0 ? sum : stock.total.quantity == undefined ? 0 : stock.total.quantity};${stock.local.quantity};${stock.zonaFranca.quantity};0;${variation.weight_override > 0 ? variation.weight_override : ''};;;;;${variation.price_override > 0 ? variation.price_override : precio_sugerido > 0 ? precio_sugerido : products[i].price};${products[i].price};;variante;${img_variant};${products[i].reference};${c + 1};;Yes;`;
-          if (color != null && space == null) {
-            variant += `Color;${color};1;1`;
-          }
-          if (space != null && color == null) {
-            variant += `Espacio;${space};1;1`;
-          }
-          if (space != null && color != null) {
-            variant += `Color;${color};1;1;`;
-            variant += `Espacio;${space};2;2`;
-          }
-          variant += `\n`;
-          products_csv += variant;
+          return JSON.parse(e.urlImage).join(",")
+        })
+        img_variant = img_variant.join(",");
+        //quiero validar si las imagenes de las variantes son distintas que la del padre, si son iguales las dejo vacias
+        if(imagenes.includes(img_variant) && imagenes == img_variant){
+          img_variant = '';
+          console.log("iguales")
         }
+      } else {
+        img_variant = '';
+      }
+    }
+    let sum = stock.total.quantity + stock.local.quantity + stock.zonaFranca.quantity;
+    let variant = `variation;${variation.sku};${variation.name_variant};;${description_product};${stock.total.quantity == undefined || stock.total.quantity == 0 ? "outofstock" : "instock"};${stock.total.quantity == 0 ? sum : stock.total.quantity == undefined ? 0 : stock.total.quantity};${stock.local.quantity};${stock.zonaFranca.quantity};0;${variation.weight_override > 0 ? variation.weight_override : ''};;;;;${variation.price_override > 0 ? variation.price_override : precio_sugerido > 0 ? precio_sugerido : products[i].price};${products[i].price};;variante;${img_variant};${products[i].reference};${c + 1};;Yes;`;
+    if (color != null && space == null) {
+      variant += `Color;${color};1;1`;
+    }
+    if (space != null && color == null) {
+      variant += `Espacio;${space};1;1`;
+    }
+    if (space != null && color != null) {
+      variant += `Color;${color};1;1;`;
+      variant += `Espacio;${space};2;2`;
+    }
+    variant += `\n`;
+    products_csv += variant;
+  }
+}
       }
       //convertirlo en un archivo csv a los datos obtenidos y guardarlos en la carpeta temp 
       fs.writeFile(`temp/products.csv`, products_csv, 'utf8', function (err) {
