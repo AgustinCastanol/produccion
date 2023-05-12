@@ -6,6 +6,7 @@ import utls from "../../helpers/utils.js"
 import utils from "../../helpers/utils.js";
 import axios from "axios";
 import { DOMParser } from "@xmldom/xmldom";
+import knex from "knex";
 var router = express.Router();
 
 router.post("/property", async function (request, response, next) {
@@ -218,14 +219,14 @@ router.post("/load_CSV", async function (request, response, next) {
 
     }
     let errors = [];
-      // const products_db = await knex_products_db("products").select("*")
-      //   .join("collection", "products.collection_id", "=", "collection.idCollection")
-      //   .join("categories", "products.category_id", "=", "categories.id_categorias")
-      //   .join("productImages", "products.idProducts", "=", "productImages.productId")
-      //   .join("supplier", "products.supplier", "=", "supplier.id")
-      //   .join("price", "products.idProducts", "=", "price.productId")
-      //   .limit(limit).offset(i * offset);
-      const { rows } = await global.knex_products_db.raw(`
+    // const products_db = await knex_products_db("products").select("*")
+    //   .join("collection", "products.collection_id", "=", "collection.idCollection")
+    //   .join("categories", "products.category_id", "=", "categories.id_categorias")
+    //   .join("productImages", "products.idProducts", "=", "productImages.productId")
+    //   .join("supplier", "products.supplier", "=", "supplier.id")
+    //   .join("price", "products.idProducts", "=", "price.productId")
+    //   .limit(limit).offset(i * offset);
+    const { rows } = await global.knex_products_db.raw(`
       SELECT * FROM public."products"
       LEFT JOIN public."collection" ON "products"."collection_id" = "collection"."idCollection"
       LEFT JOIN public."categories" ON "products"."category_id" = "categories"."id_categorias"
@@ -233,51 +234,51 @@ router.post("/load_CSV", async function (request, response, next) {
       LEFT JOIN public."supplier" ON "products"."supplier" = "supplier"."id"
       LEFT JOIN public."price" ON "products"."idProducts" = "price"."productId"
       `);
-      const products_db = rows;
+    const products_db = rows;
 
-      for (let c = 0; c < products_db.length; c++) {
-        if (products_db[c].name_supplier == 'Promos') {
-          proveedores.Promos++;
-        }
-        if (products_db[c].name_supplier == 'CDO') {
-          proveedores.cdo++;
-        }
-        if (products_db[c].name_supplier == 'Marpico') {
-          proveedores.marpico++;
-        }
-        if (products_db[c].name_supplier == 'PromoOpcion') {
-          proveedores.promoopcion++;
-        }
-        if (products_db[c].name_supplier == 'ProveedorAdministrador(back)') {
-          continue;
-        }
-        if(products_db[c].name_supplier == 'esferos'){
-        continue;
-        }
-        console.log(products_db[c].reference)
-        try {
-          if (products_db[c].parent != null) {
-            const parent_category = await knex_products_db("categories").select("name_category").where("id_categorias", products_db[c].parent);
-            products_db[c].parent = parent_category[0].name_category;
-          }
-          const variants = await knex_products_db("variants").select("*").where("product_id", products_db[c].idProducts)
-          products_db[c].variants = variants;
-          for (let v = 0; v < variants.length; v++) {
-            await new Promise((resolve) => setTimeout(resolve, 100));
-            const variant_images = await knex_products_db.raw(`SELECT * FROM public."productVariantImage" WHERE "variantId" = '${variants[v].id_variant}'`)
-            const variant_stock = await knex_products_db("stock").select("*")
-              .join("stockLocation", "stockLocation.idStockLocation", "=", "stock.locationId")
-              .where("variant_id", variants[v].id_variant);
-            variants[v].images = variant_images.rows;
-            variants[v].stock = variant_stock;
-          }
-        } catch (err) {
-          console.log(err)
-          errors += err;
-          continue;
-        }
+    for (let c = 0; c < products_db.length; c++) {
+      if (products_db[c].name_supplier == 'Promos') {
+        proveedores.Promos++;
       }
-      products = [...products, ...products_db, errors];
+      if (products_db[c].name_supplier == 'CDO') {
+        proveedores.cdo++;
+      }
+      if (products_db[c].name_supplier == 'Marpico') {
+        proveedores.marpico++;
+      }
+      if (products_db[c].name_supplier == 'PromoOpcion') {
+        proveedores.promoopcion++;
+      }
+      if (products_db[c].name_supplier == 'ProveedorAdministrador(back)') {
+        continue;
+      }
+      if (products_db[c].name_supplier == 'esferos') {
+        continue;
+      }
+      console.log(products_db[c].reference)
+      try {
+        if (products_db[c].parent != null) {
+          const parent_category = await knex_products_db("categories").select("name_category").where("id_categorias", products_db[c].parent);
+          products_db[c].parent = parent_category[0].name_category;
+        }
+        const variants = await knex_products_db("variants").select("*").where("product_id", products_db[c].idProducts)
+        products_db[c].variants = variants;
+        for (let v = 0; v < variants.length; v++) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          const variant_images = await knex_products_db.raw(`SELECT * FROM public."productVariantImage" WHERE "variantId" = '${variants[v].id_variant}'`)
+          const variant_stock = await knex_products_db("stock").select("*")
+            .join("stockLocation", "stockLocation.idStockLocation", "=", "stock.locationId")
+            .where("variant_id", variants[v].id_variant);
+          variants[v].images = variant_images.rows;
+          variants[v].stock = variant_stock;
+        }
+      } catch (err) {
+        console.log(err)
+        errors += err;
+        continue;
+      }
+    }
+    products = [...products, ...products_db, errors];
     // convertirlo en un archivo json a los datos obtenidos y guardarlos en la carpeta temp
     const json = JSON.stringify(products);
     fs.writeFile('temp/products.json', json, 'utf8', function (err) {
@@ -312,7 +313,7 @@ router.post("/get_CSV", async function (request, response, next) {
         return console.log(err);
       }
       const products = JSON.parse(data);
-      let products_csv = `Tipo;SKU;Nombre;Descripción corta;Descripción;¿Existencias?;Inventario;Inventario Local;Inventario Zona Franca; Inventario En Transito;Peso (kg);Longitud (cm);Anchura (cm);Altura (cm);Precio rebajado;Precio normal;Precio neto;Categorías;Etiquetas;Imágenes;Superior;Posición;Brands;Gestión de inventario;Nombre del atributo 1;Valor(es) del atributo 1;Atributo visible 1;Atributo global 1;Nombre del atributo 2;Valor(es) del atributo 2;Atributo visible 2;Atributo global 2\n`;
+      let products_csv = `Tipo;SKU;Nombre;Descripción corta;Descripción;¿Existencias?;Inventario;Inventario Local;Inventario Zona Franca; Inventario En Transito;Peso (kg);Longitud (cm);Anchura (cm);Altura (cm);Empaque (und);Precio rebajado;Precio normal;Precio neto;Categorías;Etiquetas;Imágenes;Superior;Posición;Brands;Gestión de inventario;Nombre del atributo 1;Valor(es) del atributo 1;Atributo visible 1;Atributo global 1;Nombre del atributo 2;Valor(es) del atributo 2;Atributo visible 2;Atributo global 2\n`;
       for (let i = 0; i < products.length; i++) {
         if (products[i].variants == undefined) {
           error.push(products[i])
@@ -338,13 +339,16 @@ router.post("/get_CSV", async function (request, response, next) {
         // console.log(products[i].description_product)
         let description_product = '';
         if (products[i].description_product != 'undefined' || products[i].description_product != undefined || products[i].description_product != null) {
-          description_product = products[i].description_product.replace(/;/g, "").replace(/\./g, " ")
           //quietar los saltos de linea
+          description_product = products[i].description_product.replace(/;/g, "");
           description_product = description_product.replace(/(\r\n|\n|\r)/gm, " ");
           description_product = utils.corregirTexto(description_product);
-          console.log(description_product)
+
         } else {
           description_product = '';
+        }
+        if(products[i].description_product == 'not description'){
+          description_product = products[i].name_product;
         }
         let precio_sugerido = 0;
         if (products[i].metadata !== '[object Object]') {
@@ -355,7 +359,7 @@ router.post("/get_CSV", async function (request, response, next) {
           precio_sugerido = (precio_sugerido.precioSugerido !== null && typeof precio_sugerido.precioSugerido != 'number') ? precio_sugerido.precioSugerido.split(".") : precio_sugerido.precioSugerido;
           precio_sugerido = precio_sugerido.length > 0 ? precio_sugerido[0] : precio_sugerido;
         } else {
-          precio_sugerido = 0;
+          precio_sugerido = products[i].price * 1.4;
         }
         let name_product_slug = products[i].name_product.replace(/ /g, ",");
         let imagenes = ""
@@ -370,7 +374,7 @@ router.post("/get_CSV", async function (request, response, next) {
           imagenes = '';
           error.push(products[i])
         }
-        let colors = await utils.get_colors_at_sku(products[i].variants)
+        let colors = await utils.get_colors_at_sku(products[i].variants,products[i].name_supplier == 'PromoOpcion')
         if (colors.length > 0) {
           colors = await utils.homologationcolor(colors);
           colors = colors.join(",");
@@ -383,7 +387,7 @@ router.post("/get_CSV", async function (request, response, next) {
         } else {
           spaces = null;
         }
-        let father_product = `variable;${products[i].reference};${products[i].name_product};${description_product};${description_product};instock;;;;;${products[i].weight};${(metadata != null && metadata.medidas_largo != undefined) ? metadata.medidas_largo : ''};${(metadata != null && metadata.medidas_ancho != undefined) ? metadata.medidas_ancho : ''};${(metadata != null && metadata.medidas_alto) ? metadata.medidas_alto : ''};;${precio_sugerido};${products[i].price};${products[i].parent == null ? products[i].name_category : `${products[i].parent} > ${products[i].name_category}`};${products[i].slug_category + ',' + products[i].slug_collection + ',' + products[i].reference + ',', name_product_slug};${imagenes};;0;${products[i].name_supplier};No;`;
+        let father_product = `variable;${products[i].reference};${products[i].name_product};${description_product};${description_product};instock;;;;;${products[i].weight};${(metadata != null && metadata.medidas_largo != undefined) ? metadata.medidas_largo : ''};${(metadata != null && metadata.medidas_ancho != undefined) ? metadata.medidas_ancho : ''};${(metadata != null && metadata.medidas_alto) ? metadata.medidas_alto : ''};;;${precio_sugerido};${products[i].price};${products[i].parent == null ? products[i].name_category : `${products[i].parent} > ${products[i].name_category}`};${products[i].slug_category + ',' + products[i].slug_collection + ',' + products[i].reference + ',', name_product_slug};${imagenes};;0;${products[i].name_supplier};No;`;
         if (colors != null && spaces == null) {
           // console.log("son color")
           // console.log("space", spaces)
@@ -401,125 +405,138 @@ router.post("/get_CSV", async function (request, response, next) {
         }
         father_product += '\n'
         // console.log("precio_sugerido", precio_sugerido, JSON.parse(products[i].metadata_price),i)
-if(products[i].variants.length == 1){
-  const variation = products[i].variants[0];
-  
-  let stock = {
-    local: {},
-    zonaFranca: {},
-    total: {}
-  }
-  if (variation.stock != undefined && variation.stock.length > 0) {
-    // console.log("variation.stock", variation.stock)
-    let total = variation.stock.find((stock) => {
-      return stock.name == "Total"
-    })
-    let local = variation.stock.find((stock) => {
-      return stock.name == "Local"
-    })
-    let zonaFranca = variation.stock.find((stock) => {
-      return stock.name == "ZonaFranca"
-    })
-    stock.total = total || { quantity: 0 };
-    stock.local = local || { quantity: 0 };
-    stock.zonaFranca = zonaFranca || { quantity: 0 };
-  } else {
-    stock = {
-      local: { quantity: 0 },
-      zonaFranca: { quantity: 0 },
-      total: { quantity: 0 }
-    }
-  }
-  let sum = stock.total.quantity + stock.local.quantity + stock.zonaFranca.quantity;
-father_product=`simple;${products[i].reference};${products[i].name_product};${description_product};${description_product};${stock.total.quantity == undefined || stock.total.quantity == 0 ? "outofstock" : "instock"};${stock.total.quantity == 0 ? sum : stock.total.quantity == undefined ? 0 : stock.total.quantity};${stock.local.quantity};${stock.zonaFranca.quantity};0;${variation.weight_override > 0 ? variation.weight_override : ''};;;;;${variation.price_override > 0 ? variation.price_override : precio_sugerido > 0 ? precio_sugerido : products[i].price};${products[i].price};;${products[i].slug_category + ',' + products[i].slug_collection + ',' + products[i].reference + ',', name_product_slug};${imagenes};${products[i].reference};0;;No;`
-if (colors != null && spaces == null) {
-  // console.log("son color")
-  // console.log("space", spaces)
-  father_product += `Color;${colors};1;1`;
-}
-if (spaces != null && colors == null) {
-  // console.log("son space")
-  father_product += `Espacio;${spaces};1;1`;
-}
-if (spaces != null && colors != null) {
-  // console.log("colors", colors)
-  // console.log("space", spaces)
-  father_product += `Color;${colors};1;1;`;
-  father_product += `Espacio;${spaces};2;2`;
-}
-father_product += '\n'
-products_csv += father_product;
-}else{
-  products_csv += father_product;
-  for (let c = 0; c < products[i].variants.length; c++) {
-    let variation = products[i].variants[c];
+        if (products[i].variants.length == 1) {
+          const variation = products[i].variants[0];
 
-    let stock = {
-      local: {},
-      zonaFranca: {},
-      total: {}
-    }
-    if (variation.stock != undefined && variation.stock.length > 0) {
-      // console.log("variation.stock", variation.stock)
-      let total = variation.stock.find((stock) => {
-        return stock.name == "Total"
-      })
-      let local = variation.stock.find((stock) => {
-        return stock.name == "Local"
-      })
-      let zonaFranca = variation.stock.find((stock) => {
-        return stock.name == "ZonaFranca"
-      })
-      stock.total = total || { quantity: 0 };
-      stock.local = local || { quantity: 0 };
-      stock.zonaFranca = zonaFranca || { quantity: 0 };
-    } else {
-      stock = {
-        local: { quantity: 0 },
-        zonaFranca: { quantity: 0 },
-        total: { quantity: 0 }
-      }
-    }
-    let color = await utils.get_color(variation.sku);
-    color = await utils.homologationcolor(color);
-    let space = await utils.get_space(variation.sku);
-    let img_variant = variation.images
-    if (img_variant == undefined) {
-      img_variant = '';
-    } else {
-      if (img_variant.length > 0) {
-        img_variant = img_variant.map(e => {
-          if (e.urlImage == 'empty' || e.urlImage == '' || e.urlImage === 'undefined') {
-            return ''
+          let stock = {
+            local: {},
+            zonaFranca: {},
+            total: {}
           }
-          return JSON.parse(e.urlImage).join(",")
-        })
-        img_variant = img_variant.join(",");
-        //quiero validar si las imagenes de las variantes son distintas que la del padre, si son iguales las dejo vacias
-        if(imagenes.includes(img_variant) && imagenes == img_variant){
-          img_variant = '';
-          console.log("iguales")
+          if (variation.stock != undefined && variation.stock.length > 0) {
+            // console.log("variation.stock", variation.stock)
+            let total = variation.stock.find((stock) => {
+              return stock.name == "Total"
+            })
+            let local = variation.stock.find((stock) => {
+              return stock.name == "Local"
+            })
+            let zonaFranca = variation.stock.find((stock) => {
+              return stock.name == "ZonaFranca"
+            })
+            stock.total = total || { quantity: 0 };
+            stock.local = local || { quantity: 0 };
+            stock.zonaFranca = zonaFranca || { quantity: 0 };
+          } else {
+            stock = {
+              local: { quantity: 0 },
+              zonaFranca: { quantity: 0 },
+              total: { quantity: 0 }
+            }
+          }
+          let sum = stock.total.quantity + stock.local.quantity + stock.zonaFranca.quantity;
+          father_product = `simple;${products[i].reference};${products[i].name_product};${description_product};${description_product};${stock.total.quantity == undefined || stock.total.quantity == 0 ? "outofstock" : "instock"};${stock.total.quantity == 0 ? sum : stock.total.quantity == undefined ? 0 : stock.total.quantity};${stock.local.quantity};${stock.zonaFranca.quantity};0;${variation.weight_override > 0 ? variation.weight_override : ''};;;;;;${variation.price_override > 0 ? variation.price_override : precio_sugerido > 0 ? precio_sugerido : products[i].price};${products[i].price};${products[i].parent == null ? products[i].name_category : `${products[i].parent} > ${products[i].name_category}`};${products[i].slug_category + ',' + products[i].slug_collection + ',' + products[i].reference + ',', name_product_slug};${imagenes};${products[i].reference};0;${products[i].name_supplier};No;`
+          if (colors != null && spaces == null) {
+            // console.log("son color")
+            // console.log("space", spaces)
+            father_product += `Color;${colors};1;1`;
+          }
+          if (spaces != null && colors == null) {
+            // console.log("son space")
+            father_product += `Espacio;${spaces};1;1`;
+          }
+          if (spaces != null && colors != null) {
+            // console.log("colors", colors)
+            // console.log("space", spaces)
+            father_product += `Color;${colors};1;1;`;
+            father_product += `Espacio;${spaces};2;2`;
+          }
+          father_product += '\n'
+          products_csv += father_product;
+        } else {
+          products_csv += father_product;
+          for (let c = 0; c < products[i].variants.length; c++) {
+            let variation = products[i].variants[c];
+
+            let stock = {
+              local: {},
+              zonaFranca: {},
+              total: {}
+            }
+            if (variation.stock != undefined && variation.stock.length > 0) {
+              // console.log("variation.stock", variation.stock)
+              let total = variation.stock.find((stock) => {
+                return stock.name == "Total"
+              })
+              let local = variation.stock.find((stock) => {
+                return stock.name == "Local"
+              })
+              let zonaFranca = variation.stock.find((stock) => {
+                return stock.name == "ZonaFranca"
+              })
+              stock.total = total || { quantity: 0 };
+              stock.local = local || { quantity: 0 };
+              stock.zonaFranca = zonaFranca || { quantity: 0 };
+            } else {
+              stock = {
+                local: { quantity: 0 },
+                zonaFranca: { quantity: 0 },
+                total: { quantity: 0 }
+              }
+            }
+            let color = await utils.get_color(variation.sku,products[i].name_supplier == 'PromoOpcion');
+            color = await utils.homologationcolor(color);
+            let space = await utils.get_space(variation.sku);
+            let img_variant = variation.images
+            if (img_variant == undefined) {
+              img_variant = '';
+            } else {
+              if (img_variant.length > 0) {
+                img_variant = img_variant.map(e => {
+                  if (e.urlImage == 'empty' || e.urlImage == '' || e.urlImage === 'undefined') {
+                    return ''
+                  }
+                  return JSON.parse(e.urlImage).join(",")
+                })
+                img_variant = img_variant.join(",");
+                //quiero validar si las imagenes de las variantes son distintas que la del padre, si son iguales las dejo vacias
+                if (imagenes.includes(img_variant) && imagenes == img_variant) {
+                  img_variant = '';
+                  // console.log("iguales")
+                }
+              } else {
+                img_variant = '';
+              }
+            }
+
+            /*
+            {"material":"PU (Poliuretano).","empaque_individual":"","empaque_unds_caja":250,"empaque_und_medida":"","empaque_largo":"62.00","empaque_ancho":"31.50","empaque_alto":"29.50","empaque_peso_neto":"5.00","empaque_peso_bruto":"6.00","area_impresion":"2,8 x 2,2 cm.","medidas_largo":null,"medidas_ancho":null,"medidas_alto":null,"medidas_diametro":6.3,"medidas_peso_neto":"20.00","tecnica_marca_codigo":"5500047","tecnica_marca_tecnica":"TAMPO.  ANTIESTRES 1 TINTA","tecnica_marca_precio":null,"tecnica_marca_num_tintas":null,"tecnica_marca_descripcion":"SE SUGIERE: Tampografía para Antiestrés 1 tinta."}*/
+            let longitud = ''
+            let anchura = ''
+            let altura = ''
+            let empaque= ''
+            if(products.metadata != undefined && products.metadata != null){
+             longitud = products[i].metadata.empaque_largo != undefined ||products[i].metadata.empaque_largo !== null ? products[i].metadata.empaque_largo : '';
+             anchura = products[i].metadata.empaque_ancho != undefined || products[i].metadata.empaque_ancho !== null ? products[i].metadata.empaque_ancho : '';
+             altura = products[i].metadata.empaque_largo != undefined || products[i].metadata.empaque_largo !== null  ? products[i].metadata.empaque_largo : '';
+             empaque= products[i].metadata.empaque_unds_caja != undefined || products[i].metadata.empaque_unds_caja !== null ? products[i].metadata.empaque_unds_caja : '';
+            }
+            let sum = stock.total.quantity + stock.local.quantity + stock.zonaFranca.quantity;
+            let variant = `variation;${variation.sku};${variation.name_variant};;${description_product};${stock.total.quantity == undefined || stock.total.quantity == 0 ? "outofstock" : "instock"};${stock.total.quantity == 0 ? sum : stock.total.quantity == undefined ? 0 : stock.total.quantity};${stock.local.quantity};${stock.zonaFranca.quantity};0;${variation.weight_override > 0 ? variation.weight_override : ''};${longitud};${anchura};${altura};${empaque};;${variation.price_override > 0 ? variation.price_override : precio_sugerido > 0 ? precio_sugerido : products[i].price};${products[i].price};;variante;${img_variant};${products[i].reference};${c + 1};;Yes;`;
+            if (color != null && space == null) {
+              variant += `Color;${color};1;1`;
+            }
+            if (space != null && color == null) {
+              variant += `Espacio;${space};1;1`;
+            }
+            if (space != null && color != null) {
+              variant += `Color;${color};1;1;`;
+              variant += `Espacio;${space};2;2`;
+            }
+            variant += `\n`;
+            products_csv += variant;
+          }
         }
-      } else {
-        img_variant = '';
-      }
-    }
-    let sum = stock.total.quantity + stock.local.quantity + stock.zonaFranca.quantity;
-    let variant = `variation;${variation.sku};${variation.name_variant};;${description_product};${stock.total.quantity == undefined || stock.total.quantity == 0 ? "outofstock" : "instock"};${stock.total.quantity == 0 ? sum : stock.total.quantity == undefined ? 0 : stock.total.quantity};${stock.local.quantity};${stock.zonaFranca.quantity};0;${variation.weight_override > 0 ? variation.weight_override : ''};;;;;${variation.price_override > 0 ? variation.price_override : precio_sugerido > 0 ? precio_sugerido : products[i].price};${products[i].price};;variante;${img_variant};${products[i].reference};${c + 1};;Yes;`;
-    if (color != null && space == null) {
-      variant += `Color;${color};1;1`;
-    }
-    if (space != null && color == null) {
-      variant += `Espacio;${space};1;1`;
-    }
-    if (space != null && color != null) {
-      variant += `Color;${color};1;1;`;
-      variant += `Espacio;${space};2;2`;
-    }
-    variant += `\n`;
-    products_csv += variant;
-  }
-}
       }
       //convertirlo en un archivo csv a los datos obtenidos y guardarlos en la carpeta temp 
       fs.writeFile(`temp/products.csv`, products_csv, 'utf8', function (err) {
@@ -541,5 +558,37 @@ products_csv += father_product;
     next(err.message);
   }
 })
+// router.get("/homologation_varios",async (request, response, next) => {
+//   fs.readFile('temp/homologacion_varios.csv', 'utf8', async function (err, data) {
+//     //headers name_product,reference,category_id,channel
+//     if (err) {
+//       return console.log(err);
+//     }
+//     let homologation = data.split('\n');
+//     const homologation_varios = [];
+//     const error = []
+//     let size = homologation.length;
+//     // esta delimitado por coma, quiero actualizar la categoria de los productos que vienen en el csv
+//     for (let i = 1; i < size; i++) {
+//       try{
+//         let product = homologation[i].split(',');
+//         let reference = product[1];
+//         let category_id = product[2];
+//         // await new Promise(resolve => setTimeout(resolve, 100));
+//         console.log("reference", reference)
+//         await knex_products_db('products').where({ reference }).update({ category_id })
+//         // let product_db = await knex_products_db('products').where({ reference })
+//         // console.log("product_db", product_db)
+//         // product_db = product_db[0];
+//         // homologation_varios.push({ product_db })
+//       }catch(err){
+//         console.log("err", err)
+//         error.push({err})
+//       }
+//     }
+
+//     return response.status(200).send({ message: "ok", homologation_varios,error });
+//   });
+// })
 
 export default router;

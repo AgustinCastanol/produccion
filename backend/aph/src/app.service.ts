@@ -352,7 +352,7 @@ export class AppService {
   INSERT INTO public.variants(
 	id_variant, name_variant,metadata_variant,description_variant,brand,price_override,weight_override, sku, product_id)
 	VALUES ('${obj.id_variant}','${obj.name_variant}','${obj.metadata_variant}','${obj.description_variant}','${obj.brand}',${obj.price_override},${obj.weight_override},'${obj.sku}','${obj.product_id}')`);
-      console.log('res', res);
+      // console.log('res', res);
       return obj;
     } catch (err) {
       console.log('err', err);
@@ -565,8 +565,8 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
         quantity: data.quantity,
         quantity_allocated: data.quantity_allocated,
       }
-      console.log(obj,"obj")
-      console.log(data,"daya")
+      // console.log(obj,"obj")
+      // console.log(data,"daya")
 
       await this.sequelize.query(`
       INSERT INTO public.stock(
@@ -893,7 +893,7 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
       /*INSERT INTO public."productVariantImage"(
   "idImage", "variantId", image, alt, "urlImage")
   VALUES (?, ?, ?, ?, ?); */
-      console.log(image, 'objeto')
+      // console.log(image, 'objeto')
       const obj = {
         idImage: uuidv1(),
         variantId: image.variantId,
