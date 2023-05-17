@@ -589,6 +589,15 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
       return err;
     }
   }
+  async getStockByLocation(data: any) {
+    try{
+      const res = await this.sequelize.query(`SELECT * FROM public."stock" WHERE "locationId" = '${data.locationId}' AND "variant_id" = '${data.id_variant}'`);
+      return res[0]
+    }catch(err){
+      console.log(err)
+      return err;
+    }
+  }
   async getCollections(data: any) {
     const res = await this.sequelize.query(
       `SELECT * FROM "public"."collection"`,
