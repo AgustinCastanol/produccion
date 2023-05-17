@@ -27,6 +27,11 @@ export class AppController {
     const count = await this.aphService.getCountPRoveedores(data);
     return { res, countProductsSuppliers: count};
   }
+  @EventPattern('hookCSV')
+    async handleHookCSV() {
+      const res = await this.aphService.hookCSV();
+    return res;
+    }
   @EventPattern('get_logs')
   async handleGetLogs(data: any) {
     const res = await this.aphService.getLogs(data);
