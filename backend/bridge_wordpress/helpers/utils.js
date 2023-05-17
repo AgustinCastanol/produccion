@@ -51,10 +51,10 @@ async function get_color(sku, check) {
     //traeme el ultimo elemento del array
     stringMin = stringMin[stringMin.length - 1].toLowerCase().replace(/\s/g, '');
     //colores minimales viene como {color:"Rojo",letter:"r"}, quiero buscar si tiene la letra y que devuelva el color
-    console.log(sku,stringMin, "stringMin")
+    // console.log(sku,stringMin, "stringMin")
     for(let i = 0; i < lettersColors.length; i++){
       if(lettersColors[i].letter.includes(stringMin)){
-        console.log(lettersColors[i].color, "match");
+        // console.log(lettersColors[i].color, "match");
         return lettersColors[i].color;
       }
     }
@@ -135,5 +135,24 @@ function corregirTexto(texto) {
   // .replace(/[^\w\s]/gi, '');
   return texto;
 }
-
-export default { get_colors_at_sku, get_space_at_sku, get_space, get_color, homologationcolor, corregirTexto };
+function searchCategoriesExtra(categories, name){
+  //quiero buscar el nombre de ecologicos en las categorias, si aparece devuelvo la categoria encontrada
+  const categoriesExtra = ["ecologicos","ecológico",'eco',"reciclado","reciclable"]
+  let aux = [];
+  for(let i = 0; i < categoriesExtra.length; i++){
+    if(name.toLowerCase().includes(categoriesExtra[i])){
+      if(categoriesExtra[i] != "eco"){
+        console.log(categoriesExtra[i], "categoriesExtra[i]")
+        aux.push('Ecológicos');
+      }else{
+        aux.push('Ecológicos');
+      }
+      
+    }
+  }
+  //eliminar duplicados
+  aux = [...new Set(aux)];
+//ahora lo devuelvo en un string separado por comas
+  return aux == null ? categories : categories+','+aux.join(",");
+}
+export default { get_colors_at_sku, get_space_at_sku, get_space, get_color, homologationcolor, corregirTexto,searchCategoriesExtra };

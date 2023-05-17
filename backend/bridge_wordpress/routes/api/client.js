@@ -387,7 +387,14 @@ router.post("/get_CSV", async function (request, response, next) {
         } else {
           spaces = null;
         }
-        let father_product = `variable;${products[i].reference};${products[i].name_product};${description_product};${description_product};instock;;;;;${products[i].weight};${(metadata != null && metadata.medidas_largo != undefined) ? metadata.medidas_largo : ''};${(metadata != null && metadata.medidas_ancho != undefined) ? metadata.medidas_ancho : ''};${(metadata != null && metadata.medidas_alto) ? metadata.medidas_alto : ''};;;${precio_sugerido};${products[i].price};${products[i].parent == null ? products[i].name_category : `${products[i].parent} > ${products[i].name_category}`};${products[i].slug_category + ',' + products[i].slug_collection + ',' + products[i].reference + ',', name_product_slug};${imagenes};;0;${products[i].name_supplier};No;`;
+        let categories = products[i].parent == null ? products[i].name_category : `${products[i].parent} > ${products[i].name_category}`;
+        categories = utils.searchCategoriesExtra(categories,products[i].name_product)
+        let auxCategories = categories.split(",");
+        if(auxCategories.length > 1 || auxCategories[1]== ''){
+          // console.log("auxCategories",auxCategories)
+          categories = auxCategories[0];
+        }
+        let father_product = `variable;${products[i].reference};${products[i].name_product};${description_product};${description_product};instock;;;;;${products[i].weight};${(metadata != null && metadata.medidas_largo != undefined) ? metadata.medidas_largo : ''};${(metadata != null && metadata.medidas_ancho != undefined) ? metadata.medidas_ancho : ''};${(metadata != null && metadata.medidas_alto) ? metadata.medidas_alto : ''};;;${precio_sugerido};${products[i].price};${categories};${products[i].slug_category + ',' + products[i].slug_collection + ',' + products[i].reference + ',', name_product_slug};${imagenes};;0;${products[i].name_supplier};No;`;
         if (colors != null && spaces == null) {
           // console.log("son color")
           // console.log("space", spaces)
@@ -434,8 +441,15 @@ router.post("/get_CSV", async function (request, response, next) {
               total: { quantity: 0 }
             }
           }
+          let categories = products[i].parent == null ? products[i].name_category : `${products[i].parent} > ${products[i].name_category}`;
+          categories = utils.searchCategoriesExtra(categories,products[i].name_product);
+          let auxCategories = categories.split(",");
+          if(auxCategories.length > 1 || auxCategories[1]== ''){
+            // console.log("auxCategories",auxCategories)
+            categories = auxCategories[0];
+          }
           let sum = stock.total.quantity + stock.local.quantity + stock.zonaFranca.quantity;
-          father_product = `simple;${products[i].reference};${products[i].name_product};${description_product};${description_product};${stock.total.quantity == undefined || stock.total.quantity == 0 ? "outofstock" : "instock"};${stock.total.quantity == 0 ? sum : stock.total.quantity == undefined ? 0 : stock.total.quantity};${stock.local.quantity};${stock.zonaFranca.quantity};0;${variation.weight_override > 0 ? variation.weight_override : ''};;;;;;${variation.price_override > 0 ? variation.price_override : precio_sugerido > 0 ? precio_sugerido : products[i].price};${products[i].price};${products[i].parent == null ? products[i].name_category : `${products[i].parent} > ${products[i].name_category}`};${products[i].slug_category + ',' + products[i].slug_collection + ',' + products[i].reference + ',', name_product_slug};${imagenes};${products[i].reference};0;${products[i].name_supplier};No;`
+          father_product = `simple;${products[i].reference};${products[i].name_product};${description_product};${description_product};${stock.total.quantity == undefined || stock.total.quantity == 0 ? "outofstock" : "instock"};${stock.total.quantity == 0 ? sum : stock.total.quantity == undefined ? 0 : stock.total.quantity};${stock.local.quantity};${stock.zonaFranca.quantity};0;${variation.weight_override > 0 ? variation.weight_override : ''};;;;;;${variation.price_override > 0 ? variation.price_override : precio_sugerido > 0 ? precio_sugerido : products[i].price};${products[i].price};${categories};${products[i].slug_category + ',' + products[i].slug_collection + ',' + products[i].reference + ',', name_product_slug};${imagenes};${products[i].reference};0;${products[i].name_supplier};No;`
           if (colors != null && spaces == null) {
             // console.log("son color")
             // console.log("space", spaces)
@@ -522,7 +536,15 @@ router.post("/get_CSV", async function (request, response, next) {
              empaque= products[i].metadata.empaque_unds_caja != undefined || products[i].metadata.empaque_unds_caja !== null ? products[i].metadata.empaque_unds_caja : '';
             }
             let sum = stock.total.quantity + stock.local.quantity + stock.zonaFranca.quantity;
-            let variant = `variation;${variation.sku};${variation.name_variant};;${description_product};${stock.total.quantity == undefined || stock.total.quantity == 0 ? "outofstock" : "instock"};${stock.total.quantity == 0 ? sum : stock.total.quantity == undefined ? 0 : stock.total.quantity};${stock.local.quantity};${stock.zonaFranca.quantity};0;${variation.weight_override > 0 ? variation.weight_override : ''};${longitud};${anchura};${altura};${empaque};;${variation.price_override > 0 ? variation.price_override : precio_sugerido > 0 ? precio_sugerido : products[i].price};${products[i].price};;variante;${img_variant};${products[i].reference};${c + 1};;Yes;`;
+            if(products[i].name_supplier == 'CDO'){
+
+              stock.local.quantity = sum;
+            }
+            let variantPrice = variation.price_override > 0 ? variation.price_override : precio_sugerido;
+            if(variation.price_override < precio_sugerido){
+              variantPrice = precio_sugerido;
+            }
+            let variant = `variation;${variation.sku};${variation.name_variant};;${description_product};${stock.total.quantity == undefined || stock.total.quantity == 0 ? "outofstock" : "instock"};${stock.total.quantity == 0 ? sum : stock.total.quantity == undefined ? 0 : stock.total.quantity};${stock.local.quantity};${stock.zonaFranca.quantity};0;${variation.weight_override > 0 ? variation.weight_override : ''};${longitud};${anchura};${altura};${empaque};;${variantPrice};${products[i].price};;variante;${img_variant};${products[i].reference};${c + 1};;Yes;`;
             if (color != null && space == null) {
               variant += `Color;${color};1;1`;
             }

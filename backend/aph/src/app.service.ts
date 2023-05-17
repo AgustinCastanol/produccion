@@ -332,6 +332,7 @@ export class AppService {
   async setVariant(data: any) {
     try {
       if (data.name_variants == null || data.brand == null || data.sku == null || data.product_id == null) {
+        console.log(data,"variant")
         return {
           data: null,
           message: 'variant not created, missing name or description or brand or sku',
