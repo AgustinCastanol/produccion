@@ -171,7 +171,22 @@ export class AppController {
                 const producto_promos = await this.promos.getProduct({ referencia: products[j].referencia });
                 console.log(producto_promos)
                 const aux = await this.promos.clearName(producto_promos.nombre);
-                const price = producto_promos.descripcionPrecio1.toLowerCase() == "precio neto" || producto_promos.precio2 == -1 ? producto_promos.precio1 : 0;
+                let price = 0;
+                let sugerido = 0;
+                if (producto_promos.descripcionPrecio1 != null || producto_promos.descripcionPrecio1 != "") {
+                  price = producto_promos.descripcionPrecio1.toLowerCase() == "precio neto" || producto_promos.precio2 == -1 ? producto_promos.precio1 : 0;
+                  sugerido = price * 5 / 3;
+
+                } else {
+                  if (producto_promos.precio2 == -1) {
+                    price = producto_promos.precio1;
+                    sugerido = price * 5 / 3;
+                  }
+                  else {
+                    price = producto_promos.precio1;
+                    sugerido = 0;
+                  }
+                }
                 await new Promise((resolve) => setTimeout(resolve, 100));
                 const true_category = await this.promos.getCategoryById(producto_promos.idCategoria);
                 const category = await this.aphService.getCategoryBySlug({ slug: true_category });
@@ -197,7 +212,7 @@ export class AppController {
                   price,
                   currency: 'COP',
                   type: 'Precio Neto',
-                  metadata: { precioSugerido: producto_promos.descripcionPrecio1.toLowerCase() == "precio neto" || producto_promos.precio2 == -1 ? producto_promos.precio1 * 5 / 3 : producto_promos.precio1 },
+                  metadata: { precioSugerido: sugerido },
                   productId: null
                 });
                 productaux.price = price_db.id_price;
@@ -242,13 +257,30 @@ export class AppController {
                 // console.log("category", category)
                 const product_db = checkProduct[0];
                 const price_db = await this.aphService.getPrice({ id: product_db.idProducts });
+                let priceUpdate = 0;
+                let sugerido = 0;
+                if (producto_promos.descripcionPrecio1 != null || producto_promos.descripcionPrecio1 != "") {
+                  priceUpdate = producto_promos.descripcionPrecio1.toLowerCase() == "precio neto" || producto_promos.precio2 == -1 ? producto_promos.precio1 : 0;
+                  sugerido = priceUpdate * 5 / 3;
+
+                } else {
+                  if (producto_promos.precio2 == -1) {
+                    priceUpdate = producto_promos.precio1;
+                    sugerido = priceUpdate * 5 / 3;
+                  }
+                  else {
+                    priceUpdate = producto_promos.precio1;
+                    sugerido = 0;
+                  }
+                }
+
                 await this.aphService.updatePrice(
                   {
                     id: price_db[0].id,
                     type: 'Precio Neto',
-                    metadata: JSON.stringify({ precioSugerido: producto_promos.descripcionPrecio1.toLowerCase() == "precio neto" ? producto_promos.precio1 * 5 / 3 : producto_promos.precio1 }),
+                    metadata: JSON.stringify({ precioSugerido: sugerido }),
                     currency: 'COP',
-                    price: producto_promos.descripcionPrecio1.toLowerCase() == "precio neto" ? producto_promos.precio1 : 0,
+                    price: priceUpdate,
                     productId: price_db[0].productId
                   })
                 // console.log(category, "category")
@@ -1235,7 +1267,8 @@ export class AppController {
         const productId = productElements[i].getAttribute('id');
         productIds.push(productId);
       }
-      for (let i = 0; i < productIds.length; i++) {
+      const size = productIds.length
+      for (let i = 69; i < 72; i++) {
         console.log(i, productIds[i], "product")
         await new Promise(resolve => setTimeout(resolve, 400));
 
@@ -1262,16 +1295,28 @@ export class AppController {
         // const imageId = imageArray[imageArray.length - 1]
         // const imageAux = await this.esferosService.getImageById(imageId, productIds[i])
         // await this.esferosService.saveImage(imageAux)
-        const description = productElement.getElementsByTagName("description_short")[0].getElementsByTagName("language")[0].textContent;
-        const stock = productElement.getElementsByTagName("stock_availables")
-        // console.log("hasta aca 1")
-        const stockArray = Array.from(stock).map((element) => {
-          const idElement = element.getElementsByTagName("id")[0];
-          return idElement ? idElement.textContent : "";
-        })
-        console.log(stockArray, "stock")
         //stock
-
+        const description = productElement.getElementsByTagName("description_short")[0].getElementsByTagName("language")[0].textContent;
+        const rootElement = xmlAux.documentElement;
+        const stockAvailableElements = rootElement.getElementsByTagName("stock_available");
+        const stockObjects = [];
+        for (let i = 0; i < stockAvailableElements.length; i++) {
+          const element = stockAvailableElements[i];
+          const idElement = element.getElementsByTagName("id")[0];
+          const idProductAttributeElement = element.getElementsByTagName("id_product_attribute")[0];
+        
+          // Obtener los valores de los elementos hijos
+          const id = idElement.textContent;
+          const idProductAttribute = idProductAttributeElement.textContent;
+        
+          // Crear el objeto y agregarlo al array
+          const stockObject = {
+            idProductAttribute,
+            idStock: id,
+          };
+          stockObjects.push(stockObject);
+        }
+        // console.log(stockObjects, "stock")
         //categoria
         const category_name = await this.esferosService.getCategoryById(categoryName)
         const auxCategory = parser.parseFromString(category_name, 'text/xml');
@@ -1314,56 +1359,87 @@ export class AppController {
             console.log("La combinacion " + (i + 1) + " está vacía.");
           }
         }
-        console.log("hasta aca 4")
-        for (let i = 0; i < idCombination.length; i++) {
-          await new Promise(resolve => setTimeout(resolve, 200));
-          const combination = await this.esferosService.getCombinatiosById(idCombination[i])
-          const auxCombination = parser.parseFromString(combination, 'text/xml');
-          const combinationElement = auxCombination.getElementsByTagName("combination")[0];
-          const reference = combinationElement.getElementsByTagName("reference")[0].textContent;
-          const price = combinationElement.getElementsByTagName("price")[0].textContent;
-          const weight = combinationElement.getElementsByTagName("weight")[0].textContent;
-          // const stock = combinationElement.getElementsByTagName("quantity")[0].textContent;
-
-          let stockElement = '0'
-          if (stockArray.length == 0 || stockArray[i + 1] == undefined || stockArray[i + 1] == "") {
-            stockElement = '0';
-          } else {
-            console.log(stockArray[i + 1], "stock")
-            const stock = await this.esferosService.getStockById(stockArray[i + 1])
-            const auxStock = parser.parseFromString(stock, 'text/xml');
-            stockElement = auxStock.getElementsByTagName("quantity")[0].textContent;
-          }
-
-          const imagenes = combinationElement.getElementsByTagName("image");
-          const images = []
-          // Recorrer los elementos <image> y obtener los atributos xlink:href y <id>
-          for (let i = 0; i < imagenes.length; i++) {
-            const imagen = imagenes[i];
-            const href = imagen.getAttribute("xlink:href");
-            images.push(href)
-          }
-          // obtener atributos
-          const atributId = combinationElement.getElementsByTagName("product_option_value")[0].getElementsByTagName("id")[0].textContent;
-          const atrib = await this.esferosService.getPropsById(atributId)
-          const atribAux = parser.parseFromString(atrib, 'text/xml');
-          const atribElement = atribAux.getElementsByTagName("name")[0].getElementsByTagName("language")[0].textContent;
-          aux.variants.push({
-            id: productIds[i],
-            sku: reference,
-            categorie: nameElement,
+        // console.log("hasta aca 4")
+        // console.log(idCombination, "idCombination")
+        if (idCombination.length == 0) {
+          // console.log(stockObjects, "stockArray")
+          const stockCombination = await this.esferosService.getStockById(stockObjects[0].idStock)
+          const auxStock = parser.parseFromString(stockCombination, 'text/xml');
+          const stockElement = auxStock.getElementsByTagName("stock_available")[0];
+          const stock = stockElement.getElementsByTagName("quantity")[0].textContent;
+          const variant = {
+            idVariant: productIds[i],
+            idCombination: "",
+            reference: id,
             price,
             weight,
             height,
             width,
             name,
             description,
-            images,
-            stock: stockElement,
-            atribut: atribElement
-          })
-        }
+            image,
+            stock: stock,
+            variants: []
+          }
+          // console.log(variant, "variant")
+          aux.variants.push(variant)
+          jsonProducts.push(aux)
+        } else {
+          for (let i = 0; i < idCombination.length; i++) {
+            await new Promise(resolve => setTimeout(resolve, 200));
+            const combination = await this.esferosService.getCombinatiosById(idCombination[i])
+            const auxCombination = parser.parseFromString(combination, 'text/xml');
+            const combinationElement = auxCombination.getElementsByTagName("combination")[0];
+            const reference = combinationElement.getElementsByTagName("reference")[0].textContent;
+            const price = combinationElement.getElementsByTagName("price")[0].textContent;
+            const weight = combinationElement.getElementsByTagName("weight")[0].textContent;
+            // const stock = combinationElement.getElementsByTagName("quantity")[0].textContent;
+            let stockElement = '0'
+            
+            for (let x = 0; x < stockObjects.length; x++) {
+              // console.log(stockObjects[x].idProductAttribute+'_'+idCombination[i], "combinationstock")
+              // console.log(idCombination[i], "idCombination")
+              if (stockObjects[x].idProductAttribute == idCombination[i]) {
+                const stockCombination = await this.esferosService.getStockById(stockObjects[x].idStock)
+                const auxStock = parser.parseFromString(stockCombination, 'text/xml');
+                const stockData= auxStock.getElementsByTagName("stock_available")[0];
+                const stock = stockData.getElementsByTagName("quantity")[0].textContent;
+                stockElement = stock
+                // console.log(stock)
+                break;
+              }
+            }
+            // console.log(stockElement, "stockElement")
+            const imagenes = combinationElement.getElementsByTagName("image");
+            const images = []
+            // Recorrer los elementos <image> y obtener los atributos xlink:href y <id>
+            for (let i = 0; i < imagenes.length; i++) {
+              const imagen = imagenes[i];
+              const href = imagen.getAttribute("xlink:href");
+              images.push(href)
+            }
+            // obtener atributos
+            const atributId = combinationElement.getElementsByTagName("product_option_value")[0].getElementsByTagName("id")[0].textContent;
+            const atrib = await this.esferosService.getPropsById(atributId)
+            const atribAux = parser.parseFromString(atrib, 'text/xml');
+            const atribElement = atribAux.getElementsByTagName("name")[0].getElementsByTagName("language")[0].textContent;
+            aux.variants.push({
+              id: productIds[i],
+              sku: reference,
+              categorie: nameElement,
+              price,
+              weight,
+              height,
+              width,
+              name,
+              description,
+              images,
+              stock: stockElement,
+              atribut: atribElement
+            })
+          }
 
+        }
 
         jsonProducts.push(aux)
       }
@@ -1558,11 +1634,20 @@ export class AppController {
               try {
                 const variant = <any>await this.aphService.getVariantBySku({ sku: variant_db[c].sku });
                 const stock_db = <any>await this.aphService.getStockByVariant({ id_variant: variant[0].id_variant });
-                await this.aphService.updateStock({
-                  locationId: location,
-                  quantity: products[i].variants[c].stock,
-                  id_variant: variant[0].id_variant,
-                })
+                if (stock_db.length == 0) {
+                  await this.aphService.setStock({
+                    locationId: location,
+                    quantity: products[i].variants[c].stock,
+                    variant_id: variant[0].id_variant,
+                    quantity_allocated: 0
+                  })
+                } else {
+                  await this.aphService.updateStock({
+                    locationId: location,
+                    quantity: products[i].variants[c].stock,
+                    id_variant: variant[0].id_variant,
+                  })
+                }
                 // console.log(variant)
                 await this.aphService.updateVariant({
                   name_variant: variant[0].name_variant,

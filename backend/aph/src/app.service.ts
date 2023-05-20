@@ -587,7 +587,7 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
         quantity: data.quantity,
         quantity_allocated: data.quantity_allocated,
       }
-      // console.log(obj,"obj")
+      console.log(obj,"obj stock")
       // console.log(data,"daya")
 
       await this.sequelize.query(`
