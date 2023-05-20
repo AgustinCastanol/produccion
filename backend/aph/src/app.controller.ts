@@ -1268,7 +1268,7 @@ export class AppController {
         productIds.push(productId);
       }
       const size = productIds.length
-      for (let i = 69; i < 72; i++) {
+      for (let i = 0; i < size; i++) {
         console.log(i, productIds[i], "product")
         await new Promise(resolve => setTimeout(resolve, 400));
 
