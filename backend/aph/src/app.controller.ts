@@ -155,7 +155,7 @@ export class AppController {
       ]
       const base_url_image = 'https://www.catalogospromocionales.com'
       const categorias = await this.promos.getCategories();
-      for (let i = 1; 2 > i; i++) {
+      for (let i = 1; categorias.length > i; i++) {
         await new Promise((resolve) => setTimeout(resolve, 300));
         const categoriaHomologada = <any>await this.promos.getCategoriasHomologadas(categorias[i]);
         const categorias_aph = await this.aphService.getCategoryBySlug({ slug: categoriaHomologada });
