@@ -176,7 +176,7 @@ app.use("/",client_dis)
 app.use("/bgwp", users);
 //de aca no pasa sin tokens
 
-// app.use(jwt_proxy);
+app.use(jwt_proxy);
 app.use(verifLogin);
 app.use("/bgwp", products);
 // manejo de roles
