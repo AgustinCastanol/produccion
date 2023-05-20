@@ -191,5 +191,13 @@ router.post("/verify_token", async function (request, response,next) {
     next(err.message);
   }
 })
-
+router.post("/form_provider", async function (request, response,next) {
+  try{
+    const {form} = request.body;
+    return response.status(200).json({message:"Formulario enviado con exito",error:[]})
+  }catch(err){
+    console.log(err);
+    next(err.message);
+  }
+})
 export default router;

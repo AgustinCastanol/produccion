@@ -103,6 +103,31 @@ export class EsferosService {
       return {error};
     }
   }
+  async getImageById(id: string,idProduct: string){
+    try{
+      const res = <any>await firstValueFrom(
+        this.httpService.get(`${URL_API}images/products/${idProduct}/${id}`, {
+          auth:{
+            username: USER,
+            password: ''
+          }}).pipe(
+          catchError((err: AxiosError) => {
+            this.logger.error(err.message);
+            throw new Error(`Causa: ${err.config} - codigo: ${err.code} - mensaje: ${err.message}`);
+          }
+        )
+      ));
+      if(res.data){
+        return res.data;
+      }
+      return {error: res};
+
+    }catch(error){
+      return {error};
+    }
+
+  }
+
   async getCombinatiosById(id: string){
     try{
       const res = <any>await firstValueFrom(

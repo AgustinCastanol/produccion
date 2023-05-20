@@ -1,12 +1,33 @@
 /* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
+import { AxiosError } from 'axios';
 import { Sequelize } from 'sequelize-typescript';
 import { v4 as uuidv1 } from 'uuid';
+import { catchError, firstValueFrom } from 'rxjs';
 import * as fs from 'fs';
 import * as path from 'path';
+import { HttpService } from '@nestjs/axios';
 @Injectable()
 export class AppService {
-  constructor(private sequelize: Sequelize) { }
+  constructor(private sequelize: Sequelize, private httpService: HttpService) { }
+  async hookCSV(){
+    const BASE_URL = 'http://localhost:47300/load_CSV'
+    const TOKEN = `API-KEY bgwp_marcou8XoL0b47ImGhZsSuwzHCxX0qC6jQhljhhsGYHjisq57KY2rp37miOZsCNRLt0vtsnNIqn9eZdtyr1OFQGaa2toPTpZgDRqPG9PEWV9onuoS7duFz7DSOO4AWowA4qC4stSnlRZ2BsySBaoKohGhX6MQYKq1uW5WE7VaJ0l0go1omtHVumG4ey4TuLzutcrsujwqbBgmGnMxtMk6ZSKRNT3jKrdqEdzcgHzyz8YU5bPn9KcsJ2PY99v85hP4Gp8cB0qyaYzSIGgY9E4oRgTUJwcWv1Y3GtwmMItNdWWcrU0v8tShVGLbIYGarpVtCbAAAfhSvcnnIdnStO404uBmBKeatlCb5O4l9o7awScqCuRmsHllURQrfCRCFbcuu8KS5pZbV1CtYoKHgIVFxTsKSIIIzTKYcJhceaceROOsMpIKpNQXXBNmg3ovKxaBiA0QeLa1N1plhPCSTzCQaTObrZB1UtXqglwcZ5hPb0cRHgT3yXFRmuwzyrIgUBVthWcOzVDPMflZ0OiP9kVCy4vsfs5ufJANXBmUDQGGYLtJvljImZdtZG1KBnQQd4W1k14GJ4S3bBfoUOMxWVh93hHh96OiZ512r1csceu5yV6BrS4q67NX4dzpoy00XlfTmyADxbOHRljF9ERybNIyeBJjlxO8hyd2E8KLRyVsCyqEkTdgNYbCEtZrX4qI9g7SCCjGgmdtPyDMZsGNlP271kcJzfoouH8W4vSBJ01k9WZkNedVPLAh55YbdQBFyRYaujbenuNUgqXY3lF1N5B9j1TxJ1LiYEhX3BKZxXLic8yNNSOalymqpthaGaNNimC1TorUVdmcx7T7CdxmuGdAm8o6MhabQCKGuEfI6OhS8Am8n09lWfffkvJ23KTacL2UuEhqG2aLB2q3vq9flHAJG7z4zEnZ5oGZ7VwjAUXvqQqiTi3kfNF5LmedecUDFgy21NBXxRzVfS1Lh05ajslpngHkbYS6JKvwRcR2pEfOFwUrd4sOZ58toBsZRf`
+     firstValueFrom(
+      this.httpService.post(`${BASE_URL}`, {
+        headers: {
+          'Authorization':TOKEN,
+        }
+      })
+      .pipe(
+        catchError((err: AxiosError) => {
+          console.log('err', err);
+          throw new Error(`Causa: ${err.config} - codigo: ${err.code} - mensaje: ${err.message}`);
+        })
+      )
+    )
+    return {message : 'ok'}
+  }
   async getProducts(data: any) {
     try {
       const limit = data.limit || 10;
@@ -332,6 +353,7 @@ export class AppService {
   async setVariant(data: any) {
     try {
       if (data.name_variants == null || data.brand == null || data.sku == null || data.product_id == null) {
+        console.log(data,"variant")
         return {
           data: null,
           message: 'variant not created, missing name or description or brand or sku',
@@ -565,7 +587,7 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
         quantity: data.quantity,
         quantity_allocated: data.quantity_allocated,
       }
-      // console.log(obj,"obj")
+      console.log(obj,"obj stock")
       // console.log(data,"daya")
 
       await this.sequelize.query(`
@@ -584,6 +606,15 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
       FROM public."stockLocation";`)
       return { data: res[0] };
     } catch (err) {
+      console.log(err)
+      return err;
+    }
+  }
+  async getStockByLocation(data: any) {
+    try{
+      const res = await this.sequelize.query(`SELECT * FROM public."stock" WHERE "locationId" = '${data.locationId}' AND "variant_id" = '${data.id_variant}'`);
+      return res[0]
+    }catch(err){
       console.log(err)
       return err;
     }

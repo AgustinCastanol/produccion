@@ -47,7 +47,7 @@ export default {
     },
     {
       "name":"Relojes",
-      "ave":"slugrelojes"
+      "ave":"relojes"
     },
     {
       "name":"Botilitos",
@@ -199,7 +199,7 @@ export default {
     },
     {
       "name":"Botilitos - Hogar +",
-      "ave":"	botilitos-y-mugs-sublimacion"
+      "ave":"botilitos-y-mugs-sublimacion"
     },
     // {
     //   "name":"",

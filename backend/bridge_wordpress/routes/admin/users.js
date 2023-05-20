@@ -313,6 +313,27 @@ router.post("/set_logo", async function (req, res, next) {
     next(err.message);
   }
 })
+router.post("/set_payment", async function (req, res, next) {
+  try{
+    const {id_wordpress,card_number,exp_month,exp_year,cvc}=req.body
+    if(!id_wordpress || !card_number || !exp_month || !exp_year || !cvc){
+      return res.status(400).send({mesagge:"Missing fields",data:[],err:["Missing fields"]})
+    }
+    const admin = new AdminUser({})
+    const checkAdmin = await admin.userIsAdmin({ id_wordpress })
+    if (checkAdmin == false) {
+      return res.status(401).json({ mesagge:"Missing fields",data:[],error: ["Not authorized"] })
+    }
+    const user = new AdminUser({ id_wordpress });
+    const user_id = await user.getUserId();
+    const property_id = await user.getPropertyId({ user_id });
+    const payment=await user.setPayment({user_id,card_number,exp_month,exp_year,cvc,property_id})
+    res.status(200).send({mesagge:"Payment set",data:payment.data,err:[]})
+  } catch (err) {
+    console.log(err)
+    next(err.message);
+  }
+})
 /*        {
             "id_property": "c8d814e1-9290-4859-8c62-6b3e81335b4b",
             "id_social_networks": null,

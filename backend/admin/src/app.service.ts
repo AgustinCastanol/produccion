@@ -2,11 +2,26 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { randomUUID } from 'crypto';
-
+import { Cron } from '@nestjs/schedule';
 @Injectable()
 export class AppService {
   constructor(@Inject('LOGIN_SERVICE') private clienteLogin: ClientProxy) {}
 
+  @Cron('50 18 * * *')
+  async handleCron() {
+    console.log('Cron');
+    const promos = this.loadApiPromos({});
+    const marpico = this.loadApiMarpico({});
+    const cdo = this.loadApiCdo({});
+    const promoopcion = this.loadPricePromoOpcion({});
+    await Promise.all([promos, marpico, cdo, promoopcion]);
+    await this.hookCSV();
+    return { promos };
+  }
+  async hookCSV(){
+    const res = await this.clienteLogin.send('hookCSV', {}).toPromise();
+    return res;
+  }
   async home(user: any) {
     const res = await this.clienteLogin.send('home', user).toPromise();
     return res;

@@ -4,7 +4,7 @@ import { Controller } from '@nestjs/common';
 import { AppService } from './app.service';
 import { EventPattern } from '@nestjs/microservices';
 import { PromosService } from './promos/promos.service';
-import { find, findIndex } from 'rxjs';
+import { elementAt, find, findIndex } from 'rxjs';
 import { CdoService } from './cdo/cdo.service';
 import { MarpicoService } from './marpico/marpico.service';
 import { PromoopcionService } from './promoopcion/promoopcion.service';
@@ -25,7 +25,12 @@ export class AppController {
   async handleHome(data: any) {
     const res = await this.aphService.home(data);
     const count = await this.aphService.getCountPRoveedores(data);
-    return { res, countProductsSuppliers: count};
+    return { res, countProductsSuppliers: count };
+  }
+  @EventPattern('hookCSV')
+  async handleHookCSV() {
+    const res = await this.aphService.hookCSV();
+    return res;
   }
   @EventPattern('get_logs')
   async handleGetLogs(data: any) {
@@ -150,11 +155,12 @@ export class AppController {
       ]
       const base_url_image = 'https://www.catalogospromocionales.com'
       const categorias = await this.promos.getCategories();
-      for (let i = 11; categorias.length > i; i++) {
+      for (let i = 1; 2 > i; i++) {
         await new Promise((resolve) => setTimeout(resolve, 300));
         const categoriaHomologada = <any>await this.promos.getCategoriasHomologadas(categorias[i]);
         const categorias_aph = await this.aphService.getCategoryBySlug({ slug: categoriaHomologada });
         if (categorias_aph != undefined && (categorias_aph.id_categorias !== undefined || categorias_aph.id_categorias !== null)) {
+          console.log(categorias[i])
           const products = await this.promos.getProductsByCategory(categorias[i]);
           const size = products.length
           for (let j = 0; size > j; j++) {
@@ -165,11 +171,26 @@ export class AppController {
                 const producto_promos = await this.promos.getProduct({ referencia: products[j].referencia });
                 console.log(producto_promos)
                 const aux = await this.promos.clearName(producto_promos.nombre);
-                const price = producto_promos.descripcionPrecio1 == "precio neto" ? producto_promos.precio1 : 0;
+                let price = 0;
+                let sugerido = 0;
+                if (producto_promos.descripcionPrecio1 != null || producto_promos.descripcionPrecio1 != "") {
+                  price = producto_promos.descripcionPrecio1.toLowerCase() == "precio neto" || producto_promos.precio2 == -1 ? producto_promos.precio1 : 0;
+                  sugerido = price * 5 / 3;
+
+                } else {
+                  if (producto_promos.precio2 == -1) {
+                    price = producto_promos.precio1;
+                    sugerido = price * 5 / 3;
+                  }
+                  else {
+                    price = producto_promos.precio1;
+                    sugerido = 0;
+                  }
+                }
                 await new Promise((resolve) => setTimeout(resolve, 100));
                 const true_category = await this.promos.getCategoryById(producto_promos.idCategoria);
                 const category = await this.aphService.getCategoryBySlug({ slug: true_category });
-               
+
                 const productaux = {
                   nombre: aux.str,
                   referencia: producto_promos.referencia,
@@ -191,7 +212,7 @@ export class AppController {
                   price,
                   currency: 'COP',
                   type: 'Precio Neto',
-                  metadata: { precioSugerido: producto_promos.descripcionPrecio1 == "precio neto" ? 0 : producto_promos.precio1 },
+                  metadata: { precioSugerido: sugerido },
                   productId: null
                 });
                 productaux.price = price_db.id_price;
@@ -204,7 +225,7 @@ export class AppController {
                 await this.aphService.updatePrice(price_db);
                 const images_array = producto_promos.imagenes.map((e: string) => 'https:' + e)
                 images_array.push(base_url_image + producto_promos.imageUrl)
-                await this.aphService.setProductImage({ productId: productDB.idProducts, url: JSON.stringify(images_array) })
+                await this.aphService.setProductImage({ productId: productDB.id_productos, url: JSON.stringify(images_array) })
                 await new Promise((resolve) => setTimeout(resolve, 100));
                 const variants = await this.promos.getStock(products[j]);
 
@@ -223,7 +244,7 @@ export class AppController {
                   await this.aphService.setStock({ locationId: locations[0].id, quantity: variants[k].bodegaLocal, variant_id: variant_db.id_variant, quantity_allocated: 0 });
                   await this.aphService.setStock({ locationId: locations[1].id, quantity: variants[k].bodegaZonaFranca, variant_id: variant_db.id_variant, quantity_allocated: 0 });
                   await this.aphService.setStock({ locationId: locations[3].id, quantity: variants[k].totalDisponible, variant_id: variant_db.id_variant, quantity_allocated: 0 });
-
+                  await this.aphService.setStock({ locationId: locations[2].id, quantity: variants[k].cantidadTransito == null ? 0 : variants[k].cantidadTransito, variant_id: variant_db.id_variant, quantity_allocated: 0 });
                 }
               } else {
                 /*actualizo el precio */
@@ -236,20 +257,43 @@ export class AppController {
                 // console.log("category", category)
                 const product_db = checkProduct[0];
                 const price_db = await this.aphService.getPrice({ id: product_db.idProducts });
+                let priceUpdate = 0;
+                let sugerido = 0;
+                if (producto_promos.descripcionPrecio1 != null || producto_promos.descripcionPrecio1 != "") {
+                  priceUpdate = producto_promos.descripcionPrecio1.toLowerCase() == "precio neto" || producto_promos.precio2 == -1 ? producto_promos.precio1 : 0;
+                  sugerido = priceUpdate * 5 / 3;
+
+                } else {
+                  if (producto_promos.precio2 == -1) {
+                    priceUpdate = producto_promos.precio1;
+                    sugerido = priceUpdate * 5 / 3;
+                  }
+                  else {
+                    priceUpdate = producto_promos.precio1;
+                    sugerido = 0;
+                  }
+                }
+
                 await this.aphService.updatePrice(
                   {
                     id: price_db[0].id,
                     type: 'Precio Neto',
-                    metadata: JSON.stringify({ precioSugerido: producto_promos.descripcionPrecio1 == "precio neto" ? 0 : producto_promos.precio1 }),
+                    metadata: JSON.stringify({ precioSugerido: sugerido }),
                     currency: 'COP',
-                    price: producto_promos.descripcionPrecio1 == "precio neto" ? producto_promos.precio1 : 0,
+                    price: priceUpdate,
                     productId: price_db[0].productId
                   })
-                  // console.log(category, "category")
-                  // product_db.category_id = category == undefined ? categorias_aph.id_categorias : category.id_categorias;   
-                  // product_db.description_product= producto_promos.descripcionProducto.replace(/(\r\n|\n|\r)/igm, "").replace(/"/ig, '\\"').replace(/(<([^>]+)>)/ig, "");
+                // console.log(category, "category")
+                // product_db.category_id = category == undefined ? categorias_aph.id_categorias : category.id_categorias;   
+                // product_db.description_product= producto_promos.descripcionProducto.replace(/(\r\n|\n|\r)/igm, "").replace(/"/ig, '\\"').replace(/(<([^>]+)>)/ig, "");
                 // await this.aphService.updateProduct(product_db)
                 // await new Promise((resolve) => setTimeout(resolve, 300));
+                const images = await this.aphService.getImagesProduct({ id: product_db.idProducts });
+                if (images.length == 0) {
+                  const images_array = producto_promos.imagenes.map((e: string) => 'https:' + e)
+                  images_array.push(base_url_image + producto_promos.imageUrl)
+                  await this.aphService.setProductImage({ productId: product_db.idProducts, url: JSON.stringify(images_array) })
+                }
                 const variants = await this.promos.getStock(products[j]);
                 for (let k = 0; variants.length > k; k++) {
                   const variant_db = <any>await this.aphService.getVariantBySku({ sku: variants[k].referencia + '-' + variants[k].color });
@@ -271,37 +315,39 @@ export class AppController {
                       const str = variants[k].color.replace(/\s+/g, '');
                       const found = str.match(regex);
                       if (found) {
-                        try{
-                                                  for (let x = 1; x < 6; x++) {
-                          if ((producto_promos['descripcionPrecio' + x].replace(/\s+/g, '')).includes(found[0])) {
-                            productVariant.price_override = products[j]['precio' + x];
-                            productVariant.description_variant = products[j]['descripcionPrecio' + x];
-                            if (products[j]['descripcionPrecio' + x].toLowerCase().includes('precio neto')) {
-                              productVariant.metadata_variant = { type: 'Precio Neto' };
+                        try {
+                          for (let x = 1; x < 6; x++) {
+                            if ((producto_promos['descripcionPrecio' + x].replace(/\s+/g, '')).includes(found[0])) {
+                              productVariant.price_override = products[j]['precio' + x];
+                              productVariant.description_variant = products[j]['descripcionPrecio' + x];
+                              if (products[j]['descripcionPrecio' + x].toLowerCase().includes('precio neto')) {
+                                productVariant.metadata_variant = { type: 'Precio Neto' };
+                              }
                             }
+                            break;
                           }
-                          break;
+                        } catch (e) {
+                          productVariant.price_override = 0;
                         }
-                      }catch(e){
-                        productVariant.price_override = 0;
                       }
-                        }
                     }
                     await new Promise((resolve) => setTimeout(resolve, 100));
                     const new_variant = await this.aphService.setVariant(productVariant);
+                    console.log("variants[k]", variants[k])
                     await this.aphService.setStock({ locationId: locations[0].id, quantity: variants[k].bodegaLocal, variant_id: new_variant.id_variant, quantity_allocated: 0 });
                     await this.aphService.setStock({ locationId: locations[1].id, quantity: variants[k].bodegaZonaFranca, variant_id: new_variant.id_variant, quantity_allocated: 0 });
                     await this.aphService.setStock({ locationId: locations[3].id, quantity: variants[k].totalDisponible, variant_id: new_variant.id_variant, quantity_allocated: 0 });
+                    await this.aphService.setStock({ locationId: locations[2].id, quantity: variants[k].cantidadTransito == null ? 0 : variants[k].cantidadTransito, variant_id: new_variant.id_variant, quantity_allocated: 0 });
                   }
                   if (variant_db.length != 0) {
-                    if (producto_promos.descripcionPrecio1 == 'precio neto') {
+                    if (producto_promos.descripcionPrecio1.toLowerCase() == 'precio neto' || producto_promos.precio2 == -1) {
                       variant_db[0].price_override = 0;
                     } else {
                       const regex = /\d+GB/g;
                       const str = variant_db[0].sku.replace(/\s+/g, '');
                       const found = str.match(regex);
                       if (found) {
-                        try{
+                        try {
                           for (let x = 1; x < 6; x++) {
                             if ((products[j]['descripcionPrecio' + x].replace(/\s+/g, '')).includes(found[0])) {
                               variant_db[0].price_override = producto_promos['precio' + x];
@@ -312,14 +358,25 @@ export class AppController {
                               break;
                             }
                           }
-                        }catch(e){
+                        } catch (e) {
                           variant_db[0].price_override = 0;
                         }
                       }
-
+                      //actualizo el stock
+                      console.log(variants[k], "variants[k]")
+                      await this.aphService.updateStock({ locationId: locations[0].id, quantity: variants[k].bodegaLocal, id_variant: variant_db[0].id_variant, quantity_allocated: 0 });
+                      await this.aphService.updateStock({ locationId: locations[1].id, quantity: variants[k].bodegaZonaFranca, id_variant: variant_db[0].id_variant, quantity_allocated: 0 });
+                      await this.aphService.updateStock({ locationId: locations[3].id, quantity: variants[k].totalDisponible, id_variant: variant_db[0].id_variant, quantity_allocated: 0 });
+                      const validateTransito = await this.aphService.getStockByLocation({ locationId: locations[2].id, id_variant: variant_db[0].id_variant });
+                      if (validateTransito.length == 0) {
+                        await this.aphService.setStock({ locationId: locations[2].id, quantity: variants[k].cantidadTransito == null ? 0 : variants[k].cantidadTransito, variant_id: variant_db[0].id_variant, quantity_allocated: 0 });
+                      } else {
+                        await this.aphService.updateStock({ locationId: locations[2].id, quantity: variants[k].cantidadTransito == null ? 0 : variants[k].cantidadTransito, id_variant: variant_db[0].id_variant, quantity_allocated: 0 });
+                      }
                     }
                     await this.aphService.updateVariant(variant_db[0]);
                   }
+
                 }
 
                 // const price = products[j].precio1;
@@ -329,7 +386,7 @@ export class AppController {
                 //   price_db[0].price = price;
                 //   await this.aphService.updatePrice(price_db[0]);
                 // }
-                // /*actualizo el stock */
+                /*actualizo el stock */
                 // const variants = await this.promos.getStock(products[j]);
                 // for (let k = 0; variants.length > k; k++) {
                 //   await new Promise((resolve) => setTimeout(resolve, 300));
@@ -402,7 +459,7 @@ export class AppController {
           const { id_categorias } = await this.aphService.getCategoryBySlug({ slug: categoriaHomologada });
           if (id_categorias != undefined && id_categorias != '') {
             const checkProduct = await this.aphService.checkProduct(products[i].code)
-            if (!(checkProduct.length > 0)) {
+            if (checkProduct.length == 0) {
               const price = products[i].variants[0].net_price
               const priceList = products[i].variants[0].list_price
               const productaux = {
@@ -449,7 +506,6 @@ export class AppController {
             } else {
               const product_db = checkProduct[0];
               const price_db = await this.aphService.getPrice({ id: product_db.idProducts })
-              console.log({ metadata: JSON.stringify({ precioSugerido: products[i].variants[0].list_price }) })
               await this.aphService.updatePrice(
                 {
                   id: price_db[0].id,
@@ -464,8 +520,15 @@ export class AppController {
                 const variants_db = await this.aphService.getVariants({ idProducts: product_db.idProducts })
                 // aux.push({ product: product_db, variants: variants_db })
                 for (let c = 0; variants_db.length > c; c++) {
+                  console.log("update stock-----")
                   // const variantImage_db = await this.aphService.setVariantImage({ variantId: variants_db[c].id_variant, urlImage: JSON.stringify([products[i].variants[c].picture.original]) })
-                  await this.aphService.setStock({ locationId: locations[3].id, quantity: products[i].variants[c].stock_available, variant_id: variants_db[c].id_variant, quantity_allocated: products[i].variants[c].stock_existent })
+                  console.log(products[i].variants[c])
+                  await this.aphService.updateStock({
+                    locationId: locations[3].id,
+                    quantity: products[i].variants[c].stock_available == undefined ? 0 : products[i].variants[c].stock_available,
+                    id_variant: variants_db[c].id_variant,
+                    quantity_allocated: 0
+                  })
 
                 }
               } catch (e) {
@@ -565,14 +628,16 @@ export class AppController {
           }
           const variant_db = await this.aphService.setVariant(variante);
           console.log(variant_db, 'variant_db')
+          const tramite = res.results[i].materiales[c].trackings_importacion[0].cantidad == undefined ? 0 : res.results[i].materiales[c].trackings_importacion[0].cantidad;
           await this.aphService.setStock({ locationId: locations[0].id, quantity: res.results[i].materiales[c].inventario, variant_id: variant_db.id_variant, quantity_allocated: 0 });
           await this.aphService.setStock({ locationId: locations[1].id, quantity: 0, variant_id: variant_db.id_variant, quantity_allocated: 0 });
+          await this.aphService.setStock({ locationId: locations[2].id, quantity: tramite, variant_id: variant_db.id_variant, quantity_allocated: 0 });
           await this.aphService.setStock({ locationId: locations[3].id, quantity: res.results[i].materiales[c].inventario, variant_id: variant_db.id_variant, quantity_allocated: 0 });
           const variantImage_db = await this.aphService.setVariantImage({ variantId: variant_db.id_variant, url: JSON.stringify([arrayUrls]) })
         }
       } else {
         let product_db = checkProduct[0];
-        if(product_db[0] !== undefined){
+        if (product_db[0] !== undefined) {
           console.log('entro', product_db[0])
           product_db = product_db[0];
         }
@@ -584,7 +649,7 @@ export class AppController {
             const variant_api = res.results[i].materiales.find((item: any) => variant_db[j].name_variant === product_db.reference + '-' + item.color_nombre)
             const arrayUrls = variant_api.imagenes.map((item: { imagen: { file: any; }; }) => { return item.imagen.file })
             await this.aphService.setVariantImage({ variantId: variant_db[j].id_variant, url: JSON.stringify(arrayUrls) })
-          }else{
+          } else {
 
             const variant_api = res.results[i].materiales.find((item: any) => variant_db[j].name_variant === product_db.reference + '-' + item.color_nombre)
             const arrayUrls = variant_api.imagenes.map((item: { imagen: { file: any; }; }) => { return item.imagen.file })
@@ -595,6 +660,10 @@ export class AppController {
               variantId: variant_db[j].id_variant
             })
           }
+          //actualizo stock
+          // await this.aphService.updateStock({ locationId: locations[0].id, quantity: res.results[i].materiales[j].inventario, variant_id: variant_db[0].id_variant, quantity_allocated: 0 });
+          // await this.aphService.updateStock({ locationId: locations[1].id, quantity: 0, variant_id: variant_db[0].id_variant, quantity_allocated: 0 });
+          // await this.aphService.updateStock({ locationId: locations[3].id, quantity: res.results[i].materiales[j].inventario, variant_id: variant_db[0].id_variant, quantity_allocated: 0 });
         }
         /*checkeo el precio */
         // let priceChange = false;
@@ -617,57 +686,69 @@ export class AppController {
         //       price: 0,
         //       productId: price_db.productId
         //     })
-  
+
         // }
 
-        // /*checkeo el stock */
-        // for (let c = 0; c < res.results[i].materiales.length; c++) {
-        //   await new Promise((resolve) => setTimeout(resolve, 300));
-        //   const variant_db = <any>await this.aphService.getVariantBySku({ sku: res.results[i].familia + '-' + res.results[i].materiales[c].color_nombre + '-' + res.results[i].materiales[c].codigo });
-        //   console.log(variant_db, 'variant_db')
-        //   if(variant_db == undefined || variant_db.length == 0){
-        //     const variante = {
-        //       name_variants: res.results[i].familia + '-' + res.results[i].materiales[c].color_nombre,
-        //       sku: res.results[i].familia + '-' + res.results[i].materiales[c].color_nombre + '-' + res.results[i].materiales[c].codigo,
-        //       price_override: res.results[i].materiales[c].precio,
-        //       metadata_variants: { descuento: res.results[i].materiales[c].descuento, estado: res.results[i].materiales[c].estado },
-        //       weight_override: 0,
-        //       brand: 'not-brand',
-        //       description_variant: '',
-        //       product_id: product_db.id_productos
-        //     }
-        //     const variant_db = await this.aphService.setVariant(variante);
-        //     console.log(variant_db, 'variant_db')
-        //     await this.aphService.setStock({ locationId: locations[0].id, quantity: res.results[i].materiales[c].inventario, variant_id: variant_db.id_variant, quantity_allocated: 0 });
-        //     await this.aphService.setStock({ locationId: locations[1].id, quantity: 0, variant_id: variant_db.id_variant, quantity_allocated: 0 });
-        //     await this.aphService.setStock({ locationId: locations[3].id, quantity: res.results[i].materiales[c].inventario, variant_id: variant_db.id_variant, quantity_allocated: 0 });
-        //     const variantImage_db = await this.aphService.setVariantImage({ variantId: variant_db.id_variant, url: JSON.stringify([arrayUrls]) })
-        //   }else{
-        //   const stock_db = <any>await this.aphService.getStockByVariant({ id_variant: variant_db[0].id_variant });
-        //   // console.log(stock_db, 'stock_db')
-        //   if (stock_db[0].quantity != res.results[i].materiales[c].inventario) {
-        //     console.log("actualizo stock")
-        //     await this.aphService.updateStock({ locationId: locations[0].id, quantity: res.results[i].materiales[c].inventario, variant_id: variant_db[0].id_variant, quantity_allocated: 0 });
-        //     await this.aphService.updateStock({ locationId: locations[1].id, quantity: 0, variant_id: variant_db[0].id_variant, quantity_allocated: 0 });
-        //     await this.aphService.updateStock({ locationId: locations[3].id, quantity: res.results[i].materiales[c].inventario, variant_id: variant_db[0].id_variant, quantity_allocated: 0 });
-        //   }
-        //   if (priceChange) {
-        //     await this.aphService.updateVariant({
-        //       name_variant: variant_db[0].name_variant,
-        //       sku: variant_db[0].sku,
-        //       price_override: res.results[i].materiales[c].precio,
-        //       metadata_variant: { descuento: res.results[i].materiales[c].descuento, estado: res.results[i].materiales[c].estado },
-        //       weight_override: 0,
-        //       brand: 'not-brand',
-        //       description_variant: '',
-        //       product_id: variant_db[0].product_id,
-        //       id_variant: variant_db[0].id_variant
-        //     })
-        //   }
-        // }
-        // }
+        /*checkeo el stock */
+        for (let c = 0; c < res.results[i].materiales.length; c++) {
+          await new Promise((resolve) => setTimeout(resolve, 300));
+          const variant_db = <any>await this.aphService.getVariantBySku({ sku: res.results[i].familia + '-' + res.results[i].materiales[c].color_nombre + '-' + res.results[i].materiales[c].codigo });
+          console.log(variant_db, 'variant_db')
+          if (variant_db == undefined || variant_db.length == 0) {
+            const variante = {
+              name_variants: res.results[i].familia + '-' + res.results[i].materiales[c].color_nombre,
+              sku: res.results[i].familia + '-' + res.results[i].materiales[c].color_nombre + '-' + res.results[i].materiales[c].codigo,
+              price_override: res.results[i].materiales[c].precio,
+              metadata_variants: { descuento: res.results[i].materiales[c].descuento, estado: res.results[i].materiales[c].estado },
+              weight_override: 0,
+              brand: 'not-brand',
+              description_variant: '',
+              product_id: product_db.id_productos
+            }
+            const variant_db = await this.aphService.setVariant(variante);
+            console.log(variant_db, 'variant_db')
+            const tramite = res.results[i].materiales[c].trackings_importacion[0].cantidad == undefined ? 0 : res.results[i].materiales[c].trackings_importacion[0].cantidad;
+            await this.aphService.setStock({ locationId: locations[0].id, quantity: res.results[i].materiales[c].inventario, variant_id: variant_db.id_variant, quantity_allocated: 0 });
+            await this.aphService.setStock({ locationId: locations[1].id, quantity: 0, variant_id: variant_db.id_variant, quantity_allocated: 0 });
+            await this.aphService.setStock({ locationId: locations[2].id, quantity: tramite, variant_id: variant_db.id_variant, quantity_allocated: 0 });
+            await this.aphService.setStock({ locationId: locations[3].id, quantity: res.results[i].materiales[c].inventario, variant_id: variant_db.id_variant, quantity_allocated: 0 });
+          } else {
+            const stock_db = <any>await this.aphService.getStockByVariant({ id_variant: variant_db[0].id_variant });
+            // console.log(stock_db, 'stock_db')
+            // if (stock_db[0].quantity != res.results[i].materiales[c].inventario) {
+            if (true) {
+
+              // console.log("actualizo stock")
+              // console.log(res.results[i].materiales[c].trackings_importacion)
+              const tramite = res.results[i].materiales[c].trackings_importacion.length == 0 ? 0 : res.results[i].materiales[c].trackings_importacion[0].cantidad;
+              await this.aphService.updateStock({ locationId: locations[0].id, quantity: res.results[i].materiales[c].inventario, id_variant: variant_db[0].id_variant, quantity_allocated: 0 });
+              await this.aphService.updateStock({ locationId: locations[1].id, quantity: 0, id_variant: variant_db[0].id_variant, quantity_allocated: 0 });
+              await this.aphService.updateStock({ locationId: locations[3].id, quantity: res.results[i].materiales[c].inventario, id_variant: variant_db[0].id_variant, quantity_allocated: 0 });
+              const validateTransito = await this.aphService.getStockByLocation({ locationId: locations[2].id, id_variant: variant_db[0].id_variant });
+              if (validateTransito.length == 0) {
+                await this.aphService.setStock({ locationId: locations[2].id, quantity: tramite, variant_id: variant_db[0].id_variant, quantity_allocated: 0 });
+              } else {
+
+                await this.aphService.updateStock({ locationId: locations[2].id, quantity: tramite, id_variant: variant_db[0].id_variant, quantity_allocated: 0 });
+              }
+            }
+            //   if (priceChange) {
+            //     await this.aphService.updateVariant({
+            //       name_variant: variant_db[0].name_variant,
+            //       sku: variant_db[0].sku,
+            //       price_override: res.results[i].materiales[c].precio,
+            //       metadata_variant: { descuento: res.results[i].materiales[c].descuento, estado: res.results[i].materiales[c].estado },
+            //       weight_override: 0,
+            //       brand: 'not-brand',
+            //       description_variant: '',
+            //       product_id: variant_db[0].product_id,
+            //       id_variant: variant_db[0].id_variant
+            //     })
+            //   }
+          }
+        }
       }
-      console.log(i,'de',res.results.length)
+      console.log(i, 'de', res.results.length)
     }
     console.log('termino')
     return { data: aux };
@@ -695,8 +776,8 @@ export class AppController {
         const categorias_db = <any>await this.aphService.getCategoryBySlug({ slug: categoriaHomologada });
         const checkProduct = await this.aphService.checkProduct(response[i].skuPadre);
         // console.log(Stocks.length, "Stocks.length")
-        if(response[i].skuPadre == 'SOC 011-09'){
-          aux.push({product:response[i],error:"description"})
+        if (response[i].skuPadre == 'SOC 011-09') {
+          aux.push({ product: response[i], error: "description" })
           console.log(response[i])
         }
         if (checkProduct.length == 0) {
@@ -929,17 +1010,17 @@ export class AppController {
       const aux = []
       for (let i = 0; i < jsonPrice.length; i++) {
         await new Promise((resolve) => setTimeout(resolve, 150));
-        
+
         const product = await <any>this.aphService.getProductByReferenceAndSupplier({ reference: jsonPrice[i].referencia, supplier })
         if (product.length > 0) {
           const price = await this.aphService.getPriceById({ id: product[0].price_base })
           console.log(jsonPrice[i].precio)
-          
+
           if (price.length > 0) {
             const priceUpdate = await this.aphService.updatePrice(
               {
-                price: jsonPrice[i].tipo == "PRECIO ÚNICO" ? jsonPrice[i].precio * 5/3 : 0,
-                metadata: JSON.stringify({ precioSugerido: jsonPrice[i].tipo == "NORMAL" ? jsonPrice[i].precio : 0 }),
+                price: jsonPrice[i].tipo == "PRECIO ÚNICO" ? jsonPrice[i].precio : 0,
+                metadata: JSON.stringify({ precioSugerido: jsonPrice[i].tipo == "NORMAL" ? jsonPrice[i].precio : jsonPrice[i].precio * 5 / 3 }),
                 id: price[0].id,
                 currency: price[0].currency,
                 productId: price[0].productId,
@@ -1170,7 +1251,7 @@ export class AppController {
       return { error: err.message, message: "productos " }
     }
   }
-  @EventPattern('load_esferos_products')
+  @EventPattern('load_esferos')
   async loadEsferos(data: any) {
     try {
       const jsonProducts = []
@@ -1186,7 +1267,8 @@ export class AppController {
         const productId = productElements[i].getAttribute('id');
         productIds.push(productId);
       }
-      for (let i = 0; i < productIds.length; i++) {
+      const size = productIds.length
+      for (let i = 0; i < size; i++) {
         console.log(i, productIds[i], "product")
         await new Promise(resolve => setTimeout(resolve, 400));
 
@@ -1205,22 +1287,41 @@ export class AppController {
         if (image.length == 0) {
           continue
         }
+        const idImage = productElement.getElementsByTagName("images");
         image = image[0].getAttribute('xlink:href');
-        const description = productElement.getElementsByTagName("description_short")[0].getElementsByTagName("language")[0].textContent;
-        const stock = productElement.getElementsByTagName("stock_availables")[0].getElementsByTagName("stock_available")[0].getElementsByTagName("id")[0].textContent;
-        console.log("hasta aca 1")
+        // console.log(image, "image")
+        // el string de image es https://esferos.com/site/api/images/products/3584/19444  y quiero el ultimo numero que me da
+        // const imageArray = image.split("/")
+        // const imageId = imageArray[imageArray.length - 1]
+        // const imageAux = await this.esferosService.getImageById(imageId, productIds[i])
+        // await this.esferosService.saveImage(imageAux)
         //stock
-        const stock_quantity = await this.esferosService.getStockById(stock)
-        const auxStock = parser.parseFromString(stock_quantity, 'text/xml');
-        const stockAvailable = auxStock.getElementsByTagName("stock_available")[0];
-        const quantity = stockAvailable.getElementsByTagName("quantity")[0].textContent;
-        console.log("hasta aca 2")
-
+        const description = productElement.getElementsByTagName("description_short")[0].getElementsByTagName("language")[0].textContent;
+        const rootElement = xmlAux.documentElement;
+        const stockAvailableElements = rootElement.getElementsByTagName("stock_available");
+        const stockObjects = [];
+        for (let i = 0; i < stockAvailableElements.length; i++) {
+          const element = stockAvailableElements[i];
+          const idElement = element.getElementsByTagName("id")[0];
+          const idProductAttributeElement = element.getElementsByTagName("id_product_attribute")[0];
+        
+          // Obtener los valores de los elementos hijos
+          const id = idElement.textContent;
+          const idProductAttribute = idProductAttributeElement.textContent;
+        
+          // Crear el objeto y agregarlo al array
+          const stockObject = {
+            idProductAttribute,
+            idStock: id,
+          };
+          stockObjects.push(stockObject);
+        }
+        // console.log(stockObjects, "stock")
         //categoria
         const category_name = await this.esferosService.getCategoryById(categoryName)
         const auxCategory = parser.parseFromString(category_name, 'text/xml');
         const nameElement = auxCategory.getElementsByTagName("name")[0].getElementsByTagName("language")[0].textContent;
-        console.log("hasta aca 3")
+        // console.log("hasta aca 3")
 
 
         //cargar aux
@@ -1235,9 +1336,10 @@ export class AppController {
           name,
           description,
           image,
-          stock: quantity,
+          stock: 0,
           variants: []
         }
+        console.log(aux, "aux")
 
 
         //Variantes
@@ -1257,59 +1359,101 @@ export class AppController {
             console.log("La combinacion " + (i + 1) + " está vacía.");
           }
         }
-        console.log("hasta aca 4")
-        for (let i = 0; i < idCombination.length; i++) {
-          await new Promise(resolve => setTimeout(resolve, 200));
-          const combination = await this.esferosService.getCombinatiosById(idCombination[i])
-          const auxCombination = parser.parseFromString(combination, 'text/xml');
-          const combinationElement = auxCombination.getElementsByTagName("combination")[0];
-          const reference = combinationElement.getElementsByTagName("reference")[0].textContent;
-          const price = combinationElement.getElementsByTagName("price")[0].textContent;
-          const weight = combinationElement.getElementsByTagName("weight")[0].textContent;
-          const stock = combinationElement.getElementsByTagName("quantity")[0].textContent;
-          const imagenes = combinationElement.getElementsByTagName("image");
-          const images = []
-          // Recorrer los elementos <image> y obtener los atributos xlink:href y <id>
-          for (let i = 0; i < imagenes.length; i++) {
-            const imagen = imagenes[i];
-            const href = imagen.getAttribute("xlink:href");
-            images.push(href)
-          }
-          // obtener atributos
-          const atributId = combinationElement.getElementsByTagName("product_option_value")[0].getElementsByTagName("id")[0].textContent;
-          const atrib = await this.esferosService.getPropsById(atributId)
-          const atribAux = parser.parseFromString(atrib, 'text/xml');
-          const atribElement = atribAux.getElementsByTagName("name")[0].getElementsByTagName("language")[0].textContent;
-          aux.variants.push({
-            id: productIds[i],
-            sku: reference,
-            categorie: nameElement,
+        // console.log("hasta aca 4")
+        // console.log(idCombination, "idCombination")
+        if (idCombination.length == 0) {
+          // console.log(stockObjects, "stockArray")
+          const stockCombination = await this.esferosService.getStockById(stockObjects[0].idStock)
+          const auxStock = parser.parseFromString(stockCombination, 'text/xml');
+          const stockElement = auxStock.getElementsByTagName("stock_available")[0];
+          const stock = stockElement.getElementsByTagName("quantity")[0].textContent;
+          const variant = {
+            idVariant: productIds[i],
+            idCombination: "",
+            reference: id,
             price,
             weight,
             height,
             width,
             name,
             description,
-            images,
-            stock,
-            atribut: atribElement
-          })
-        }
+            image,
+            stock: stock,
+            variants: []
+          }
+          // console.log(variant, "variant")
+          aux.variants.push(variant)
+          jsonProducts.push(aux)
+        } else {
+          for (let i = 0; i < idCombination.length; i++) {
+            await new Promise(resolve => setTimeout(resolve, 200));
+            const combination = await this.esferosService.getCombinatiosById(idCombination[i])
+            const auxCombination = parser.parseFromString(combination, 'text/xml');
+            const combinationElement = auxCombination.getElementsByTagName("combination")[0];
+            const reference = combinationElement.getElementsByTagName("reference")[0].textContent;
+            const price = combinationElement.getElementsByTagName("price")[0].textContent;
+            const weight = combinationElement.getElementsByTagName("weight")[0].textContent;
+            // const stock = combinationElement.getElementsByTagName("quantity")[0].textContent;
+            let stockElement = '0'
+            
+            for (let x = 0; x < stockObjects.length; x++) {
+              // console.log(stockObjects[x].idProductAttribute+'_'+idCombination[i], "combinationstock")
+              // console.log(idCombination[i], "idCombination")
+              if (stockObjects[x].idProductAttribute == idCombination[i]) {
+                const stockCombination = await this.esferosService.getStockById(stockObjects[x].idStock)
+                const auxStock = parser.parseFromString(stockCombination, 'text/xml');
+                const stockData= auxStock.getElementsByTagName("stock_available")[0];
+                const stock = stockData.getElementsByTagName("quantity")[0].textContent;
+                stockElement = stock
+                // console.log(stock)
+                break;
+              }
+            }
+            // console.log(stockElement, "stockElement")
+            const imagenes = combinationElement.getElementsByTagName("image");
+            const images = []
+            // Recorrer los elementos <image> y obtener los atributos xlink:href y <id>
+            for (let i = 0; i < imagenes.length; i++) {
+              const imagen = imagenes[i];
+              const href = imagen.getAttribute("xlink:href");
+              images.push(href)
+            }
+            // obtener atributos
+            const atributId = combinationElement.getElementsByTagName("product_option_value")[0].getElementsByTagName("id")[0].textContent;
+            const atrib = await this.esferosService.getPropsById(atributId)
+            const atribAux = parser.parseFromString(atrib, 'text/xml');
+            const atribElement = atribAux.getElementsByTagName("name")[0].getElementsByTagName("language")[0].textContent;
+            aux.variants.push({
+              id: productIds[i],
+              sku: reference,
+              categorie: nameElement,
+              price,
+              weight,
+              height,
+              width,
+              name,
+              description,
+              images,
+              stock: stockElement,
+              atribut: atribElement
+            })
+          }
 
+        }
 
         jsonProducts.push(aux)
       }
       //crear un archivo json
       const json = JSON.stringify(jsonProducts);
       writeFileSync('products.json', json);
-
+      await this.loadProductsEsferos({})
       return { message: 'ok', data: json }
     } catch (error) {
       console.log(error)
       return { error: error }
     }
   }
-  @EventPattern('load_esferos')
+  @EventPattern('load_esferos_products')
   async loadProductsEsferos(data: any) {
     try {
       const location = '3b257993-638c-4505-ad1d-5a6dd24d9ac5'
@@ -1317,7 +1461,9 @@ export class AppController {
       const collection = 'b4995e35-2373-4b36-a3f8-d147f6833a5a'
       const products = JSON.parse(readFileSync('products.json', 'utf8'))
       const aux = []
-      for (let i = 0; i < products.length; i++) {
+      const err = []
+      const size = products.length
+      for (let i = 0; i < size; i++) {
         await new Promise(resolve => setTimeout(resolve, 200));
         const categoria = await this.esferosService.getCategoriasHomologadas(products[i].categorie)
         console.log(categoria, "homo")
@@ -1332,7 +1478,7 @@ export class AppController {
         slug_aux = products[i].id + '-' + slug_aux.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
         const reference = products[i].reference === '' ? slug_aux : products[i].reference
         const check_product = await this.aphService.checkProduct(reference)
-        console.log(check_product)
+        // console.log(check_product)
         if (check_product.length == 0) {
           const descripcion = await this.esferosService.clearTagsHtml(products[i].description);
           const productaux = {
@@ -1356,11 +1502,11 @@ export class AppController {
             price,
             currency: 'COP',
             type: 'Precio Neto',
-            metadata: { precioSugerido: price * 3 / 5 },
+            metadata: { precioSugerido: price * 5 / 3 },
             productId: null
           })
           productaux.price = price_db.id_price
-          await new Promise(resolve => setTimeout(resolve, 200));
+          await new Promise(resolve => setTimeout(resolve, 100));
           const product_db = await this.aphService.setProduct(productaux)
           price_db.productId = product_db.id_productos;
           await this.aphService.updatePrice(price_db);
@@ -1371,7 +1517,7 @@ export class AppController {
           })
           if (products[i].variants.length > 0) {
             for (let j = 0; j < products[i].variants.length; j++) {
-              await new Promise(resolve => setTimeout(resolve, 200));
+              await new Promise(resolve => setTimeout(resolve, 100));
               const variant = products[i].variants[j];
               const variantaux = {
                 name_variants: reference + '-' + variant.atribut,
@@ -1385,11 +1531,12 @@ export class AppController {
               }
               const variant_db = await this.aphService.setVariant(variantaux)
               console.log(variant_db, "variant")
-              console.log(variant, "images")
+              // console.log(variant, "images")
+              console.log(variant_db.id_variant)
               await this.aphService.setStock({
-                location: location,
+                locationId: location,
                 quantity: variant.stock,
-                variantId: variant_db.id_variant,
+                variant_id: variant_db.id_variant,
                 quantity_allocated: 0
               })
               await this.aphService.setVariantImage({
@@ -1411,9 +1558,9 @@ export class AppController {
             }
             const variant_db = await this.aphService.setVariant(variantaux)
             await this.aphService.setStock({
-              location: location,
+              locationId: location,
               quantity: products[i].stock,
-              variantId: variant_db.id_variant,
+              variant_id: variant_db.id_variant,
               quantity_allocated: 0
             })
             await this.aphService.setVariantImage({
@@ -1427,7 +1574,7 @@ export class AppController {
           const variant_db = await this.aphService.getVariants({ idProducts: product_db.idProducts });
           const price_db = await this.aphService.getPrice({ id: product_db.idProducts });
           const price = products[i].price.split('.')[0]
-          if(price_db.length == 0){
+          if (price_db.length == 0) {
             const price_db = await this.aphService.setPrice({
               price,
               currency: 'COP',
@@ -1437,45 +1584,93 @@ export class AppController {
             })
             product_db.price = price_db.id_price
             await this.aphService.updateProduct(product_db)
-          }else{
+          } else {
             await this.aphService.updatePrice(
               {
                 id: price_db[0].id,
                 type: 'Precio Neto',
-                metadata: JSON.stringify({ precioSugerido:price * 3 / 5 }),
+                metadata: JSON.stringify({ precioSugerido: price * 3 / 5 }),
                 currency: 'COP',
                 price: 0,
                 productId: price_db[0].productId
               })
           }
-          if(products[i].variants.length == 0){
-            continue;
-          }
-          for (let c = 0; products[i].variants.length > c; c++) {
-            await new Promise(resolve => setTimeout(resolve, 200));
-            const variant = <any>await this.aphService.getVariantBySku({ sku: variant_db[c].sku });
-            const stock_db = <any>await this.aphService.getStockByVariant({ id_variant: variant[0].id_variant });
-            await this.aphService.updateStock({
-              locationId: location,
-              quantity: products[i].variants[c].stock,
-              id_variant: variant[0].id_variant,
-            })
-            await this.aphService.updateVariant({
-              name_variant:variant[0].name_variant,
-              metadata_variant:variant[0].metadata_variant,
-              price_override:products[i].variants[c].price.split('.')[0] * 3 / 5,
-              weight_override:0,
-              sku:variant[0].sku,
-              description_variant:variant[0].description_variant,
-              brand:variant[0].brand,
-              product_id:variant[0].product_id,
-            })
+          if (variant_db.length == 0) {
+            console.log("no tengo variante")
+            for (let j = 0; j < products[i].variants.length; j++) {
+              await new Promise(resolve => setTimeout(resolve, 100));
+              const variant = products[i].variants[j];
+              const descripcion = await this.esferosService.clearTagsHtml(products[i].description);
+              const variantaux = {
+                name_variants: reference + '-' + variant.atribut,
+                metadata_variants: {},
+                price_override: variant.price.split('.')[0] * 3 / 5,
+                weight_override: variant.weight.split('.')[0],
+                sku: variant.sku + '-' + variant.atribut,
+                description_variant: descripcion,
+                brand: 'not-brand',
+                product_id: product_db.idProducts,
+              }
+              // console.log(product_db)
+              const variant_db = await this.aphService.setVariant(variantaux)
+              console.log(variant_db, "variant")
+              // console.log(variant, "images")
+              await this.aphService.setStock({
+                locationId: location,
+                quantity: variant.stock,
+                variantId: variant_db.id_variant,
+                quantity_allocated: 0
+              })
+              await this.aphService.setVariantImage({
+                variantId: variant_db.id_variant,
+                image: null,
+                urlImage: JSON.stringify(variant.images)
+              })
+            }
+          } else {
+            for (let c = 0; products[i].variants.length > c; c++) {
+              await new Promise(resolve => setTimeout(resolve, 100));
+              console.log(variant_db[c])
+              try {
+                const variant = <any>await this.aphService.getVariantBySku({ sku: variant_db[c].sku });
+                const stock_db = <any>await this.aphService.getStockByVariant({ id_variant: variant[0].id_variant });
+                if (stock_db.length == 0) {
+                  await this.aphService.setStock({
+                    locationId: location,
+                    quantity: products[i].variants[c].stock,
+                    variant_id: variant[0].id_variant,
+                    quantity_allocated: 0
+                  })
+                } else {
+                  await this.aphService.updateStock({
+                    locationId: location,
+                    quantity: products[i].variants[c].stock,
+                    id_variant: variant[0].id_variant,
+                  })
+                }
+                // console.log(variant)
+                await this.aphService.updateVariant({
+                  name_variant: variant[0].name_variant,
+                  metadata_variant: variant[0].metadata_variant,
+                  price_override: products[i].variants[c].price.split('.')[0] * 3 / 5,
+                  weight_override: 0,
+                  sku: variant[0].sku,
+                  description_variant: variant[0].description_variant,
+                  brand: variant[0].brand,
+                  product_id: variant[0].product_id,
+                  id_variant: variant[0].id_variant
+                })
+              } catch (error) {
+                console.log(error)
+                err.push({ error: error.message, sku: products[i].variants[c], product_l: products[i] })
+              }
+            }
           }
         }
         aux.push(products[i])
 
       }
-      return { message: 'ok', data: aux }
+      return { message: 'ok', data: aux, err }
     } catch (err) {
       console.log(err)
       return { error: err }

@@ -445,4 +445,18 @@ export default class Users {
       return { error: true, message: err.message };
     }
   }
+  async setPayment({card_number,exp_month,exp_year,cvc,property_id}){
+    try{
+      const res = await knex_user_db('payment').where({property_id}).select('*');
+      if(res.length > 0){
+        await knex_user_db('payment').where({property_id}).update({card_number,exp_month,exp_year,cvc});
+      }else{
+        await knex_user_db('payment').insert({card_number,exp_month,exp_year,cvc,property_id});
+      }
+      return { error: false, message: 'Payment added' };
+    }catch(err){
+      console.log(err);
+      return { error: true, message: err.message };
+    }
+  }
 }

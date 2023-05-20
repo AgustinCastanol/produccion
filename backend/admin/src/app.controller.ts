@@ -13,6 +13,15 @@ export class AppController {
     return { data: res };
   }
   @UseGuards(CorsGuard)
+  @Post('/csv')
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  async csv(@Body() body: any): Promise<Object> {
+    const res = await this.appService.hookCSV();
+    return res;
+  }
+
+
+  @UseGuards(CorsGuard)
   @Post('/')
   // eslint-disable-next-line @typescript-eslint/ban-types
   async home(@Body() body: any): Promise<Object> {
