@@ -7,7 +7,7 @@ import { Cron } from '@nestjs/schedule';
 export class AppService {
   constructor(@Inject('LOGIN_SERVICE') private clienteLogin: ClientProxy) {}
 
-  @Cron('50 18 * * *')
+  //@Cron('50 18 * * *')
   async handleCron() {
     console.log('Cron');
     const promos = this.loadApiPromos({});

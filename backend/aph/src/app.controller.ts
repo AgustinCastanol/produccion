@@ -707,7 +707,7 @@ export class AppController {
             }
             const variant_db = await this.aphService.setVariant(variante);
             console.log(variant_db, 'variant_db')
-            const tramite = res.results[i].materiales[c].trackings_importacion[0].cantidad == undefined ? 0 : res.results[i].materiales[c].trackings_importacion[0].cantidad;
+            const tramite = res.results[i].materiales[c].trackings_importacion == undefined  ? 0 : res.results[i].materiales[c].trackings_importacion[0].cantidad;
             await this.aphService.setStock({ locationId: locations[0].id, quantity: res.results[i].materiales[c].inventario, variant_id: variant_db.id_variant, quantity_allocated: 0 });
             await this.aphService.setStock({ locationId: locations[1].id, quantity: 0, variant_id: variant_db.id_variant, quantity_allocated: 0 });
             await this.aphService.setStock({ locationId: locations[2].id, quantity: tramite, variant_id: variant_db.id_variant, quantity_allocated: 0 });
@@ -720,7 +720,7 @@ export class AppController {
 
               // console.log("actualizo stock")
               // console.log(res.results[i].materiales[c].trackings_importacion)
-              const tramite = res.results[i].materiales[c].trackings_importacion.length == 0 ? 0 : res.results[i].materiales[c].trackings_importacion[0].cantidad;
+              const tramite = res.results[i].materiales[c].trackings_importacion == undefined||res.results[i].materiales[c].trackings_importacion.length == 0 ? 0 : res.results[i].materiales[c].trackings_importacion[0].cantidad;
               await this.aphService.updateStock({ locationId: locations[0].id, quantity: res.results[i].materiales[c].inventario, id_variant: variant_db[0].id_variant, quantity_allocated: 0 });
               await this.aphService.updateStock({ locationId: locations[1].id, quantity: 0, id_variant: variant_db[0].id_variant, quantity_allocated: 0 });
               await this.aphService.updateStock({ locationId: locations[3].id, quantity: res.results[i].materiales[c].inventario, id_variant: variant_db[0].id_variant, quantity_allocated: 0 });
