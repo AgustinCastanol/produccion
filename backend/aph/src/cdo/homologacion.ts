@@ -456,6 +456,10 @@ export default{
       "slugAve": "paraguas-e-impermeables",
       "slugAveChildrent":"",
       "nombre":"Paraguas"
+    },{
+      "slugAve":"boligrafos-ecolgicos",
+      "slugAveChildrent":"",
+      "nombre":"Escritura,Escrituras Plásticas y otros,Masivos,Eco"
     }
     ]
 }
