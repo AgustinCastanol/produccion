@@ -168,7 +168,14 @@ export class AppController {
               await new Promise((resolve) => setTimeout(resolve, 300));
               const checkProduct = await this.aphService.checkProduct(products[j].referencia)
               if (!(checkProduct.length > 0)) {
-                const producto_promos = await this.promos.getProduct({ referencia: products[j].referencia });
+                let producto_promos = null;
+                try{
+                  producto_promos = await this.promos.getProduct({ referencia: products[j].referencia });
+                }catch(err){
+                  console.log(err)
+                  errores.push({ categorias: categorias[i], products: products[j], err: err }) 
+                  continue;
+                }
                 console.log(producto_promos)
                 const aux = await this.promos.clearName(producto_promos.nombre);
                 let price = 0;
@@ -250,7 +257,14 @@ export class AppController {
                 /*actualizo el precio */
                 console.log("updatePrice")
                 await new Promise((resolve) => setTimeout(resolve, 150));
-                const producto_promos = await this.promos.getProduct({ referencia: products[j].referencia });
+                let producto_promos = null;
+                try{
+                  producto_promos = await this.promos.getProduct({ referencia: products[j].referencia });
+                }catch(err){
+                  console.log(err)
+                  errores.push({ categorias: categorias[i], products: products[j], err: err }) 
+                  continue;
+                }
                 // const true_category = await this.promos.getCategoryById(producto_promos.idCategoria);
                 // await new Promise((resolve) => setTimeout(resolve, 150));
                 // const category = await this.aphService.getCategoryBySlug({ slug: true_category });

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const service = axios.create({
-  baseURL: 'https://back.soyave.com:47300/',
+  baseURL: 'https://back.soyave.com/bgwp_api/',
 
   withCredentials: false,
   timeout: 5000,

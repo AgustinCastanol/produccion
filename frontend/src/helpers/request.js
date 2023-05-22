@@ -2,7 +2,7 @@ import axios from "axios";
 
 const service = axios.create({
 
-  baseURL: 'https://back.soyave.com:3001/',
+  baseURL: 'https://back.soyave.com/api',
 
   withCredentials: false,
   timeout: 5000,
