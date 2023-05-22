@@ -14,7 +14,7 @@ export class AppService {
     const BASE_URL = 'http://localhost:47300/load_CSV'
     const TOKEN = `API-KEY bgwp_marcou8XoL0b47ImGhZsSuwzHCxX0qC6jQhljhhsGYHjisq57KY2rp37miOZsCNRLt0vtsnNIqn9eZdtyr1OFQGaa2toPTpZgDRqPG9PEWV9onuoS7duFz7DSOO4AWowA4qC4stSnlRZ2BsySBaoKohGhX6MQYKq1uW5WE7VaJ0l0go1omtHVumG4ey4TuLzutcrsujwqbBgmGnMxtMk6ZSKRNT3jKrdqEdzcgHzyz8YU5bPn9KcsJ2PY99v85hP4Gp8cB0qyaYzSIGgY9E4oRgTUJwcWv1Y3GtwmMItNdWWcrU0v8tShVGLbIYGarpVtCbAAAfhSvcnnIdnStO404uBmBKeatlCb5O4l9o7awScqCuRmsHllURQrfCRCFbcuu8KS5pZbV1CtYoKHgIVFxTsKSIIIzTKYcJhceaceROOsMpIKpNQXXBNmg3ovKxaBiA0QeLa1N1plhPCSTzCQaTObrZB1UtXqglwcZ5hPb0cRHgT3yXFRmuwzyrIgUBVthWcOzVDPMflZ0OiP9kVCy4vsfs5ufJANXBmUDQGGYLtJvljImZdtZG1KBnQQd4W1k14GJ4S3bBfoUOMxWVh93hHh96OiZ512r1csceu5yV6BrS4q67NX4dzpoy00XlfTmyADxbOHRljF9ERybNIyeBJjlxO8hyd2E8KLRyVsCyqEkTdgNYbCEtZrX4qI9g7SCCjGgmdtPyDMZsGNlP271kcJzfoouH8W4vSBJ01k9WZkNedVPLAh55YbdQBFyRYaujbenuNUgqXY3lF1N5B9j1TxJ1LiYEhX3BKZxXLic8yNNSOalymqpthaGaNNimC1TorUVdmcx7T7CdxmuGdAm8o6MhabQCKGuEfI6OhS8Am8n09lWfffkvJ23KTacL2UuEhqG2aLB2q3vq9flHAJG7z4zEnZ5oGZ7VwjAUXvqQqiTi3kfNF5LmedecUDFgy21NBXxRzVfS1Lh05ajslpngHkbYS6JKvwRcR2pEfOFwUrd4sOZ58toBsZRf`
      firstValueFrom(
-      this.httpService.post(`${BASE_URL}`, {
+      this.httpService.post(`${BASE_URL}`,{},{
         headers: {
           'Authorization':TOKEN,
         }
@@ -174,7 +174,7 @@ export class AppService {
       await this.sequelize.query(`INSERT INTO public."productImages"(
         "idImage", "productId", image, alt, "urlImage")
         VALUES ('${obj.idImage}', '${obj.id_productos}', ${obj.image ? `'${obj.image}'` : null}, '${obj.alt}', ${obj.url ? `'${obj.url}'` : null});`)
-      return obj;
+        return obj;
     } catch (err) {
       console.log('err', err);
       return err;
@@ -303,7 +303,7 @@ export class AppService {
     }
   }
   async getVariants(data: any) {
-    console.log("getVariants1",data.idProducts)
+    // console.log("getVariants1",data.idProducts)
     try {
       if (data.idProducts == undefined || data.idProducts == null) {
         return { message: 'missing idProducts' }
@@ -312,7 +312,7 @@ export class AppService {
         `SELECT * FROM "public"."variants" 
     where product_id = '${data.idProducts}'`,
       );
-      console.log(res[0], 'res')
+      // console.log(res[0], 'res')
       return res[0];
     } catch (err) {
       console.log(err)
@@ -833,6 +833,7 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
   async updatePrice(price: any) {
     /*UPDATE public.price */
     try {
+      console.log("entre aca")
       const obj = {
         id_price: price.id_price == null ? price.id : price.id_price,
         price: price.price,
@@ -846,6 +847,7 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
       UPDATE public.price
       SET price=${obj.price}, currency='${obj.currency}', type='${obj.type}', metadata_price='${obj.metadata}', "productId"='${obj.productId}'
       WHERE id = '${obj.id_price}';`);
+      console.log(obj, 'obj price')
       return obj;
     } catch (e) {
       console.log(e);

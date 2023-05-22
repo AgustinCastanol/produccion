@@ -142,7 +142,7 @@ function searchCategoriesExtra(categories, name){
   for(let i = 0; i < categoriesExtra.length; i++){
     if(name.toLowerCase().includes(categoriesExtra[i])){
       if(categoriesExtra[i] != "eco"){
-        console.log(categoriesExtra[i], "categoriesExtra[i]")
+        // console.log(categoriesExtra[i], "categoriesExtra[i]", name)
         aux.push('Ecológicos');
       }else{
         aux.push('Ecológicos');

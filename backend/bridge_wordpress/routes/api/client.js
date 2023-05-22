@@ -308,17 +308,17 @@ router.post("/clear_variants", async function (request, response, next) {
       // console.log(variantesAgrupadas, "variantes")
       const variantes = Array.from(variantesAgrupadas.values());
       // console.log(variantes, "variantes")
-      for( let x = 0; variantes.length > x; x++){
+      for (let x = 0; variantes.length > x; x++) {
         const variant = variantes[x];
-        if(variant.length > 1){
-          for(let y = 1; variant.length > y; y++){
-            console.log( "id variant")
+        if (variant.length > 1) {
+          for (let y = 1; variant.length > y; y++) {
+            console.log("id variant")
             const image = await knex_products_db("productVariantImage").select("*").where("variantId", variant[y].id_variant);
             // console.log(image, "imagen")
-            if(image.length == 0){
+            if (image.length == 0) {
               console.log("sin imagen")
               const stock = await knex_products_db("stock").select("*").where("variant_id", variant[y].id_variant);
-              for(let z = 0; stock.length > z; z++){
+              for (let z = 0; stock.length > z; z++) {
                 console.log("stock eliminado", stock[z].idStock)
                 await knex_products_db("stock").where("idStock", stock[z].idStock).del();
               }
@@ -472,11 +472,15 @@ router.post("/get_CSV", async function (request, response, next) {
         }
         if (products[i].name_supplier == 'esferos') {
           proveedores.esferos++;
-          products[i].urlImage = "";
-          products[i].variants.map((variant) => {
-            variant.images = [];
-          })
           // console.log(products[i])
+          products[i].variants.map((variant) => {
+            if(products[i].urlImage != null && products[i].urlImage.includes('https://esferos.com')){
+              products[i].urlImage = '';
+            }
+            if (variant.images[0].urlImage.includes('https://esferos.com')) {
+              variant.images[0].urlImage = ''
+            }
+          })
         }
         let metadata = null;
         //reemplazar los . y los ; de las descripciones si lo tienen
@@ -499,11 +503,25 @@ router.post("/get_CSV", async function (request, response, next) {
           metadata = products[i].metadata != null ? JSON.parse(products[i].metadata) : null;
         }
         precio_sugerido = JSON.parse(products[i].metadata_price);
+        if (products[i].name_supplier == 'Promos') {
+          if (precio_sugerido !== null && precio_sugerido.precioSugerido != undefined) {
+            if (typeof precio_sugerido.precioSugerido == 'number') {
+              //convertir a int
+              precio_sugerido = precio_sugerido.precioSugerido.toString().split(".");
+              precio_sugerido = precio_sugerido[0];
+            } else {
+              precio_sugerido = precio_sugerido.precioSugerido.split(".");
+              precio_sugerido = precio_sugerido[0];
+            }
+          }
+        }
         if (precio_sugerido != null && precio_sugerido.precioSugerido != undefined) {
           precio_sugerido = (precio_sugerido.precioSugerido !== null && typeof precio_sugerido.precioSugerido != 'number') ? precio_sugerido.precioSugerido.split(".") : precio_sugerido.precioSugerido;
           precio_sugerido = precio_sugerido.length > 0 ? precio_sugerido[0] : precio_sugerido;
         } else {
-          precio_sugerido = products[i].price * 1.4;
+          if(precio_sugerido == null){
+            precio_sugerido = products[i].price * 1.4;
+          }
         }
         let name_product_slug = products[i].name_product.replace(/ /g, ",");
         let imagenes = ""
@@ -534,7 +552,7 @@ router.post("/get_CSV", async function (request, response, next) {
         let categories = products[i].parent == null ? products[i].name_category : `${products[i].parent} > ${products[i].name_category}`;
         categories = utils.searchCategoriesExtra(categories, products[i].name_product)
         let auxCategories = categories.split(",");
-        if (auxCategories.length > 1 || auxCategories[1] == '') {
+        if (auxCategories.length > 1 && auxCategories[1] == '') {
           // console.log("auxCategories",auxCategories)
           categories = auxCategories[0];
         }
@@ -611,12 +629,16 @@ router.post("/get_CSV", async function (request, response, next) {
           let categories = products[i].parent == null ? products[i].name_category : `${products[i].parent} > ${products[i].name_category}`;
           categories = utils.searchCategoriesExtra(categories, products[i].name_product);
           let auxCategories = categories.split(",");
-          if (auxCategories.length > 1 || auxCategories[1] == '') {
+          if (auxCategories.length > 1 && auxCategories[1] == '') {
             // console.log("auxCategories",auxCategories)
             categories = auxCategories[0];
           }
+          // console.log(categories, "total categories")
           let sum = stock.total.quantity + stock.local.quantity + stock.zonaFranca.quantity;
-          father_product = `simple;${products[i].reference};${products[i].name_product};${description_product};${description_product};${stock.total.quantity == undefined || stock.total.quantity == 0 ? "outofstock" : "instock"};${stock.total.quantity == 0 ? sum : stock.total.quantity == undefined ? 0 : stock.total.quantity};${stock.local.quantity};${stock.zonaFranca.quantity};${stock.transito.quantity};${variation.weight_override > 0 ? variation.weight_override : ''};;;;;;${variation.price_override > 0 ? variation.price_override : precio_sugerido > 0 ? precio_sugerido : products[i].price};${products[i].price};${categories};${products[i].slug_category + ',' + products[i].slug_collection + ',' + products[i].reference + ',', name_product_slug};${img_variant};${products[i].reference};0;${products[i].name_supplier};No;`
+          if(products[i].reference == 'T215'){
+            console.log("precio",precio_sugerido)
+          }
+          father_product = `simple;${products[i].reference};${products[i].name_product};${description_product};${description_product};${stock.total.quantity == undefined || stock.total.quantity == 0 ? "outofstock" : "instock"};${stock.total.quantity == 0 ? sum : stock.total.quantity == undefined ? 0 : stock.total.quantity};${stock.local.quantity};${stock.zonaFranca.quantity};${stock.transito.quantity};${variation.weight_override > 0 ? variation.weight_override : ''};;;;;;${precio_sugerido};${products[i].price};${categories};${products[i].slug_category + ',' + products[i].slug_collection + ',' + products[i].reference + ',', name_product_slug};${img_variant};${products[i].reference};0;${products[i].name_supplier};No;`
           if (colors != null && spaces == null) {
             // console.log("son color")
             // console.log("space", spaces)
