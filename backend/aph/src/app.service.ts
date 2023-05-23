@@ -13,7 +13,7 @@ export class AppService {
   async hookCSV(){
     const BASE_URL = 'http://localhost:47300/load_CSV'
     const TOKEN = `API-KEY bgwp_marcou8XoL0b47ImGhZsSuwzHCxX0qC6jQhljhhsGYHjisq57KY2rp37miOZsCNRLt0vtsnNIqn9eZdtyr1OFQGaa2toPTpZgDRqPG9PEWV9onuoS7duFz7DSOO4AWowA4qC4stSnlRZ2BsySBaoKohGhX6MQYKq1uW5WE7VaJ0l0go1omtHVumG4ey4TuLzutcrsujwqbBgmGnMxtMk6ZSKRNT3jKrdqEdzcgHzyz8YU5bPn9KcsJ2PY99v85hP4Gp8cB0qyaYzSIGgY9E4oRgTUJwcWv1Y3GtwmMItNdWWcrU0v8tShVGLbIYGarpVtCbAAAfhSvcnnIdnStO404uBmBKeatlCb5O4l9o7awScqCuRmsHllURQrfCRCFbcuu8KS5pZbV1CtYoKHgIVFxTsKSIIIzTKYcJhceaceROOsMpIKpNQXXBNmg3ovKxaBiA0QeLa1N1plhPCSTzCQaTObrZB1UtXqglwcZ5hPb0cRHgT3yXFRmuwzyrIgUBVthWcOzVDPMflZ0OiP9kVCy4vsfs5ufJANXBmUDQGGYLtJvljImZdtZG1KBnQQd4W1k14GJ4S3bBfoUOMxWVh93hHh96OiZ512r1csceu5yV6BrS4q67NX4dzpoy00XlfTmyADxbOHRljF9ERybNIyeBJjlxO8hyd2E8KLRyVsCyqEkTdgNYbCEtZrX4qI9g7SCCjGgmdtPyDMZsGNlP271kcJzfoouH8W4vSBJ01k9WZkNedVPLAh55YbdQBFyRYaujbenuNUgqXY3lF1N5B9j1TxJ1LiYEhX3BKZxXLic8yNNSOalymqpthaGaNNimC1TorUVdmcx7T7CdxmuGdAm8o6MhabQCKGuEfI6OhS8Am8n09lWfffkvJ23KTacL2UuEhqG2aLB2q3vq9flHAJG7z4zEnZ5oGZ7VwjAUXvqQqiTi3kfNF5LmedecUDFgy21NBXxRzVfS1Lh05ajslpngHkbYS6JKvwRcR2pEfOFwUrd4sOZ58toBsZRf`
-     firstValueFrom(
+     await firstValueFrom(
       this.httpService.post(`${BASE_URL}`,{},{
         headers: {
           'Authorization':TOKEN,
@@ -27,6 +27,36 @@ export class AppService {
       )
     )
     return {message : 'ok'}
+  }
+  async uploadImage(data:any){
+    try{
+      const TOKEN = `API-KEY bgwp_marcou8XoL0b47ImGhZsSuwzHCxX0qC6jQhljhhsGYHjisq57KY2rp37miOZsCNRLt0vtsnNIqn9eZdtyr1OFQGaa2toPTpZgDRqPG9PEWV9onuoS7duFz7DSOO4AWowA4qC4stSnlRZ2BsySBaoKohGhX6MQYKq1uW5WE7VaJ0l0go1omtHVumG4ey4TuLzutcrsujwqbBgmGnMxtMk6ZSKRNT3jKrdqEdzcgHzyz8YU5bPn9KcsJ2PY99v85hP4Gp8cB0qyaYzSIGgY9E4oRgTUJwcWv1Y3GtwmMItNdWWcrU0v8tShVGLbIYGarpVtCbAAAfhSvcnnIdnStO404uBmBKeatlCb5O4l9o7awScqCuRmsHllURQrfCRCFbcuu8KS5pZbV1CtYoKHgIVFxTsKSIIIzTKYcJhceaceROOsMpIKpNQXXBNmg3ovKxaBiA0QeLa1N1plhPCSTzCQaTObrZB1UtXqglwcZ5hPb0cRHgT3yXFRmuwzyrIgUBVthWcOzVDPMflZ0OiP9kVCy4vsfs5ufJANXBmUDQGGYLtJvljImZdtZG1KBnQQd4W1k14GJ4S3bBfoUOMxWVh93hHh96OiZ512r1csceu5yV6BrS4q67NX4dzpoy00XlfTmyADxbOHRljF9ERybNIyeBJjlxO8hyd2E8KLRyVsCyqEkTdgNYbCEtZrX4qI9g7SCCjGgmdtPyDMZsGNlP271kcJzfoouH8W4vSBJ01k9WZkNedVPLAh55YbdQBFyRYaujbenuNUgqXY3lF1N5B9j1TxJ1LiYEhX3BKZxXLic8yNNSOalymqpthaGaNNimC1TorUVdmcx7T7CdxmuGdAm8o6MhabQCKGuEfI6OhS8Am8n09lWfffkvJ23KTacL2UuEhqG2aLB2q3vq9flHAJG7z4zEnZ5oGZ7VwjAUXvqQqiTi3kfNF5LmedecUDFgy21NBXxRzVfS1Lh05ajslpngHkbYS6JKvwRcR2pEfOFwUrd4sOZ58toBsZRf`
+      const BASE_URL = "http://localhost:48700/create_image_product"
+      const formData = new FormData();
+      formData.append('image', new Blob([data.image]), `${data.name}-${data.sku}.png`);
+      const res = <any>await firstValueFrom(
+        this.httpService.post(`${BASE_URL}`,formData,{
+          headers: {
+            'Authorization':TOKEN,
+            'Content-Type': 'multipart/form-data'
+          }
+        })
+        .pipe(
+          catchError((err: AxiosError) => {
+            console.log('err', err);
+            throw new Error(`Causa: ${err.config} - codigo: ${err.code} - mensaje: ${err.message}`);
+          })
+        )
+      )
+      if(res.data){
+        return res.data;
+      }
+      return {error: res};
+
+    }catch(err){
+      console.log('err',err)
+      return err
+    }
   }
   async getProducts(data: any) {
     try {
@@ -214,7 +244,7 @@ export class AppService {
         productId: data.productId,
         image: data.image ? data.image : null,
         alt: data.alt ? data.alt : "image",
-        url: data.url ? data.url : null,
+        url: data.urlImage ? data.urlImage : null,
       };
       console.log(obj, 'objeto imagenes')
       await this.sequelize.query(`UPDATE public."productImages"

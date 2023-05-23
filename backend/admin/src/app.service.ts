@@ -7,16 +7,16 @@ import { Cron } from '@nestjs/schedule';
 export class AppService {
   constructor(@Inject('LOGIN_SERVICE') private clienteLogin: ClientProxy) {}
 
-  //@Cron('50 18 * * *')
+  @Cron('0 4 * * *')
   async handleCron() {
     console.log('Cron');
-    const promos = this.loadApiPromos({});
-    const marpico = this.loadApiMarpico({});
-    const cdo = this.loadApiCdo({});
-    const promoopcion = this.loadPricePromoOpcion({});
-    await Promise.all([promos, marpico, cdo, promoopcion]);
+    // const promos = this.loadApiPromos({});
+    // const marpico = this.loadApiMarpico({});
+    // const cdo = this.loadApiCdo({});
+    // const promoopcion = this.loadPricePromoOpcion({});
+    // await Promise.all([promos, marpico, cdo, promoopcion]);
     await this.hookCSV();
-    return { promos };
+    return { message:"ok" };
   }
   async hookCSV(){
     const res = await this.clienteLogin.send('hookCSV', {}).toPromise();

@@ -127,6 +127,31 @@ export class EsferosService {
     }
 
   }
+  async getImageByURL(url: string){
+    try{
+      const res = <any>await firstValueFrom(
+        this.httpService.get(`${url}`, {
+          auth:{
+            username: USER,
+            password: ''
+          },
+          responseType: 'arraybuffer'
+        }).pipe(
+          catchError((err: AxiosError) => {
+            this.logger.error(err.message);
+            throw new Error(`Causa: ${err.config} - codigo: ${err.code} - mensaje: ${err.message}`);
+          }
+        )
+      ));
+      if(res.data){
+        return res.data;
+      }
+      return {error: res};
+
+    }catch(error){
+      return {error};
+    }
+  }
 
   async getCombinatiosById(id: string){
     try{
