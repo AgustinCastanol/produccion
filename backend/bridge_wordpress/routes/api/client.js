@@ -202,90 +202,124 @@ router.post("/validate_supplier", async function (request, response, next) {
     next(err.message)
   }
 })
-// router.post("/clear_esferos", async function (request, response, next) {
-//   try {
-//     // const URL = "http://back.soyave.com:48700/create_image_product"
-//     const URL = "http://localhost:48700/create_image_product"
-//     const USER = 'DKLL9S98JGMC4RRGLQF2Z4Z2J1RTLJ3N'
-//     const products = await knex_products_db("products").select("*").where("supplier", "9c124ac9-ceaa-4ccb-b026-8906d75fc430");
-//     const size = products.length;
-//     for (let i = 1667; i < size; i++) {
-//       try {
-//         const product = products[i];
-//         const productImages = await knex_products_db("productImages").select("*").where("productId", product.idProducts);
-//         console.log(productImages, "imagenes")
-//         let urlImage = JSON.parse(productImages[0].urlImage);
-//         console.log(urlImage[0], "url")
+router.post("/clear_esferos", async function (request, response, next) {
+  try {
+    // const URL = "http://back.soyave.com:48700/create_image_product"
+    const URL = "http://localhost:48700/create_image_product"
+    const USER = 'DKLL9S98JGMC4RRGLQF2Z4Z2J1RTLJ3N'
+    fs.readFile('temp/esferos.json', 'utf8', async function (err, data_esferos) {
+      if (err) {
+        console.log("An error occured while reading JSON Object from File.");
+        return console.log(err);
+      }
+      const products = await knex_products_db("products").select("*").where("supplier", "9c124ac9-ceaa-4ccb-b026-8906d75fc430");
+      const size = products.length;
+      for (let i = 0; i < size; i++) {
+        try {
+          console.log("temp", i, products.length)
+          const esferos = JSON.parse(data_esferos);
+          const product = products[i];
+          const productImages = await knex_products_db("productImages").select("*").where("productId", product.idProducts);
+          console.log(productImages, "imagenes")
+          let urlImage = JSON.parse(productImages[0].urlImage);
+          console.log(urlImage, "url")
+          //buscar los productos con products[i].name_product en el json que tiene un array de productos
+          const index = esferos.findIndex((esfero) => esfero.name == product.name_product);
+          console.log(index, "index")
+          if (index == -1) {
+            continue;
+          }
+          console.log(esferos[index].image, "esfero")
+          const imagenes = esferos[index].image;
 
-//         const variants = await knex_products_db("variants").select("*").where("product_id", product.idProducts);
-//         for (let c = 0; variants.length > c; c++) {
-//           const variant = variants[c];
-//           console.log(variant, "variantes")
-//           const variant_images = await knex_products_db.raw(`SELECT * FROM public."productVariantImage" WHERE "variantId" = '${variant.id_variant}'`)
-//           console.log(variant_images.rows[0], "imagenes")
-//           let variants_image = JSON.parse(variant_images.rows[0].urlImage);
-//           console.log(variants_image, "variantes")
-//           if (variants_image[0] == 'h') {
-//             console.log("entreo")
-//             const imageBit = await axios.get(variants_image, { auth: { username: USER, password: "" }, responseType: 'arraybuffer' });
-//             const formData = new FormData();
-//             formData.append('image', new Blob([imageBit.data]), `${product.reference}-${variant.sku}.png`);
-//             const newPath = await axios.post(URL, formData, {
-//               headers: {
-//                 'Content-Type': 'multipart/form-data'
-//               }
-//             });
-//             console.log(newPath.data.data.path, "path")
-//             variants_image = newPath.data.data.path;
-//             await knex_products_db("productVariantImage").update({ urlImage: JSON.stringify(variants_image) }).where("idImage", variant_images.rows[0].idImage);
+          if(imagenes.length == 0){
+            continue;
+          }
+          if( urlImage.length == imagenes.length && urlImage[0].includes('https://back.soyave.com')){
+            console.log("iguales")
+            continue;
+          }
 
-//           } else {
-//             if (variants_image.length !== 0) {
-//               for (let x = 0; variants_image.length > x; x++) {
-//                 console.log(variants_image[x], "imagenes")
-//                 if (variants_image[x] == null || variants_image[x] == undefined || variants_image[x] == '' || variant_images[x].urlImage.includes('https://back.soyave.com')) continue;
-//                 //   try{
-//                 const imageBit = await axios.get(variants_image[x], { auth: { username: USER, password: "" }, responseType: 'arraybuffer' });
-//                 const formData = new FormData();
-//                 formData.append('image', new Blob([imageBit.data]), `${product.reference}-${variant.sku}.png`);
-//                 const newPath = await axios.post(URL, formData, {
-//                   headers: {
-//                     'Content-Type': 'multipart/form-data'
-//                   }
-//                 });
-//                 console.log(newPath.data.data.path, "path")
-//                 variants_image[x] = newPath.data.data.path;
+          const arrayImage = [];
+          for (let x = 0; x < imagenes.length; x++) {
+            console.log(imagenes[x], "imagen")
+            const imageBit = await axios.get(imagenes[x], { auth: { username: USER, password: "" }, responseType: 'arraybuffer' });
+            const formData = new FormData();
+            formData.append('image', new Blob([imageBit.data]), `${product.reference+x}.png`);
+            const newPath = await axios.post(URL, formData, {
+              headers: {
+                'Content-Type': 'multipart/form-data'
+              }
+            });
+            console.log(newPath.data.data.path, "path")
+            arrayImage.push(newPath.data.data.path);
+          }
+          console.log(arrayImage, "array")
+          urlImage = JSON.stringify(arrayImage);
+          console.log(urlImage, "url")
+          await knex_products_db("productImages").update({ urlImage }).where("productId", product.idProducts);
 
-//                 //   }catch(err){
-//                 //     variants_image[x] = '';
-//                 //     continue
-//                 //   }
-//               }
-//               await knex_products_db("productVariantImage").update("urlImage", JSON.stringify(variants_image)).where("idImage", variant_images.rows[0].idImage);
-//             }
-//           }
-//         }
-//         const imageBit = await axios.get(urlImage, { auth: { username: USER, password: "" }, responseType: 'arraybuffer' });
-//       } catch (err) {
-//         console.log(err)
-//         console.log("tempo", i)
-//         const product = products[i];
-//         const productImages = await knex_products_db("productImages").select("*").where("productId", product.idProducts);
-//         if (productImages.length !== 0) {
-//           let urlImage = JSON.parse(productImages[0].urlImage);
-//           if (urlImage.includes('https://esferos.com/site/api/images')) {
-//             await knex_products_db("productImages").update("urlImage", '[]').where("idImage", productImages[0].idImage);
-//           }
-//         }
-//         continue
-//       }
-//     }
-//     return response.status(200).send({ message: "ok" })
-//   } catch (err) {
-//     console.log(err)
-//     next(err.message)
-//   }
-// })
+          // const variants = await knex_products_db("variants").select("*").where("product_id", product.idProducts);
+          // for (let c = 0; variants.length > c; c++) {
+          //   const variant = variants[c];
+          //   console.log(variant, "variantes")
+          //   const variant_images = await knex_products_db.raw(`SELECT * FROM public."productVariantImage" WHERE "variantId" = '${variant.id_variant}'`)
+          //   console.log(variant_images.rows[0], "imagenes")
+          //   let variants_image = JSON.parse(variant_images.rows[0].urlImage);
+          //   console.log(variants_image, "variantes")
+          //   if (variants_image[0] == 'h') {
+          //     console.log("entreo")
+          //     const imageBit = await axios.get(variants_image, { auth: { username: USER, password: "" }, responseType: 'arraybuffer' });
+          //     const formData = new FormData();
+          //     formData.append('image', new Blob([imageBit.data]), `${product.reference}-${variant.sku}.png`);
+          //     const newPath = await axios.post(URL, formData, {
+          //       headers: {
+          //         'Content-Type': 'multipart/form-data'
+          //       }
+          //     });
+          //     console.log(newPath.data.data.path, "path")
+          //     variants_image = newPath.data.data.path;
+          //     await knex_products_db("productVariantImage").update({ urlImage: JSON.stringify(variants_image) }).where("idImage", variant_images.rows[0].idImage);
+
+          //   } else {
+          //     if (variants_image.length !== 0) {
+          //       for (let x = 0; variants_image.length > x; x++) {
+          //         console.log(variants_image[x], "imagenes")
+          //         if (variants_image[x] == null || variants_image[x] == undefined || variants_image[x] == '' || variant_images[x].urlImage.includes('https://back.soyave.com')) continue;
+          //         //   try{
+          //         const imageBit = await axios.get(variants_image[x], { auth: { username: USER, password: "" }, responseType: 'arraybuffer' });
+          //         const formData = new FormData();
+          //         formData.append('image', new Blob([imageBit.data]), `${product.reference}-${variant.sku}.png`);
+          //         const newPath = await axios.post(URL, formData, {
+          //           headers: {
+          //             'Content-Type': 'multipart/form-data'
+          //           }
+          //         });
+          //         console.log(newPath.data.data.path, "path")
+          //         variants_image[x] = newPath.data.data.path;
+
+          //         //   }catch(err){
+          //         //     variants_image[x] = '';
+          //         //     continue
+          //         //   }
+          //       }
+          //       await knex_products_db("productVariantImage").update("urlImage", JSON.stringify(variants_image)).where("idImage", variant_images.rows[0].idImage);
+          //     }
+          //   }
+          // }
+          // const imageBit = await axios.get(urlImage, { auth: { username: USER, password: "" }, responseType: 'arraybuffer' });
+        } catch (err) {
+          console.log(err)
+          console.log("tempo", i)
+        }
+      }
+    });
+    return response.status(200).send({ message: "ok" })
+  } catch (err) {
+    console.log(err)
+    next(err.message)
+  }
+})
 router.post("/clear_variants", async function (request, response, next) {
   try {
     const products = await knex_products_db("products").select("*").where("supplier", "408afa0a-41c1-4c31-a831-8de0dfc3d30a");
@@ -455,7 +489,34 @@ router.post("/get_CSV", async function (request, response, next) {
           continue;
         }
         if (products[i].name_supplier == 'Promos') {
+          if(products[i].urlImage == null){
+            continue;
+          }
           proveedores.Promos++;
+          console.log(products[i].urlImage,"url image")
+          if(products[i].urlImage){
+            if(products[i].urlImage == 'https://www.catalogospromocionales.com/images/productos/1696.jpg'){
+              products[i].urlImage = 'https://www.catalogospromocionales.com/images/productos/1696.jpg'
+            }
+            if(products[i].urlImage.includes(`//www.catalogospromocionales.com/images/productos/1424.jpg/images/productos/1424.jpg`)){
+              products[i].urlImage = `https://www.catalogospromocionales.com/images/productos/1424.jpg`
+            }
+            if(products[i].urlImage.includes(`"https://www.catalogospromocionales.com/images/productos/2867.jpg`)){
+              products[i].urlImage = `https://www.catalogospromocionales.com/images/productos/2867.jpg`
+            }
+            if(products[i].urlImage.includes(`https://www.catalogospromocionales.com/images/productos/4500.jpg`)){
+              products[i].urlImage = `https://www.catalogospromocionales.com/images/productos/4500.jpg`
+            }
+            if(products[i].urlImage.includes(`https://www.catalogospromocionales.com/images/productos/1296.jpg/images/productos/1296.jpg`)){
+              products[i].urlImage = `https://www.catalogospromocionales.com/images/productos/1296.jpg`
+            }
+            if(products[i].urlImage.includes(`s://www.catalogospromocionales.com/images/productos/1658`)){
+              products[i].urlImage = `https://www.catalogospromocionales.com/images/productos/1658.jpg`
+            }
+          }
+          // if(products[i].utlImage.includes(`https://catalogospromocionales.com/images/galeria/MB01/MB01-2.jpg`)){
+          //   products[i].urlImage = `https://catalogospromocionales.com/images/galeria/MB01/MB01-2.jpg`
+          // }
           // continue;
         }
         if (products[i].name_supplier == 'CDO') {
@@ -474,7 +535,7 @@ router.post("/get_CSV", async function (request, response, next) {
           proveedores.esferos++;
           // console.log(products[i])
           products[i].variants.map((variant) => {
-            if(products[i].urlImage != null && products[i].urlImage.includes('https://esferos.com')){
+            if (products[i].urlImage != null && products[i].urlImage.includes('https://esferos.com')) {
               products[i].urlImage = '';
             }
             if (variant.images[0].urlImage.includes('https://esferos.com')) {
@@ -482,6 +543,7 @@ router.post("/get_CSV", async function (request, response, next) {
             }
           })
         }
+
         let metadata = null;
         //reemplazar los . y los ; de las descripciones si lo tienen
         // console.log(products[i].description_product)
@@ -503,31 +565,61 @@ router.post("/get_CSV", async function (request, response, next) {
           metadata = products[i].metadata != null ? JSON.parse(products[i].metadata) : null;
         }
         precio_sugerido = JSON.parse(products[i].metadata_price);
-        if (products[i].name_supplier == 'Promos') {
-          if (precio_sugerido !== null && precio_sugerido.precioSugerido != undefined) {
-            if (typeof precio_sugerido.precioSugerido == 'number') {
-              //convertir a int
-              precio_sugerido = precio_sugerido.precioSugerido.toString().split(".");
-              precio_sugerido = precio_sugerido[0];
-            } else {
-              precio_sugerido = precio_sugerido.precioSugerido.split(".");
-              precio_sugerido = precio_sugerido[0];
+        if (products[i].metadata_price == "{}") {
+          precio_sugerido = 0;
+        } else {
+          if(products[i].name_supplier == 'esferos'){
+            precio_sugerido = products[i].price * 5/3;
+          }
+          if (products[i].name_supplier == 'Promos' || products[i].name_supplier == 'PromoOpcion' || products[i].name_supplier == 'esferos') {
+            if (precio_sugerido !== null && precio_sugerido.precioSugerido != undefined) {
+              if (typeof precio_sugerido.precioSugerido == 'number') {
+                //convertir a int
+                precio_sugerido = precio_sugerido.precioSugerido.toString().split(".");
+                precio_sugerido = precio_sugerido[0];
+              } else {
+                precio_sugerido = precio_sugerido.precioSugerido.split(".");
+                precio_sugerido = precio_sugerido[0];
+              }
+            }
+          }
+
+          if (precio_sugerido != null && precio_sugerido.precioSugerido != undefined) {
+            precio_sugerido = (precio_sugerido.precioSugerido !== null && typeof precio_sugerido.precioSugerido != 'number') ? precio_sugerido.precioSugerido.split(".") : precio_sugerido.precioSugerido;
+            precio_sugerido = precio_sugerido.length > 0 ? precio_sugerido[0] : precio_sugerido;
+          } else {
+            if (precio_sugerido == null) {
+              precio_sugerido = products[i].price * 1.4;
             }
           }
         }
-        if (precio_sugerido != null && precio_sugerido.precioSugerido != undefined) {
-          precio_sugerido = (precio_sugerido.precioSugerido !== null && typeof precio_sugerido.precioSugerido != 'number') ? precio_sugerido.precioSugerido.split(".") : precio_sugerido.precioSugerido;
-          precio_sugerido = precio_sugerido.length > 0 ? precio_sugerido[0] : precio_sugerido;
-        } else {
-          if(precio_sugerido == null){
-            precio_sugerido = products[i].price * 1.4;
-          }
+        if (precio_sugerido < 0) {
+          precio_sugerido = 0;
+        }
+        if (products[i].price < 0) {
+          products[i].price = 0;
         }
         let name_product_slug = products[i].name_product.replace(/ /g, ",");
         let imagenes = ""
         if (products[i].urlImage !== null) {
           if (products[i].urlImage[0] == "[") {
-            imagenes = JSON.parse(products[i].urlImage);
+              imagenes = JSON.parse(products[i].urlImage);
+
+            for (let m = 0; m < imagenes.length; m++) {
+              if (imagenes[m][0] == '[') {
+                // console.log(imagenes[m])
+                //eliminar ese elemento
+                imagenes.splice(m, 1);
+
+              }
+            }
+            // console.log(imagenes)
+            await imagenes.map((imagen) => {
+              // console.log(imagen)
+              if(imagen.includes(`.jpg/images/productos`)){
+                imagen= imagen.replace(/\/[^/]+$/, "");;
+              }
+            })
             imagenes = imagenes.join(",");
           } else {
             imagenes = products[i].urlImage;
@@ -536,6 +628,7 @@ router.post("/get_CSV", async function (request, response, next) {
           imagenes = '';
           error.push(products[i])
         }
+
         let colors = await utils.get_colors_at_sku(products[i].variants, products[i].name_supplier == 'PromoOpcion')
         if (colors.length > 0) {
           colors = await utils.homologationcolor(colors);
@@ -635,8 +728,8 @@ router.post("/get_CSV", async function (request, response, next) {
           }
           // console.log(categories, "total categories")
           let sum = stock.total.quantity + stock.local.quantity + stock.zonaFranca.quantity;
-          if(products[i].reference == 'T215'){
-            console.log("precio",precio_sugerido)
+          if (products[i].reference == 'T215') {
+            console.log("precio", precio_sugerido)
           }
           father_product = `simple;${products[i].reference};${products[i].name_product};${description_product};${description_product};${stock.total.quantity == undefined || stock.total.quantity == 0 ? "outofstock" : "instock"};${stock.total.quantity == 0 ? sum : stock.total.quantity == undefined ? 0 : stock.total.quantity};${stock.local.quantity};${stock.zonaFranca.quantity};${stock.transito.quantity};${variation.weight_override > 0 ? variation.weight_override : ''};;;;;;${precio_sugerido};${products[i].price};${categories};${products[i].slug_category + ',' + products[i].slug_collection + ',' + products[i].reference + ',', name_product_slug};${img_variant};${products[i].reference};0;${products[i].name_supplier};No;`
           if (colors != null && spaces == null) {
