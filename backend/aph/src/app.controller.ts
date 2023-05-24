@@ -45,18 +45,9 @@ export class AppController {
   @EventPattern('api_promos_products')
   async handleApiPromosProducts(data: any) {
 
-    const categorias = await this.promos.getCategories();
-
-    let count = 0;
-    for (let i = 0; i < categorias.length; i++) {
-      const productos = await this.promos.getProductsByCategory(categorias[i]);
-      await new Promise((resolve) => setTimeout(resolve, 200));
-      categorias[i].productos = productos;
-      count += productos.length;
-      console.log(count, categorias[i].nombre + " : " + productos.length);
-    }
-
-    return { count };
+    const res = await this.promos.getProduct({referencia:'LL-69'})
+    console.log(res,"salio")
+    return { res };
     // const products = await this.promos.getProductsByCategory({id:71});
     // const references = products[1659];
     // return references;
@@ -155,7 +146,7 @@ export class AppController {
       ]
       const base_url_image = 'https://www.catalogospromocionales.com'
       const categorias = await this.promos.getCategories();
-      for (let i = 0; categorias.length > i; i++) {
+      for (let i = 0; 1> i; i++) {
         await new Promise((resolve) => setTimeout(resolve, 300));
         const categoriaHomologada = <any>await this.promos.getCategoriasHomologadas(categorias[i]);
         const categorias_aph = await this.aphService.getCategoryBySlug({ slug: categoriaHomologada });
@@ -163,7 +154,7 @@ export class AppController {
           console.log(categorias[i])
           const products = await this.promos.getProductsByCategory(categorias[i]);
           const size = products.length
-          for (let j = 0; size > j; j++) {
+          for (let j = 0; 1 > j; j++) {
             try {
               await new Promise((resolve) => setTimeout(resolve, 300));
               const checkProduct = await this.aphService.checkProduct(products[j].referencia)
@@ -259,10 +250,11 @@ export class AppController {
                 await new Promise((resolve) => setTimeout(resolve, 150));
                 let producto_promos = null;
                 try {
-                  producto_promos = await this.promos.getProduct({ referencia: products[j].referencia });
+                  // producto_promos = await this.promos.getProduct({ referencia: products[j].referencia });
+                  producto_promos = await this.promos.getProduct({referencia:'LL-69'})
+                  console.log("producto_promos", producto_promos)
                 } catch (err) {
-                  console.log(err)
-                  errores.push({ categorias: categorias[i], products: products[j], err: err })
+                  await this.aphService.deleteFullProduct(checkProduct[0].idProducts);
                   continue;
                 }
                 // const true_category = await this.promos.getCategoryById(producto_promos.idCategoria);

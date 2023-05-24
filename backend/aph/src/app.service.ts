@@ -77,6 +77,34 @@ export class AppService {
       return err;
     }
   }
+  async deleteFullProduct(idProducts:string){
+    try{
+      console.log('idProducts',idProducts)
+      const productImages = await this.sequelize.query(`SELECT * FROM "public"."productImages" WHERE "productId" = ${idProducts}`);
+      const variant = <any>await this.sequelize.query(`SELECT * FROM "public"."variants" WHERE "product_id" = ${idProducts}`);
+      //limpio las variantes
+      console.log('variant',variant)
+
+      // for(let i = 0; i< variant.length; i++){
+      //   //eliminar todos los stocks 
+      //   await this.sequelize.query(`DELETE FROM "public"."stock" WHERE "variant_id" = ${variant[i].id_variant}`);
+      //   //eliminar todas las imagenes
+      //   await this.sequelize.query(`DELETE FROM "public"."productVariantImage" WHERE "variantId" = ${variant[i].id_variant}`);
+      //   //elimino la variante
+      //   await this.sequelize.query(`DELETE FROM "public"."variants" WHERE "id" = ${variant[i].id_variant}`);
+      // }
+      //elimino el precio
+      // await this.sequelize.query(`DELETE FROM "public"."price" WHERE "productId" = ${idProducts}`);
+      // //elimino las imagenes
+      // await this.sequelize.query(`DELETE FROM "public"."productImages" WHERE "productId" = ${idProducts}`);
+      // //elimino el producto
+      // await this.sequelize.query(`DELETE FROM "public"."products" WHERE "idProducts" = ${idProducts}`);
+      return {status:"ok"};
+    }catch(err){
+      console.log('err',err)
+      return {status:"error"}
+    }
+  }
   async updateProduct(data: any) {
     try {
       /* UPDATE public.products
