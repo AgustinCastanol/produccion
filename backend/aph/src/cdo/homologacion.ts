@@ -20,8 +20,7 @@ export default{
       "slugAve": "escritura",
       "slugAveChildrent":"",
       "nombre":"Escritura,Escrituras Plásticas y otros,Masivos"
-    }
-    ,
+    },
     {
       "slugAve": "escritura",
       "slugAveChildrent":"",
@@ -100,7 +99,7 @@ export default{
     {
       "slugAve": "bolsos-maletines-y-morrales",
       "slugAveChildrent":"",
-      "name":'Bolsos, Maletines y Morrales,Big Logo,Nivel Ejecutivo,Oficina y Negocios'
+      "name":"Bolsos, Maletines y Morrales,Big Logo,Nivel Ejecutivo,Oficina y Negocios"
     },
     {
       "slugAve":"ecolgicos",
@@ -117,7 +116,8 @@ export default{
       "slugAve": "bolsos-maletines-y-morrales",
       "slugAveChildrent":"",
       "nombre":"Bolsos, Maletines y Morrales,Oficina y Negocios"
-    },{
+    },
+    {
       "slugAve": "bolsos-maletines-y-morrales",
       "slugAveChildrent":"",
       "nombre":"Bolsos, Maletines y Morrales,Big Logo,Oficina y Negocios"
@@ -456,10 +456,92 @@ export default{
       "slugAve": "paraguas-e-impermeables",
       "slugAveChildrent":"",
       "nombre":"Paraguas"
-    },{
+    },
+    {
       "slugAve":"boligrafos-ecolgicos",
       "slugAveChildrent":"",
       "nombre":"Escritura,Escrituras Plásticas y otros,Masivos,Eco"
+    },
+    {
+      "slugAve":"bolsos-maletines-y-morrales",
+      "slugAveChildrent":"",
+      "nombre":"Tiempo Libre,Bolsos, Maletines y Morrales,Oficina y Negocios,Big Logo"
+    },
+    {
+      "slugAve":"tecnologa",
+      "slugAveChildrent":"",
+      "nombre":"Oficina y Negocios,Tecnología,Audio,Home Office"
+    },
+    {
+      "slugAve":"tecnologa",
+      "slugAveChildrent":"",
+      "nombre":"Tiempo Libre,Oficina y Negocios,Tecnología,Pocket,Audio,Home Office"
+    },
+    {
+      "slugAve":"tecnologa",
+      "slugAveChildrent":"",
+      "nombre":"Hogar,Oficina y Negocios,Tecnología,Multiuso,Audio,Home Office"
+    },
+    {
+      "slugAve":"artculos-hogar",
+      "slugAveChildrent":"",
+      "nombre":"Hogar,Tiempo Libre"
+    },
+    {
+      "slugAve":"botilitos-y-mugs-sublimacion",
+      "slugAveChildrent":"",
+      "nombre":"Tiempo Libre,Hogar,Home Office,Vasos, Mugs y Botellas"
+    },
+    {
+      "slugAve":"botilitos-y-mugs-sublimacion",
+      "slugAveChildrent":"",
+      "nombre":"Hogar,Vasos, Mugs y Botellas,Home Office,Eco"
+    },
+    {
+      "slugAve":"ecolgicos",
+      "slugAveChildrent":"",
+      "nombre":"Hogar,Big Logo,Eco"
+    },
+    {
+      "slugAve":"oficina-y-negocios",
+      "slugAveChildrent":"",
+      "nombre":"Hogar,Oficina y Negocios,Eco,Home Office"
+    },
+    {
+      "slugAve":"botilitos-y-mugs-sublimacion",
+      "slugAveChildrent":"",
+      "nombre":"Tiempo Libre,Vasos, Mugs y Botellas,Eco,Viajes,Automóvil,Home Office"
+    },
+    {
+      "slugAve":"botilitos-y-mugs-sublimacion",
+      "slugAveChildrent":"",
+      "nombre":"Tiempo Libre,Vasos, Mugs y Botellas,Eco,Viajes,Automóvil,Big Logo"
+    },
+    {
+      "slugAve":"botilitos-y-mugs-sublimacion",
+      "slugAveChildrent":"",
+      "nombre":"Tiempo Libre,Vasos, Mugs y Botellas,Eco,Viajes,Automóvil,Home Office"
+    },
+    {
+      "slugAve":"oficina-y-negocios",
+      "slugAveChildrent":"",
+      "nombre":"Hogar,Oficina y Negocios,Eco,Home Office"
+    },
+    {
+      "slugAve":"oficina-y-negocios",
+      "slugAveChildrent":"",
+      "nombre":"Hogar,Oficina y Negocios,Eco,Pocket,Home Office"
+    },
+    {
+      "slugAve":"botilitos-y-mugs-sublimacion",
+      "slugAveChildrent":"",
+      "nombre":"Tiempo Libre,Vasos, Mugs y Botellas,Eco,Viajes,Automóvil,Home Office"
+    },
+    {
+      "slugAve":"oficina-y-negocios",
+      "slugAveChildrent":"",
+      "nombre":"Hogar,Oficina y Negocios,Eco,Home Office"
     }
     ]
 }
+/**/

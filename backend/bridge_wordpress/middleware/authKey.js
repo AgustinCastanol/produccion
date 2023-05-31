@@ -19,7 +19,7 @@ try{
     // }
     // console.log("te esquive")
   }
-  console.log("salio")
+  console.log("salio token")
   next();
 }catch(err){
   response.status(498).json({ error: "Unauthorized" });

@@ -155,4 +155,23 @@ function searchCategoriesExtra(categories, name){
 //ahora lo devuelvo en un string separado por comas
   return aux == null ? categories : categories+','+aux.join(",");
 }
-export default { get_colors_at_sku, get_space_at_sku, get_space, get_color, homologationcolor, corregirTexto,searchCategoriesExtra };
+function containsKeyword(str, key) {
+  if(key == null || key=='')return false;
+  return str != null && str.toLowerCase().includes(key);
+}
+function searchCategoriesAndAppend(categories,name_product,array,newCategory,restricted){
+  let aux= []
+  for(let i= 0; array.length > i; i++){
+    const category = array[i];
+    if(containsKeyword(name_product,category) || containsKeyword(categories,category)){
+      if(!containsKeyword(categories,restricted)){
+        aux.push(newCategory);
+      }
+    }
+  }
+  //eliminar duplicados
+  aux = [...new Set(aux)];
+//ahora lo devuelvo en un string separado por comas
+  return aux == null || aux.length == 0 ? categories : categories+','+aux.join(",");
+}
+export default { get_colors_at_sku, get_space_at_sku, get_space, get_color, homologationcolor,searchCategoriesAndAppend ,corregirTexto,searchCategoriesExtra };

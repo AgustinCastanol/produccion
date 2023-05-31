@@ -22,22 +22,39 @@ export class PromosService {
 
   async getProduct(data: any) {
     try {
-
+      console.log("getProduct",data.referencia)
+      console.log("--------------------------")
       const res = <any>await firstValueFrom(
         this.httpService.get(`${URL_API}/productos/${data.referencia}`).pipe(
           catchError((err: AxiosError) => {
-            // this.logger.error(err.message);
-            throw new Error(`Causa: ${err.config} - codigo: ${err.code} - mensaje: ${err.message}`);
+            this.logger.error(err.message);
+            console.log(err)
+            throw new Error(err.message);
           }),
         ),
       );
       if (res.data.resultado) {
         return res.data.resultado;
       }
-      return { error: res };
+      return null;
+      // const response = await this.httpService.get(`${URL_API}/productos/${data.referencia}`).pipe(
+      //   catchError((err: AxiosError) => {
+      //     this.logger.error(err.message);
+      //     // console.log(err.response.status);
+      //     throw new Error(`${err.response.status}`);
+      //   }),
+      // ).toPromise();
+      //   if(response.data){
+      //     if(response.data.hayError == true){
+      //       return null;
+      //     }
+      //   }
+      // return <any>response.data.resultado;
     } catch (err) {
-      console.log("entre en el error")
-      return { error: err }
+      console.log("error")
+      // console.log(err)
+      console.log("error")
+      return null
     }
   }
   async getCategories() {
@@ -118,25 +135,30 @@ export class PromosService {
     return categoriaHomologada.slugAveChildrent === '' ? categoriaHomologada.slugAve : categoriaHomologada.slugAveChildrent;
   }
   async clearName(str: string) {
-    let collection = '';
-    str = str.toLowerCase();
-    str = str.replace(/\"/g, " ");
-    if (str.includes("oferta")) {
-      str = str.replace("oferta", "")
-      collection = collectionOBJ.find(e => e.name == 'oferta').id;
+    try{
+      let collection = '';
+      str = str.toLowerCase();
+      str = str.replace(/\"/g, " ");
+      if (str.includes("oferta")) {
+        str = str.replace("oferta", "")
+        collection = collectionOBJ.find(e => e.name == 'oferta').id;
+  
+      }
+      if (str.includes("produccion nacional")) {
+        str = str.replace("produccion nacional", "")
+        collection = collectionOBJ.find(e => e.name == 'precio sugerido').id;
+      }
+      if (str.includes("precio neto")) {
+        str = str.replace("precio neto", "")
+        collection = collectionOBJ.find(e => e.name == 'precio neto').id;
+      }
+      if (collection == '') {
+        collection = collectionOBJ.find(e => e.name == 'precio bruto').id;
+      }
+      return { str, collection };
+    }catch(err){
+      return {str: str , collection:'47ac63e1-42ef-4e49-9ba1-33f1d0050e4d'}
     }
-    if (str.includes("produccion nacional")) {
-      str = str.replace("produccion nacional", "")
-      collection = collectionOBJ.find(e => e.name == 'precio sugerido').id;
-    }
-    if (str.includes("precio neto")) {
-      str = str.replace("precio neto", "")
-      collection = collectionOBJ.find(e => e.name == 'precio neto').id;
-    }
-    if (collection == '') {
-      collection = collectionOBJ.find(e => e.name == 'precio bruto').id;
-    }
-    return { str, collection };
 
   }
 async validate_CSV(data: any) {

@@ -16,11 +16,15 @@ export class AppController {
   @Post('/csv')
   // eslint-disable-next-line @typescript-eslint/ban-types
   async csv(@Body() body: any): Promise<Object> {
-    const res = await this.appService.hookCSV();
+    const res = await this.appService.handleCron();
     return res;
   }
-
-
+  @UseGuards(CorsGuard)
+  @Post('/get_csv')
+  async get_csv(@Body() body: any): Promise<Object> {
+    const res = await this.appService.hookGetCSV();
+    return res;
+  }
   @UseGuards(CorsGuard)
   @Post('/')
   // eslint-disable-next-line @typescript-eslint/ban-types
@@ -263,5 +267,5 @@ export class AppController {
     const res = await this.appService.loadEsferos(body);
     return res;
   }
-  
+
 }

@@ -7,6 +7,7 @@ import utils from "../../helpers/utils.js";
 import axios from "axios";
 import { DOMParser } from "@xmldom/xmldom";
 import knex from "knex";
+import { exec } from "child_process";
 var router = express.Router();
 
 router.post("/property", async function (request, response, next) {
@@ -456,8 +457,8 @@ router.post("/load_CSV", async function (request, response, next) {
       }
       console.log("JSON file has been saved.");
     });
-
-    response.status(200).send({ proveedores, total: total, length: products.length, times: times, errors })
+    // await get_CSV(request, response, next);
+    response.status(200).send({message: "ok"})
   } catch (err) {
     console.log(err);
     next(err.message);
@@ -465,7 +466,7 @@ router.post("/load_CSV", async function (request, response, next) {
 })
 router.post("/get_CSV", async function (request, response, next) {
   try {
-    let file_number = request.body.file_number;
+    const collection_ofeta = '88f91efa-e7f0-4a68-b330-9f3720a738c5'
     let error = []
     //leer el archivo que esta en la carpeta temp
     let proveedores = {
@@ -482,43 +483,78 @@ router.post("/get_CSV", async function (request, response, next) {
         return console.log(err);
       }
       const products = JSON.parse(data);
-      let products_csv = `Tipo;SKU;Nombre;Descripción corta;Descripción;¿Existencias?;Inventario;Inventario Local;Inventario Zona Franca; Inventario En Transito;Peso (kg);Longitud (cm);Anchura (cm);Altura (cm);Empaque (und);Precio rebajado;Precio normal;Precio neto;Categorías;Etiquetas;Imágenes;Superior;Posición;Brands;Gestión de inventario;Nombre del atributo 1;Valor(es) del atributo 1;Atributo visible 1;Atributo global 1;Nombre del atributo 2;Valor(es) del atributo 2;Atributo visible 2;Atributo global 2\n`;
+      let products_csv = `Tipo;SKU;Nombre;Descripción corta;Descripción;¿Existencias?;Inventario;Inventario Local;Inventario Zona Franca; Inventario En Transito;Peso (kg);Longitud (cm);Anchura (cm);Altura (cm);Empaque (und);Precio rebajado;Precio normal;Precio neto;Categorías;Etiquetas;Imágenes;Superior;Posición;Brands;Gestión de inventario;Oferta;Nombre del atributo 1;Valor(es) del atributo 1;Atributo visible 1;Atributo global 1;Nombre del atributo 2;Valor(es) del atributo 2;Atributo visible 2;Atributo global 2\n`;
       for (let i = 0; i < products.length; i++) {
         if (products[i].variants == undefined) {
           error.push(products[i])
           continue;
         }
         if (products[i].name_supplier == 'Promos') {
-          if(products[i].urlImage == null){
+          if (products[i].urlImage == null) {
+            error.push(products[i])
             continue;
           }
-          proveedores.Promos++;
-          console.log(products[i].urlImage,"url image")
-          if(products[i].urlImage){
-            if(products[i].urlImage == 'https://www.catalogospromocionales.com/images/productos/1696.jpg'){
-              products[i].urlImage = 'https://www.catalogospromocionales.com/images/productos/1696.jpg'
-            }
-            if(products[i].urlImage.includes(`//www.catalogospromocionales.com/images/productos/1424.jpg/images/productos/1424.jpg`)){
-              products[i].urlImage = `https://www.catalogospromocionales.com/images/productos/1424.jpg`
-            }
-            if(products[i].urlImage.includes(`"https://www.catalogospromocionales.com/images/productos/2867.jpg`)){
-              products[i].urlImage = `https://www.catalogospromocionales.com/images/productos/2867.jpg`
-            }
-            if(products[i].urlImage.includes(`https://www.catalogospromocionales.com/images/productos/4500.jpg`)){
-              products[i].urlImage = `https://www.catalogospromocionales.com/images/productos/4500.jpg`
-            }
-            if(products[i].urlImage.includes(`https://www.catalogospromocionales.com/images/productos/1296.jpg/images/productos/1296.jpg`)){
-              products[i].urlImage = `https://www.catalogospromocionales.com/images/productos/1296.jpg`
-            }
-            if(products[i].urlImage.includes(`s://www.catalogospromocionales.com/images/productos/1658`)){
-              products[i].urlImage = `https://www.catalogospromocionales.com/images/productos/1658.jpg`
-            }
+          if (products[i].description_product == 'undefined') {
+            products[i].description_product = products[i].name_product;
           }
-          // if(products[i].utlImage.includes(`https://catalogospromocionales.com/images/galeria/MB01/MB01-2.jpg`)){
-          //   products[i].urlImage = `https://catalogospromocionales.com/images/galeria/MB01/MB01-2.jpg`
+          proveedores.Promos++;
+          // if (products[i].reference == 'VA-948') {
+          //   console.log(products[i].variants[0].stock)
           // }
-          // continue;
+          if (products[i].variants.length == 0) {
+            products[i].variants = [
+              {
+                id_variant: '',
+                name_variant: products[i].name_product,
+                metadata_variant: '{}',
+                description_variant: '  ',
+                brand: 'not-brand',
+                price_override: 0,
+                weight_override: 0,
+                sku: products[i].reference+"-v",
+                product_id: products[i].idProducts,
+                images: [],
+                stock: [
+                  {
+                    idStock: 'd2ea49b6-fed4-45ed-aa34-7b4f44c533ed',
+                    locationId: '0994b3d5-becd-401f-983f-47447352ce19',
+                    quantity: 0,
+                    quantity_allocated: 0,
+                    variant_id: 'c71e4de0-8a6a-441e-aee9-f7b7e344c590',
+                    idStockLocation: '0994b3d5-becd-401f-983f-47447352ce19',
+                    name: 'Local'
+                  },
+                  {
+                    idStock: '32573227-6b09-4ca9-baf4-5abc7f0f0d46',
+                    locationId: '9b245cdf-acc8-4655-9738-ee432f654e20',
+                    quantity: 0,
+                    quantity_allocated: 0,
+                    variant_id: 'c71e4de0-8a6a-441e-aee9-f7b7e344c590',
+                    idStockLocation: '9b245cdf-acc8-4655-9738-ee432f654e20',
+                    name: 'ZonaFranca'
+                  },
+                  {
+                    idStock: '2b769b65-c3e7-49a1-9d53-5c62a7eacc64',
+                    locationId: '3b257993-638c-4505-ad1d-5a6dd24d9ac5',
+                    quantity: 0,
+                    quantity_allocated: 0,
+                    variant_id: 'c71e4de0-8a6a-441e-aee9-f7b7e344c590',
+                    idStockLocation: '3b257993-638c-4505-ad1d-5a6dd24d9ac5',
+                    name: 'Total'
+                  },
+                  {
+                    idStock: 'aa21b916-d484-4238-b77e-6461fe9e6378',
+                    locationId: 'a5db0dfa-2d96-4950-b382-839b3acfd6ae',
+                    quantity: 0,
+                    quantity_allocated: 0,
+                    variant_id: 'c71e4de0-8a6a-441e-aee9-f7b7e344c590',
+                    idStockLocation: 'a5db0dfa-2d96-4950-b382-839b3acfd6ae',
+                    name: 'Transito'
+                  
+              }]
+          }]
         }
+      }
         if (products[i].name_supplier == 'CDO') {
           proveedores.cdo++;
           // continue;
@@ -527,24 +563,37 @@ router.post("/get_CSV", async function (request, response, next) {
           proveedores.marpico++;
           // continue;
         }
-        if (products[i].name_supplier == 'PromoOpcion' || products[i].name_supplier == 'ProveedorAdministrador(back)') {
+        if (products[i].name_supplier == 'PromoOpcion') {
           proveedores.promoopcion++;
           // continue;
         }
+        if (products[i].name_supplier == 'ProveedorAdministrador(back)') {
+          continue;
+        }
         if (products[i].name_supplier == 'esferos') {
-          proveedores.esferos++;
           // console.log(products[i])
+          if (products[i].urlImage != null && products[i].urlImage.includes('https://esferos.com')) {
+            error.push(products[i])
+            continue
+          }
+          proveedores.esferos++;
           products[i].variants.map((variant) => {
             if (products[i].urlImage != null && products[i].urlImage.includes('https://esferos.com')) {
               products[i].urlImage = '';
             }
-            if (variant.images[0].urlImage.includes('https://esferos.com')) {
+            if (variant.images.length !== 0 && variant.images[0].urlImage.includes('https://esferos.com')) {
               variant.images[0].urlImage = ''
             }
           })
         }
-
+        if(products[i].price == null){
+          products[i].price = 0;
+        }
         let metadata = null;
+        let oferta = false;
+        if(products[i].collection_id == collection_ofeta){
+          oferta = true;
+        }
         //reemplazar los . y los ; de las descripciones si lo tienen
         // console.log(products[i].description_product)
         let description_product = '';
@@ -561,16 +610,16 @@ router.post("/get_CSV", async function (request, response, next) {
           description_product = products[i].name_product;
         }
         let precio_sugerido = 0;
-        if (products[i].metadata !== '[object Object]') {
+        if (products[i].metadata !== '[object Object]' && products[i].metadata !== '' ) {
           metadata = products[i].metadata != null ? JSON.parse(products[i].metadata) : null;
         }
         precio_sugerido = JSON.parse(products[i].metadata_price);
         if (products[i].metadata_price == "{}") {
           precio_sugerido = 0;
         } else {
-          if(products[i].name_supplier == 'esferos'){
-            precio_sugerido = products[i].price * 5/3;
-          }
+          // if(products[i].name_supplier == 'esferos'){
+          //   precio_sugerido = products[i].price * 5/3;
+          // }
           if (products[i].name_supplier == 'Promos' || products[i].name_supplier == 'PromoOpcion' || products[i].name_supplier == 'esferos') {
             if (precio_sugerido !== null && precio_sugerido.precioSugerido != undefined) {
               if (typeof precio_sugerido.precioSugerido == 'number') {
@@ -582,6 +631,12 @@ router.post("/get_CSV", async function (request, response, next) {
                 precio_sugerido = precio_sugerido[0];
               }
             }
+          }
+          if (products[i].name_supplier == 'CDO') {
+            precio_sugerido.precioSugerido = precio_sugerido.precioSugerido * 5/4;
+            //eliminar los decimales
+            precio_sugerido = precio_sugerido.precioSugerido.toString().split(".")[0];
+            console.log(precio_sugerido)
           }
 
           if (precio_sugerido != null && precio_sugerido.precioSugerido != undefined) {
@@ -603,7 +658,7 @@ router.post("/get_CSV", async function (request, response, next) {
         let imagenes = ""
         if (products[i].urlImage !== null) {
           if (products[i].urlImage[0] == "[") {
-              imagenes = JSON.parse(products[i].urlImage);
+            imagenes = JSON.parse(products[i].urlImage);
 
             for (let m = 0; m < imagenes.length; m++) {
               if (imagenes[m][0] == '[') {
@@ -613,13 +668,23 @@ router.post("/get_CSV", async function (request, response, next) {
 
               }
             }
-            // console.log(imagenes)
-            await imagenes.map((imagen) => {
-              // console.log(imagen)
-              if(imagen.includes(`.jpg/images/productos`)){
-                imagen= imagen.replace(/\/[^/]+$/, "");;
+            if (products[i].name_supplier == 'PromoOpcion') {
+              // console.log(imagenes)
+              // console.log("cleaning images")
+              //quiero buscar el elemento del array que tenga la palabra padre y ponerlo al frente del array
+              for(let t = 0 ; imagenes.length > t ; t++){
+                if(imagenes[t].includes('padre')){
+                  // console.log("encontrado")
+                  let aux = imagenes[t];
+                  imagenes.splice(t,1);
+                  imagenes.unshift(aux);
+                }
               }
-            })
+              // console.log(imagenes,"sali")
+            
+          }
+            // console.log(imagenes)
+
             imagenes = imagenes.join(",");
           } else {
             imagenes = products[i].urlImage;
@@ -642,14 +707,82 @@ router.post("/get_CSV", async function (request, response, next) {
         } else {
           spaces = null;
         }
+        let auxCategories = ''
         let categories = products[i].parent == null ? products[i].name_category : `${products[i].parent} > ${products[i].name_category}`;
         categories = utils.searchCategoriesExtra(categories, products[i].name_product)
-        let auxCategories = categories.split(",");
+        auxCategories = categories.split(",");
         if (auxCategories.length > 1 && auxCategories[1] == '') {
           // console.log("auxCategories",auxCategories)
           categories = auxCategories[0];
         }
-        let father_product = `variable;${products[i].reference};${products[i].name_product};${description_product};${description_product};instock;;;;;${products[i].weight};${(metadata != null && metadata.medidas_largo != undefined) ? metadata.medidas_largo : ''};${(metadata != null && metadata.medidas_ancho != undefined) ? metadata.medidas_ancho : ''};${(metadata != null && metadata.medidas_alto) ? metadata.medidas_alto : ''};;;${precio_sugerido == null ? 0 : precio_sugerido};${products[i].price};${categories};${products[i].slug_category + ',' + products[i].slug_collection + ',' + products[i].reference + ',', name_product_slug};${imagenes};;0;${products[i].name_supplier};No;`;
+        categories = utils.searchCategoriesAndAppend(categories, products[i].name_product, ['paraguas golf'], 'Paraguas e impermeables > Paraguas Golf', null)
+        auxCategories = categories.split(",");
+        if (auxCategories.length > 1 && auxCategories[1] == '') {
+          // console.log("auxCategories",auxCategories)
+          categories = auxCategories[0];
+        }
+        categories = utils.searchCategoriesAndAppend(categories, products[i].name_product, ['mini paraguas'], 'Paraguas e impermeables > Paraguas Mini', null)
+        auxCategories = categories.split(",");
+        if (auxCategories.length > 1 && auxCategories[1] == '') {
+          // console.log("auxCategories",auxCategories)
+          categories = auxCategories[0];
+        }
+        categories = utils.searchCategoriesAndAppend(categories, products[i].name_product, ['rainpro'], 'Paraguas e impermeables > Paraguas Premium', 'mini')
+
+         auxCategories = categories.split(",");
+        if (auxCategories.length > 1 && auxCategories[1] == '') {
+          // console.log("auxCategories",auxCategories)
+          categories = auxCategories[0];
+        }
+        let sum_total_father= 0;
+        let sum_franca_father = 0;
+        let sum_transito_father = 0;
+        let sum_local_father = 0;
+        for(let c = 0; c < products[i].variants.length; c++){
+          const variation = products[i].variants[c];
+          let stock = {
+            local: { quantity: 0 },
+            zonaFranca: { quantity: 0 },
+            total: { quantity: 0 },
+            transito: { quantity: 0 }
+          }
+          if (variation.stock != undefined && variation.stock.length > 0) {
+            // console.log("variation.stock", variation.stock)
+            let total = variation.stock.find((stock) => {
+              return stock.name == "Total"
+            })
+            let local = variation.stock.find((stock) => {
+              return stock.name == "Local"
+            })
+            let zonaFranca = variation.stock.find((stock) => {
+              return stock.name == "ZonaFranca"
+            })
+            let transito = variation.stock.find((stock) => {
+              return stock.name == "Transito"
+            });
+            // console.log(variation.stock)
+            stock.total = total || { quantity: 0 };
+            stock.local = local || { quantity: 0 };
+            stock.zonaFranca = zonaFranca || { quantity: 0 };
+            stock.transito = transito || { quantity: 0 };
+          } else {
+            stock = {
+              local: { quantity: 0 },
+              zonaFranca: { quantity: 0 },
+              total: { quantity: 0 },
+              transito: { quantity: 0 }
+            }
+          }
+          sum_franca_father += stock.zonaFranca.quantity >=0? stock.zonaFranca.quantity: 0;
+          sum_transito_father += stock.transito.quantity >=0?stock.transito.quantity:0 ;
+          sum_local_father += stock.local.quantity>=0?stock.local.quantity:0;
+          sum_total_father += stock.total.quantity>=0?stock.total.quantity:0;
+        }
+        sum_total_father = sum_total_father >=0?sum_total_father:sum_franca_father+sum_local_father;
+        if(sum_total_father == 0 && products[i].name_supplier == 'esferos'){
+          continue;
+        }
+        let father_product = `variable;${products[i].reference};${products[i].name_product};${description_product};${description_product};instock;${sum_total_father};${sum_local_father};${sum_franca_father};${sum_transito_father};${products[i].weight};${(metadata != null && metadata.medidas_largo != undefined) ? metadata.medidas_largo : ''};${(metadata != null && metadata.medidas_ancho != undefined) ? metadata.medidas_ancho : ''};${(metadata != null && metadata.medidas_alto) ? metadata.medidas_alto : ''};;;${precio_sugerido == null ? 0 : precio_sugerido};${products[i].price};${categories};${products[i].slug_category + ',' + products[i].slug_collection + ',' + products[i].reference + ',', name_product_slug};${imagenes};;0;${products[i].name_supplier};no;${oferta==true?'si':'no'};`;
         if (colors != null && spaces == null) {
           // console.log("son color")
           // console.log("space", spaces)
@@ -668,6 +801,7 @@ router.post("/get_CSV", async function (request, response, next) {
         father_product += '\n'
         // console.log("precio_sugerido", precio_sugerido, JSON.parse(products[i].metadata_price),i)
         if (products[i].variants.length == 1) {
+
           const variation = products[i].variants[0];
           let img_variant = variation.images[0] !== undefined ? variation.images[0].urlImage : null;
           if (img_variant != null) {
@@ -678,7 +812,7 @@ router.post("/get_CSV", async function (request, response, next) {
               img_variant = img_variant;
             }
             if (!(img_variant.includes(imagenes))) {
-              img_variant = img_variant + ',' + imagenes;
+              img_variant = imagenes+ ',' + img_variant;
             }
           } else {
             img_variant = imagenes;
@@ -719,19 +853,42 @@ router.post("/get_CSV", async function (request, response, next) {
               transito: { quantity: 0 }
             }
           }
+          let auxCategories = ''
           let categories = products[i].parent == null ? products[i].name_category : `${products[i].parent} > ${products[i].name_category}`;
-          categories = utils.searchCategoriesExtra(categories, products[i].name_product);
-          let auxCategories = categories.split(",");
+          categories = utils.searchCategoriesExtra(categories, products[i].name_product)
+          
+          auxCategories = categories.split(",");
+          if (auxCategories.length > 1 && auxCategories[1] == '') {
+            // console.log("auxCategories",auxCategories)
+            categories = auxCategories[0];
+          }
+          categories = utils.searchCategoriesAndAppend(categories, products[i].name_product, ['paraguas golf'], 'Paraguas e impermeables > Paraguas Golf', null)
+          auxCategories = categories.split(",");
+          if (auxCategories.length > 1 && auxCategories[1] == '') {
+            // console.log("auxCategories",auxCategories)
+            categories = auxCategories[0];
+          }
+          categories = utils.searchCategoriesAndAppend(categories, products[i].name_product, ['mini paraguas'], 'Paraguas e impermeables > Paraguas Mini', null)
+          auxCategories = categories.split(",");
+          if (auxCategories.length > 1 && auxCategories[1] == '') {
+            // console.log("auxCategories",auxCategories)
+            categories = auxCategories[0];
+          }
+          categories = utils.searchCategoriesAndAppend(categories, products[i].name_product, ['rainpro'], 'Paraguas e impermeables > Paraguas Premium', 'mini')
+          if (products[i].reference == 'SO-64') {
+            console.log("categories variantes", categories)
+          }
+          auxCategories = categories.split(",");
           if (auxCategories.length > 1 && auxCategories[1] == '') {
             // console.log("auxCategories",auxCategories)
             categories = auxCategories[0];
           }
           // console.log(categories, "total categories")
           let sum = stock.total.quantity + stock.local.quantity + stock.zonaFranca.quantity;
-          if (products[i].reference == 'T215') {
-            console.log("precio", precio_sugerido)
+          if (products[i].reference == "VA-128") {
+            console.log("stock", stock)
           }
-          father_product = `simple;${products[i].reference};${products[i].name_product};${description_product};${description_product};${stock.total.quantity == undefined || stock.total.quantity == 0 ? "outofstock" : "instock"};${stock.total.quantity == 0 ? sum : stock.total.quantity == undefined ? 0 : stock.total.quantity};${stock.local.quantity};${stock.zonaFranca.quantity};${stock.transito.quantity};${variation.weight_override > 0 ? variation.weight_override : ''};;;;;;${precio_sugerido};${products[i].price};${categories};${products[i].slug_category + ',' + products[i].slug_collection + ',' + products[i].reference + ',', name_product_slug};${img_variant};${products[i].reference};0;${products[i].name_supplier};No;`
+          father_product = `simple;${products[i].reference};${products[i].name_product};${description_product};${description_product};${stock.total.quantity == undefined || stock.total.quantity == 0 ? "outofstock" : "instock"};${stock.total.quantity == 0 ? sum : stock.total.quantity == undefined ? 0 : stock.total.quantity};${stock.local.quantity};${stock.zonaFranca.quantity};${stock.transito.quantity};${variation.weight_override > 0 ? variation.weight_override : ''};;;;;;${precio_sugerido};${products[i].price};${categories};${products[i].slug_category + ',' + products[i].slug_collection + ',' + products[i].reference + ',', name_product_slug};${img_variant};${products[i].reference};0;${products[i].name_supplier};no;${oferta==true?'si':'no'};`
           if (colors != null && spaces == null) {
             // console.log("son color")
             // console.log("space", spaces)
@@ -762,10 +919,10 @@ router.post("/get_CSV", async function (request, response, next) {
 
             }
             let stock = {
-              local: {},
-              zonaFranca: {},
-              total: {},
-              transito: {}
+              local: { quantity: 0 },
+              zonaFranca: { quantity: 0 },
+              total: { quantity: 0 },
+              transito: { quantity: 0 }
             }
             if (variation.stock != undefined && variation.stock.length > 0) {
               // console.log("variation.stock", variation.stock)
@@ -840,7 +997,7 @@ router.post("/get_CSV", async function (request, response, next) {
             if (variation.price_override < precio_sugerido && products[i].name_supplier == 'CDO') {
               variantPrice = precio_sugerido;
             }
-            let variant = `variation;${variation.sku};${variation.name_variant};;${description_product};${stock.total.quantity == undefined || stock.total.quantity == 0 ? "outofstock" : "instock"};${stock.total.quantity == 0 ? sum : stock.total.quantity == undefined ? 0 : stock.total.quantity};${stock.local.quantity};${stock.zonaFranca.quantity};${stock.transito.quantity};${variation.weight_override > 0 ? variation.weight_override : ''};${longitud};${anchura};${altura};${empaque};;${variantPrice};${products[i].price};;variante;${img_variant};${products[i].reference};${c + 1};;Yes;`;
+            let variant = `variable;${variation.sku};${variation.name_variant};;${description_product};${stock.total.quantity == undefined || stock.total.quantity == 0 ? "outofstock" : "instock"};${stock.total.quantity == 0 ? sum : stock.total.quantity == undefined ? 0 : stock.total.quantity};${stock.local.quantity};${stock.zonaFranca.quantity};${stock.transito.quantity};${variation.weight_override > 0 ? variation.weight_override : ''};${longitud};${anchura};${altura};${empaque};;${variantPrice};${products[i].price};;variante;${img_variant};${products[i].reference};${c + 1};;si;${oferta==true?'si':'no'};`;
             if (color != null && space == null) {
               variant += `Color;${color};1;1`;
             }
@@ -864,9 +1021,16 @@ router.post("/get_CSV", async function (request, response, next) {
           return console.log(err);
         }
         console.log("JSON file has been saved.");
-        response.status(200).send({ proveedores, cantidad_de_errores: error.length, error })
       });
-
+      exec('cp /root/code/produccion/backend/bridge_wordpress/temp/products.csv /var/csv/csv/', (error, stdout, stderr) => {
+        if (error) {
+          console.error(`Error al ejecutar el comando: ${error}`);
+          return;
+        }
+        console.log(`Salida del comando: ${stdout}`);
+        console.error(`Error del comando: ${stderr}`);
+      });
+      response.status(200).send({ proveedores, cantidad_de_errores: error.length, error })
     }
     );
   } catch (
@@ -875,7 +1039,8 @@ router.post("/get_CSV", async function (request, response, next) {
     console.log(err);
     next(err.message);
   }
-})
+} )
+
 // router.get("/homologation_varios",async (request, response, next) => {
 //   fs.readFile('temp/homologacion_varios.csv', 'utf8', async function (err, data) {
 //     //headers name_product,reference,category_id,channel

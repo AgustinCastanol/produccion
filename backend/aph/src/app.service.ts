@@ -10,52 +10,86 @@ import { HttpService } from '@nestjs/axios';
 @Injectable()
 export class AppService {
   constructor(private sequelize: Sequelize, private httpService: HttpService) { }
-  async hookCSV(){
-    const BASE_URL = 'http://localhost:47300/load_CSV'
-    const TOKEN = `API-KEY bgwp_marcou8XoL0b47ImGhZsSuwzHCxX0qC6jQhljhhsGYHjisq57KY2rp37miOZsCNRLt0vtsnNIqn9eZdtyr1OFQGaa2toPTpZgDRqPG9PEWV9onuoS7duFz7DSOO4AWowA4qC4stSnlRZ2BsySBaoKohGhX6MQYKq1uW5WE7VaJ0l0go1omtHVumG4ey4TuLzutcrsujwqbBgmGnMxtMk6ZSKRNT3jKrdqEdzcgHzyz8YU5bPn9KcsJ2PY99v85hP4Gp8cB0qyaYzSIGgY9E4oRgTUJwcWv1Y3GtwmMItNdWWcrU0v8tShVGLbIYGarpVtCbAAAfhSvcnnIdnStO404uBmBKeatlCb5O4l9o7awScqCuRmsHllURQrfCRCFbcuu8KS5pZbV1CtYoKHgIVFxTsKSIIIzTKYcJhceaceROOsMpIKpNQXXBNmg3ovKxaBiA0QeLa1N1plhPCSTzCQaTObrZB1UtXqglwcZ5hPb0cRHgT3yXFRmuwzyrIgUBVthWcOzVDPMflZ0OiP9kVCy4vsfs5ufJANXBmUDQGGYLtJvljImZdtZG1KBnQQd4W1k14GJ4S3bBfoUOMxWVh93hHh96OiZ512r1csceu5yV6BrS4q67NX4dzpoy00XlfTmyADxbOHRljF9ERybNIyeBJjlxO8hyd2E8KLRyVsCyqEkTdgNYbCEtZrX4qI9g7SCCjGgmdtPyDMZsGNlP271kcJzfoouH8W4vSBJ01k9WZkNedVPLAh55YbdQBFyRYaujbenuNUgqXY3lF1N5B9j1TxJ1LiYEhX3BKZxXLic8yNNSOalymqpthaGaNNimC1TorUVdmcx7T7CdxmuGdAm8o6MhabQCKGuEfI6OhS8Am8n09lWfffkvJ23KTacL2UuEhqG2aLB2q3vq9flHAJG7z4zEnZ5oGZ7VwjAUXvqQqiTi3kfNF5LmedecUDFgy21NBXxRzVfS1Lh05ajslpngHkbYS6JKvwRcR2pEfOFwUrd4sOZ58toBsZRf`
-     await firstValueFrom(
-      this.httpService.post(`${BASE_URL}`,{},{
-        headers: {
-          'Authorization':TOKEN,
-        }
-      })
+  async hookCSV() {
+ try{
+  const BASE_URL = 'http://localhost:47300/load_CSV'
+  const TOKEN = `API-KEY bgwp_marcou8XoL0b47ImGhZsSuwzHCxX0qC6jQhljhhsGYHjisq57KY2rp37miOZsCNRLt0vtsnNIqn9eZdtyr1OFQGaa2toPTpZgDRqPG9PEWV9onuoS7duFz7DSOO4AWowA4qC4stSnlRZ2BsySBaoKohGhX6MQYKq1uW5WE7VaJ0l0go1omtHVumG4ey4TuLzutcrsujwqbBgmGnMxtMk6ZSKRNT3jKrdqEdzcgHzyz8YU5bPn9KcsJ2PY99v85hP4Gp8cB0qyaYzSIGgY9E4oRgTUJwcWv1Y3GtwmMItNdWWcrU0v8tShVGLbIYGarpVtCbAAAfhSvcnnIdnStO404uBmBKeatlCb5O4l9o7awScqCuRmsHllURQrfCRCFbcuu8KS5pZbV1CtYoKHgIVFxTsKSIIIzTKYcJhceaceROOsMpIKpNQXXBNmg3ovKxaBiA0QeLa1N1plhPCSTzCQaTObrZB1UtXqglwcZ5hPb0cRHgT3yXFRmuwzyrIgUBVthWcOzVDPMflZ0OiP9kVCy4vsfs5ufJANXBmUDQGGYLtJvljImZdtZG1KBnQQd4W1k14GJ4S3bBfoUOMxWVh93hHh96OiZ512r1csceu5yV6BrS4q67NX4dzpoy00XlfTmyADxbOHRljF9ERybNIyeBJjlxO8hyd2E8KLRyVsCyqEkTdgNYbCEtZrX4qI9g7SCCjGgmdtPyDMZsGNlP271kcJzfoouH8W4vSBJ01k9WZkNedVPLAh55YbdQBFyRYaujbenuNUgqXY3lF1N5B9j1TxJ1LiYEhX3BKZxXLic8yNNSOalymqpthaGaNNimC1TorUVdmcx7T7CdxmuGdAm8o6MhabQCKGuEfI6OhS8Am8n09lWfffkvJ23KTacL2UuEhqG2aLB2q3vq9flHAJG7z4zEnZ5oGZ7VwjAUXvqQqiTi3kfNF5LmedecUDFgy21NBXxRzVfS1Lh05ajslpngHkbYS6JKvwRcR2pEfOFwUrd4sOZ58toBsZRf`
+  await firstValueFrom(
+    this.httpService.post(`${BASE_URL}`, {}, {
+      headers: {
+        'Authorization': TOKEN,
+      }
+    })
       .pipe(
         catchError((err: AxiosError) => {
           console.log('err', err);
           throw new Error(`Causa: ${err.config} - codigo: ${err.code} - mensaje: ${err.message}`);
         })
       )
-    )
-    return {message : 'ok'}
+  )
+  return { message: 'ok' }
+ }catch(e){
+  console.log('e', e);
+  return { message: 'error' }
+ }
   }
-  async uploadImage(data:any){
-    try{
+  async hookGetCSV() {
+    console.log("entre")
+    const TOKEN = `API-KEY bgwp_marcou8XoL0b47ImGhZsSuwzHCxX0qC6jQhljhhsGYHjisq57KY2rp37miOZsCNRLt0vtsnNIqn9eZdtyr1OFQGaa2toPTpZgDRqPG9PEWV9onuoS7duFz7DSOO4AWowA4qC4stSnlRZ2BsySBaoKohGhX6MQYKq1uW5WE7VaJ0l0go1omtHVumG4ey4TuLzutcrsujwqbBgmGnMxtMk6ZSKRNT3jKrdqEdzcgHzyz8YU5bPn9KcsJ2PY99v85hP4Gp8cB0qyaYzSIGgY9E4oRgTUJwcWv1Y3GtwmMItNdWWcrU0v8tShVGLbIYGarpVtCbAAAfhSvcnnIdnStO404uBmBKeatlCb5O4l9o7awScqCuRmsHllURQrfCRCFbcuu8KS5pZbV1CtYoKHgIVFxTsKSIIIzTKYcJhceaceROOsMpIKpNQXXBNmg3ovKxaBiA0QeLa1N1plhPCSTzCQaTObrZB1UtXqglwcZ5hPb0cRHgT3yXFRmuwzyrIgUBVthWcOzVDPMflZ0OiP9kVCy4vsfs5ufJANXBmUDQGGYLtJvljImZdtZG1KBnQQd4W1k14GJ4S3bBfoUOMxWVh93hHh96OiZ512r1csceu5yV6BrS4q67NX4dzpoy00XlfTmyADxbOHRljF9ERybNIyeBJjlxO8hyd2E8KLRyVsCyqEkTdgNYbCEtZrX4qI9g7SCCjGgmdtPyDMZsGNlP271kcJzfoouH8W4vSBJ01k9WZkNedVPLAh55YbdQBFyRYaujbenuNUgqXY3lF1N5B9j1TxJ1LiYEhX3BKZxXLic8yNNSOalymqpthaGaNNimC1TorUVdmcx7T7CdxmuGdAm8o6MhabQCKGuEfI6OhS8Am8n09lWfffkvJ23KTacL2UuEhqG2aLB2q3vq9flHAJG7z4zEnZ5oGZ7VwjAUXvqQqiTi3kfNF5LmedecUDFgy21NBXxRzVfS1Lh05ajslpngHkbYS6JKvwRcR2pEfOFwUrd4sOZ58toBsZRf`
+    const BASE_URL_GET = 'http://localhost:47300/get_CSV'
+    // await firstValueFrom(
+    //   this.httpService.post(`${BASE_URL_GET}`, {}, {
+    //     headers: {
+    //       'Authorization': TOKEN,
+    //     }
+    //   })
+    //     .pipe(
+    //       catchError((err: AxiosError) => {
+    //         console.log('err', err);
+    //         throw new Error(`Causa: ${err.config} - codigo: ${err.code} - mensaje: ${err.message}`);
+    //       })
+    //     )
+    // )
+    console.log("pase")
+    return { message: 'ok' }
+  }
+  async uploadImage(data: any) {
+    try {
       const TOKEN = `API-KEY bgwp_marcou8XoL0b47ImGhZsSuwzHCxX0qC6jQhljhhsGYHjisq57KY2rp37miOZsCNRLt0vtsnNIqn9eZdtyr1OFQGaa2toPTpZgDRqPG9PEWV9onuoS7duFz7DSOO4AWowA4qC4stSnlRZ2BsySBaoKohGhX6MQYKq1uW5WE7VaJ0l0go1omtHVumG4ey4TuLzutcrsujwqbBgmGnMxtMk6ZSKRNT3jKrdqEdzcgHzyz8YU5bPn9KcsJ2PY99v85hP4Gp8cB0qyaYzSIGgY9E4oRgTUJwcWv1Y3GtwmMItNdWWcrU0v8tShVGLbIYGarpVtCbAAAfhSvcnnIdnStO404uBmBKeatlCb5O4l9o7awScqCuRmsHllURQrfCRCFbcuu8KS5pZbV1CtYoKHgIVFxTsKSIIIzTKYcJhceaceROOsMpIKpNQXXBNmg3ovKxaBiA0QeLa1N1plhPCSTzCQaTObrZB1UtXqglwcZ5hPb0cRHgT3yXFRmuwzyrIgUBVthWcOzVDPMflZ0OiP9kVCy4vsfs5ufJANXBmUDQGGYLtJvljImZdtZG1KBnQQd4W1k14GJ4S3bBfoUOMxWVh93hHh96OiZ512r1csceu5yV6BrS4q67NX4dzpoy00XlfTmyADxbOHRljF9ERybNIyeBJjlxO8hyd2E8KLRyVsCyqEkTdgNYbCEtZrX4qI9g7SCCjGgmdtPyDMZsGNlP271kcJzfoouH8W4vSBJ01k9WZkNedVPLAh55YbdQBFyRYaujbenuNUgqXY3lF1N5B9j1TxJ1LiYEhX3BKZxXLic8yNNSOalymqpthaGaNNimC1TorUVdmcx7T7CdxmuGdAm8o6MhabQCKGuEfI6OhS8Am8n09lWfffkvJ23KTacL2UuEhqG2aLB2q3vq9flHAJG7z4zEnZ5oGZ7VwjAUXvqQqiTi3kfNF5LmedecUDFgy21NBXxRzVfS1Lh05ajslpngHkbYS6JKvwRcR2pEfOFwUrd4sOZ58toBsZRf`
       const BASE_URL = "http://localhost:48700/create_image_product"
       const formData = new FormData();
       formData.append('image', new Blob([data.image]), `${data.name}-${data.sku}.png`);
       const res = <any>await firstValueFrom(
-        this.httpService.post(`${BASE_URL}`,formData,{
+        this.httpService.post(`${BASE_URL}`, formData, {
           headers: {
-            'Authorization':TOKEN,
+            'Authorization': TOKEN,
             'Content-Type': 'multipart/form-data'
           }
         })
-        .pipe(
-          catchError((err: AxiosError) => {
-            console.log('err', err);
-            throw new Error(`Causa: ${err.config} - codigo: ${err.code} - mensaje: ${err.message}`);
-          })
-        )
+          .pipe(
+            catchError((err: AxiosError) => {
+              console.log('err', err);
+              throw new Error(`Causa: ${err.config} - codigo: ${err.code} - mensaje: ${err.message}`);
+            })
+          )
       )
-      if(res.data){
+      if (res.data) {
         return res.data;
       }
-      return {error: res};
+      return { error: res };
 
-    }catch(err){
-      console.log('err',err)
+    } catch (err) {
+      console.log('err', err)
       return err
+    }
+  }
+  async getReferenceBySupplier(supplier: string) {
+    try{
+      const res = await this.sequelize.query(`SELECT reference, "idProducts" FROM "public"."products" where supplier = '${supplier}'`);
+      return res[0]
+    }catch(err){
+      console.log('err', err)
+      return null
     }
   }
   async getProducts(data: any) {
@@ -77,32 +111,50 @@ export class AppService {
       return err;
     }
   }
-  async deleteFullProduct(idProducts:string){
-    try{
-      console.log('idProducts',idProducts)
-      const productImages = await this.sequelize.query(`SELECT * FROM "public"."productImages" WHERE "productId" = ${idProducts}`);
-      const variant = <any>await this.sequelize.query(`SELECT * FROM "public"."variants" WHERE "product_id" = ${idProducts}`);
+  async deleteFullProduct(idProducts: string) {
+    try {
+      console.log('idProducts', idProducts)
+      const variant_res = await this.sequelize.query(
+        `SELECT * FROM "public"."variants" 
+          where product_id = '${idProducts}'`,
+      );
+      const variants = variant_res[0]
       //limpio las variantes
-      console.log('variant',variant)
+      // console.log('variant', variants)
 
-      // for(let i = 0; i< variant.length; i++){
-      //   //eliminar todos los stocks 
-      //   await this.sequelize.query(`DELETE FROM "public"."stock" WHERE "variant_id" = ${variant[i].id_variant}`);
-      //   //eliminar todas las imagenes
-      //   await this.sequelize.query(`DELETE FROM "public"."productVariantImage" WHERE "variantId" = ${variant[i].id_variant}`);
-      //   //elimino la variante
-      //   await this.sequelize.query(`DELETE FROM "public"."variants" WHERE "id" = ${variant[i].id_variant}`);
-      // }
-      //elimino el precio
-      // await this.sequelize.query(`DELETE FROM "public"."price" WHERE "productId" = ${idProducts}`);
-      // //elimino las imagenes
-      // await this.sequelize.query(`DELETE FROM "public"."productImages" WHERE "productId" = ${idProducts}`);
-      // //elimino el producto
-      // await this.sequelize.query(`DELETE FROM "public"."products" WHERE "idProducts" = ${idProducts}`);
-      return {status:"ok"};
-    }catch(err){
-      console.log('err',err)
-      return {status:"error"}
+      for(let i = 0; i< variants.length; i++){
+        const variant = <any>variants[i]
+        //eliminar todos los stocks 
+        await this.sequelize.query(`DELETE FROM "public"."stock" WHERE "variant_id" = '${variant.id_variant}'`);
+        //eliminar todas las imagenes
+        await this.sequelize.query(`DELETE FROM "public"."productVariantImage" WHERE "variantId" = '${variant.id_variant}'`);
+        //elimino la variante
+        await this.sequelize.query(`DELETE FROM "public"."variants" WHERE "id_variant" = '${variant.id_variant}'`);
+      }
+      // elimino el precio
+      await this.sequelize.query(`DELETE FROM "public"."price" WHERE "productId" = '${idProducts}'`);
+      //elimino las imagenes
+      await this.sequelize.query(`DELETE FROM "public"."productImages" WHERE "productId" = '${idProducts}'`);
+      //elimino el producto
+      await this.sequelize.query(`DELETE FROM "public"."products" WHERE "idProducts" = '${idProducts}'`);
+      return { status: "ok" };
+    } catch (err) {
+      console.log('err', err)
+      return { status: "error" }
+    }
+  }
+  async deleteVariant(id_variant: string) {
+    try {
+      //eliminar todos los stocks 
+      await this.sequelize.query(`DELETE FROM "public"."stock" WHERE "variant_id" = '${id_variant}'`);
+      //eliminar todas las imagenes
+      await this.sequelize.query(`DELETE FROM "public"."productVariantImage" WHERE "variantId" = '${id_variant}'`);
+      //elimino la variante
+      await this.sequelize.query(`DELETE FROM "public"."variants" WHERE "id_variant" = '${id_variant}'`);
+      return { status: "ok" };
+    } catch (err) {
+      console.log('err', err)
+      return { status: "error" }
     }
   }
   async updateProduct(data: any) {
@@ -121,7 +173,7 @@ export class AppService {
         nombre: data.nombre ? data.nombre : data.name_product,
         referencia: data.referencia ? data.referencia : data.reference,
         descripcion: data.description_product ? data.description_product : data.descripcion,
-        metadata:JSON.stringify(data.metadata),
+        metadata: JSON.stringify(data.metadata),
         channel: data.channel,
         disponible: data.disponible ? new Date(data.disponible).toISOString().slice(0, 19).replace('T', ' ') : new Date(data.available_on).toISOString().slice(0, 19).replace('T', ' '),
         is_published: data.is_published,
@@ -228,11 +280,11 @@ export class AppService {
         url: data.url ? data.url : null,
         idImage: uuidv1(),
       };
-      console.log(obj,"imagenes products")
+      console.log(obj, "imagenes products")
       await this.sequelize.query(`INSERT INTO public."productImages"(
         "idImage", "productId", image, alt, "urlImage")
         VALUES ('${obj.idImage}', '${obj.id_productos}', ${obj.image ? `'${obj.image}'` : null}, '${obj.alt}', ${obj.url ? `'${obj.url}'` : null});`)
-        return obj;
+      return obj;
     } catch (err) {
       console.log('err', err);
       return err;
@@ -274,7 +326,7 @@ export class AppService {
         alt: data.alt ? data.alt : "image",
         url: data.urlImage ? data.urlImage : null,
       };
-      console.log(obj, 'objeto imagenes')
+      // console.log(obj, 'objeto imagenes')
       await this.sequelize.query(`UPDATE public."productImages"
     SET "productId"='${obj.productId}', image=${obj.image ? `'${obj.image}'` : null}, alt='${obj.alt}', "urlImage"=${obj.url ? `'${obj.url}'` : null}
     WHERE "idImage" = '${obj.idImage}';`)
@@ -322,7 +374,7 @@ export class AppService {
       console.log(err);
     }
   }
-  async getProductByReferenceAndSupplier({reference, supplier}: any) {
+  async getProductByReferenceAndSupplier({ reference, supplier }: any) {
     try {
       if (reference == null) {
         return {
@@ -411,7 +463,7 @@ export class AppService {
   async setVariant(data: any) {
     try {
       if (data.name_variants == null || data.brand == null || data.sku == null || data.product_id == null) {
-        console.log(data,"variant")
+        console.log(data, "variant")
         return {
           data: null,
           message: 'variant not created, missing name or description or brand or sku',
@@ -609,8 +661,8 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
     }
   }
   async getProveedorByName(data: any) {
-    try{
-      if(data.name == null){
+    try {
+      if (data.name == null) {
         return {
           data: null,
           message: 'missing name',
@@ -619,7 +671,7 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
       const res = await this.sequelize.query(`
       SELECT * FROM public."supplier" WHERE name_supplier = '${data.name}'`);
       return res[0]
-    }catch(err){
+    } catch (err) {
       console.log(err)
       return err;
     }
@@ -645,7 +697,7 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
         quantity: data.quantity,
         quantity_allocated: data.quantity_allocated,
       }
-      console.log(obj,"obj stock")
+      console.log(obj, "obj stock")
       // console.log(data,"daya")
 
       await this.sequelize.query(`
@@ -669,10 +721,10 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
     }
   }
   async getStockByLocation(data: any) {
-    try{
+    try {
       const res = await this.sequelize.query(`SELECT * FROM public."stock" WHERE "locationId" = '${data.locationId}' AND "variant_id" = '${data.id_variant}'`);
       return res[0]
-    }catch(err){
+    } catch (err) {
       console.log(err)
       return err;
     }
@@ -788,7 +840,17 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
       return err
     }
   }
-
+  async updateProductCategory(reference:string, category:string) {
+    try {
+      await this.sequelize.query(
+        `UPDATE public.products SET category_id = '${category}' WHERE reference = '${reference}'`,
+      );
+      return { message: 'category updated' };
+    } catch (err) {
+      console.log(err)
+      return err
+    }
+  }
   async loadCategories() {
     try {
       // eslint-disable-next-line prettier/prettier
@@ -874,7 +936,7 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
         id_price: uuidv1(),
         price: price.price,
         currency: price.currency,
-        type: price.type==undefined?'no type':price.type,
+        type: price.type == undefined ? 'no type' : price.type,
         metadata: JSON.stringify(price.metadata),
         productId: price.productId,
       };
@@ -912,12 +974,12 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
       return e;
     }
   }
-  async getCollectionsBySlug({slug}) {
-    try{
+  async getCollectionsBySlug({ slug }) {
+    try {
       const res = await this.sequelize.query(`
       SELECT * FROM public.collection WHERE slug_collection = '${slug}';`);
       return res[0];
-    }catch(e){
+    } catch (e) {
       console.log(e);
       return e;
     }

@@ -27,9 +27,9 @@ export class CdoService {
   }
   async getCategoriaHomologada(data: any) {
     try {
-      console.log("data", data)
+      // console.log("data", data)
       const categoriaHomologada = diccionarioCDO["homologacion"].find(e => e.nombre == data);
-      console.log("categoriaHomologada", categoriaHomologada)
+      // console.log("categoriaHomologada", categoriaHomologada)
       if(categoriaHomologada == undefined){
         return '';
       }
