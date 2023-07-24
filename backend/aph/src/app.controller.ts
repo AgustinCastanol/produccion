@@ -10,6 +10,7 @@ import { PromoopcionService } from './promoopcion/promoopcion.service';
 import { EsferosService } from './esferos/esferos.service';
 import { DOMParser } from '@xmldom/xmldom';
 import fs, { readFileSync, writeFileSync } from 'fs';
+import promoline from '../promoline';
 @Controller()
 export class AppController {
   constructor(
@@ -170,7 +171,7 @@ export class AppController {
       ]
       const base_url_image = 'https://www.catalogospromocionales.com'
       const categorias = await this.promos.getCategories();
-      for (let i = 1; 2 > i; i++) {
+      for (let i = 0; categorias.length > i; i++) {
         // if(i == 1){
         //   continue;
         // }
@@ -184,15 +185,15 @@ export class AppController {
           for (let j = 0; size > j; j++) {
             try {
               // await new Promise((resolve) => setTimeout(resolve, 200));
-              const checkProduct = await this.aphService.checkProduct(products[j].referencia)
+              const checkProduct = await this.aphService.checkProduct(products[j].referencia, proveedor);
               if (!(checkProduct.length > 0)) {
                 let producto_promos = null;
                 try {
                   producto_promos = await this.promos.getProduct({ referencia: products[j].referencia });
-                  if(producto_promos == null){
+                  if (producto_promos == null) {
                     continue;
                   }
-                  if(producto_promos.error != null || producto_promos.error != undefined){
+                  if (producto_promos.error != null || producto_promos.error != undefined) {
                     continue;
                   }
                 } catch (err) {
@@ -204,21 +205,21 @@ export class AppController {
                 let price = 0;
                 let sugerido = 0;
                 if (producto_promos.descripcionPrecio1 != null || producto_promos.descripcionPrecio1 != "") {
-                  if((producto_promos.descripcionPrecio1.includes("precio neto")|| producto_promos.nombre.toLowerCase().includes("precio neto") || producto_promos.descripcionPrecio1.includes("Precio neto") || producto_promos.descripcionPrecio1.includes("Precio Neto") )){
+                  if ((producto_promos.descripcionPrecio1.includes("precio neto") || producto_promos.nombre.toLowerCase().includes("precio neto") || producto_promos.descripcionPrecio1.includes("Precio neto") || producto_promos.descripcionPrecio1.includes("Precio Neto"))) {
                     price = producto_promos.precio1;
                     sugerido = price * 5 / 3;
                   }
                 } else {
-                    price = 0;
-                    sugerido = producto_promos.precio1;
-            
+                  price = 0;
+                  sugerido = producto_promos.precio1;
+
                 }
                 await new Promise((resolve) => setTimeout(resolve, 100));
-                console.log(producto_promos.idCategoria,"idCategoria")
+                console.log(producto_promos.idCategoria, "idCategoria")
                 const true_category = await this.promos.getCategoryById(producto_promos.idCategoria);
                 const category = await this.aphService.getCategoryBySlug({ slug: true_category });
-                console.log(category,"category")
-                const aux_cat= category.id_categorias|| null
+                console.log(category, "category")
+                const aux_cat = category.id_categorias || null
                 console.log(categorias_aph.id_categorias)
                 const productaux = {
                   nombre: aux.str,
@@ -281,18 +282,18 @@ export class AppController {
                 console.log("updatePrice")
                 await new Promise((resolve) => setTimeout(resolve, 150));
                 let producto_promos = null;
-                  producto_promos = await this.promos.getProduct({ referencia: products[j].referencia });
-                  // producto_promos = await this.promos.getProduct({referencia:'LL-69'})
-                  // console.log("producto_promos", producto_promos)
-                  if (producto_promos == null) {
-                    console.log("error-------------- este producto debe ser eliminado")
-                    // await this.aphService.deleteFullProduct(checkProduct[0].idProducts)
-                    continue;
-                  }
-                  if(producto_promos.error!=undefined || producto_promos.error!=null){
-                    console.log("error--------------",producto_promos.error)
-                    continue;
-                  }
+                producto_promos = await this.promos.getProduct({ referencia: products[j].referencia });
+                // producto_promos = await this.promos.getProduct({referencia:'LL-69'})
+                // console.log("producto_promos", producto_promos)
+                if (producto_promos == null) {
+                  console.log("error-------------- este producto debe ser eliminado")
+                  // await this.aphService.deleteFullProduct(checkProduct[0].idProducts)
+                  continue;
+                }
+                if (producto_promos.error != undefined || producto_promos.error != null) {
+                  console.log("error--------------", producto_promos.error)
+                  continue;
+                }
 
                 const true_category = await this.promos.getCategoryById(producto_promos.idCategoria);
                 await new Promise((resolve) => setTimeout(resolve, 150));
@@ -303,12 +304,16 @@ export class AppController {
                 let priceUpdate = 0;
                 let sugerido = 0;
                 // console.log("producto_promos", producto_promos)
+                const aux_collection = await this.promos.clearName(producto_promos.nombre);
+                product_db.collection_id = aux_collection.collection;
+                product_db.description_product = producto_promos.descripcionProducto.replace(/(\r\n|\n|\r)/igm, "").replace(/"/ig, '\\"').replace(/(<([^>]+)>)/ig, "");
+                await this.aphService.updateProduct(product_db)
                 if (producto_promos.descripcionPrecio1 != null || producto_promos.descripcionPrecio1 != "") {
                   console.log("el producto se esta evaluando")
-                  if ((producto_promos.descripcionPrecio1.includes("precio neto") || producto_promos.descripcionPrecio1.includes("Precio neto")|| producto_promos.descripcionPrecio1.includes("Precio Neto") || producto_promos.nombre.toLowerCase().includes("precio neto"))) {
+                  if ((producto_promos.descripcionPrecio1.includes("precio neto") || producto_promos.descripcionPrecio1.includes("Precio neto") || producto_promos.descripcionPrecio1.includes("Precio Neto") || producto_promos.nombre.toLowerCase().includes("precio neto"))) {
                     priceUpdate = producto_promos.precio1;
                     sugerido = priceUpdate * 5 / 3;
-                  }else{
+                  } else {
                     priceUpdate = 0;
                     sugerido = producto_promos.precio1;
                   }
@@ -344,11 +349,11 @@ export class AppController {
 
                 images[0].urlImage = JSON.stringify(aux_image)
                 await this.aphService.updateImagesProducs({
-                  productId:images[0].productId,
-                  image:null,
-                  alt:'image',
-                  urlImage:JSON.stringify(aux_image),
-                  idImage:images[0].idImage
+                  productId: images[0].productId,
+                  image: null,
+                  alt: 'image',
+                  urlImage: JSON.stringify(aux_image),
+                  idImage: images[0].idImage
                 })
 
 
@@ -484,7 +489,7 @@ export class AppController {
       }
       // await this.handleApiPromosProducts({})
       console.log("termine")
-      return { message: 'Correct cron', errores:JSON.stringify(errores) };
+      return { message: 'Correct cron', errores: JSON.stringify(errores) };
     } catch (err) {
       console.log(err)
       return {
@@ -502,7 +507,7 @@ export class AppController {
   @EventPattern('load_api_cdo')
   async handleLoadApiCDO(data: any) {
     try {
-      const collection = 'b4995e35-2373-4b36-a3f8-d147f6833a5a' // precio neto
+      const collection = '47ac63e1-42ef-4e49-9ba1-33f1d0050e4d' // precio sugerido
       const locations = [
         { id: '0994b3d5-becd-401f-983f-47447352ce19', name: 'local' },
         { id: '9b245cdf-acc8-4655-9738-ee432f654e20', name: 'ZonaFranca' },
@@ -513,6 +518,7 @@ export class AppController {
       const products = await this.cdoService.getProducts();
       const size = products.length;
       const aux = []
+      const cat = []
       for (let i = 0; size > i; i++) {
         console.log(products[i].code, i)
         const categoriaHomologada = await this.cdoService.getCategoriaHomologada(products[i].category);
@@ -520,7 +526,7 @@ export class AppController {
         if (categoriaHomologada != undefined && categoriaHomologada != '') {
           const { id_categorias } = await this.aphService.getCategoryBySlug({ slug: categoriaHomologada });
           if (id_categorias != undefined && id_categorias != '') {
-            const checkProduct = await this.aphService.checkProduct(products[i].code)
+            const checkProduct = await this.aphService.checkProduct(products[i].code, proveedor)
             // console.log("aca")
             if (checkProduct.length == 0) {
               console.log("aca0")
@@ -578,7 +584,11 @@ export class AppController {
               if (image.length == 0) {
                 await this.aphService.setProductImage({ productId: product_db.idProducts, url: JSON.stringify([products[i].variants[0].picture.original]) })
               }
-
+              product_db.collection_id = collection;
+              // eliminar los \", las ' y las " de la descripcion
+              const description_aux = products[i].description.replace(/\"/g, '').replace(/\'/g, '').replace(/\\/g, '');
+              product_db.description_product = description_aux;
+              await this.aphService.updateProduct(product_db)
               const price = products[i].variants[0].net_price
               const priceList = products[i].variants[0].list_price
               // console.log("aca1.1")
@@ -613,13 +623,12 @@ export class AppController {
                   await this.aphService.updateImagesProducs(images[0])
                 }
 
-
                 // aux.push({ product: product_db, variants: variants_db })
                 for (let c = 0; variants_db.length > c; c++) {
                   // console.log("update stock-----")
                   // const variantImage_db = await this.aphService.setVariantImage({ variantId: variants_db[c].id_variant, urlImage: JSON.stringify([products[i].variants[c].picture.original]) })
                   // console.log(products[i].variants[c])
-                  console.log(products[i].variants[c])
+                  // console.log(products[i].variants[c])
                   await this.aphService.updateStock({
                     locationId: locations[3].id,
                     quantity: products[i].variants[c].stock_available == undefined ? 0 : products[i].variants[c].stock_available,
@@ -636,17 +645,58 @@ export class AppController {
 
             }
           }
+        }else{
+          cat.push(products[i].category)
         }
       }
+      console.log('termine')
+      console.log(cat)
       return { data: aux };
     } catch (e) {
       return e;
     }
   }
+
+  async clearDescriptionMarpico(data:any){
+    const proveedor = 'ea43c130-8df1-4eb8-9231-e84c1bc156e4'
+    const collection = '47ac63e1-42ef-4e49-9ba1-33f1d0050e4d'
+    const collection_ofeta = '88f91efa-e7f0-4a68-b330-9f3720a738c5'
+    const estados = [4, 5]
+    const locations = [
+      { id: '0994b3d5-becd-401f-983f-47447352ce19', name: 'local' },
+      { id: '9b245cdf-acc8-4655-9738-ee432f654e20', name: 'ZonaFranca' },
+      { id: 'a5db0dfa-2d96-4950-b382-839b3acfd6ae', name: 'transito' },
+      { id: '3b257993-638c-4505-ad1d-5a6dd24d9ac5', name: 'total' },
+    ]
+    const res = await this.marpicoService.getProducts(data);
+    const aux = []
+    console.log(res.results.length)
+    const size = res.results.length;
+    for (let i = 0; i < size; i++) {
+      console.log("voy por aca",i," de ", size)
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      const categoriaHomologada = await this.marpicoService.getCategoriaHomologada(res.results[i].subcategoria_1.nombre);
+      const categorias_db = <any>await this.aphService.getCategoryBySlug({ slug: categoriaHomologada });
+      const checkProduct = await this.aphService.checkProduct(res.results[i].familia, proveedor);
+      if (!(checkProduct.length > 0)) {
+        continue;
+      }else{
+        let product_db = checkProduct[0];
+        if (product_db[0] !== undefined) {
+          // console.log('entro', product_db[0])
+          product_db = product_db[0];
+        }
+        product_db.description_product = res.results[i].descripcion_larga.replace(/<[^>]*>?/g, '').replace(/['"]/g, '');
+        await this.aphService.updateProduct(product_db);
+
+      }
+    }
+  }
+
   @EventPattern('load_api_marpico')
   async handleLoadApiMarpico(data: any) {
     const proveedor = 'ea43c130-8df1-4eb8-9231-e84c1bc156e4'
-    const collection = 'b4995e35-2373-4b36-a3f8-d147f6833a5a'
+    const collection = '47ac63e1-42ef-4e49-9ba1-33f1d0050e4d'
     const collection_ofeta = '88f91efa-e7f0-4a68-b330-9f3720a738c5'
     const estados = [4, 5]
     const locations = [
@@ -663,21 +713,24 @@ export class AppController {
       await new Promise((resolve) => setTimeout(resolve, 200));
       const categoriaHomologada = await this.marpicoService.getCategoriaHomologada(res.results[i].subcategoria_1.nombre);
       const categorias_db = <any>await this.aphService.getCategoryBySlug({ slug: categoriaHomologada });
-      const checkProduct = await this.aphService.checkProduct(res.results[i].familia);
+      const checkProduct = await this.aphService.checkProduct(res.results[i].familia, proveedor);
       if (!(checkProduct.length > 0)) {
         let oferta = false;
-        if(res.results[i]['etiquetas'].length > 0){
-          for(let x = 0; x<res.results[i]['etiquetas'].length; x++){
-            if(res.results[i]['etiquetas'][x].nombre.toLowerCase() == 'outlet'){
+        if (res.results[i]['etiquetas'].length > 0) {
+          for (let x = 0; x < res.results[i]['etiquetas'].length; x++) {
+            if (res.results[i]['etiquetas'][x].nombre.toLowerCase() == 'outlet') {
               oferta = true;
             }
           }
         }
+
+        const descripcion_clear = res.results[i].descripcion_larga.replace(/<[^>]*>?/g, '').replace('\'', '\"')
+
         const productObject =
         {
           nombre: res.results[i].descripcion_comercial,
           referencia: res.results[i].familia,
-          description_product: res.results[i].descripcion_larga,
+          description_product: descripcion_clear,
           metadata: {
             material: res.results[i].material,
             empaque_individual: res.results[i].empaque_individual,
@@ -752,18 +805,20 @@ export class AppController {
           product_db = product_db[0];
         }
         let oferta = false;
-        if(res.results[i]['etiquetas'].length > 0){
-          for(let x = 0; x<res.results[i]['etiquetas'].length; x++){
-            if(res.results[i]['etiquetas'][x].nombre.toLowerCase() == 'outlet'){
+        if (res.results[i]['etiquetas'].length > 0) {
+          for (let x = 0; x < res.results[i]['etiquetas'].length; x++) {
+            if (res.results[i]['etiquetas'][x].nombre.toLowerCase() == 'outlet') {
               oferta = true;
             }
           }
         }
-        if(oferta){
+        // product_db.description_product = res.results[i].descripcion_larga.replace(/<[^>]*>?/g, '').replace('\'', '\"');
+        // await this.aphService.updateProduct(product_db);
+        if (oferta) {
           product_db.collection_id = collection_ofeta;
           await this.aphService.updateProduct(product_db);
-        }else{
-          if(product_db.collection_id != collection){
+        } else {
+          if (product_db.collection_id != collection) {
             product_db.collection_id = collection;
             await this.aphService.updateProduct(product_db);
           }
@@ -778,6 +833,7 @@ export class AppController {
           } else {
 
             const variant_api = res.results[i].materiales.find((item: any) => variant_db[j].name_variant === product_db.reference + '-' + item.color_nombre)
+            if(variant_api !== undefined){
             const arrayUrls = variant_api.imagenes.map((item: { imagen: { file: any; }; }) => { return item.imagen.file })
             await this.aphService.updateVariantImage({
               idImage: image[0].idImage,
@@ -785,6 +841,7 @@ export class AppController {
               alt: variant_api.color_nombre,
               variantId: variant_db[j].id_variant
             })
+          }
           }
           //actualizo stock
           // await this.aphService.updateStock({ locationId: locations[0].id, quantity: res.results[i].materiales[j].inventario, variant_id: variant_db[0].id_variant, quantity_allocated: 0 });
@@ -902,21 +959,31 @@ export class AppController {
       const { Stocks } = await this.promosOpcion.getExistencias(data);
       // eslint-disable-next-line no-var
       var aux = []
+      //obtener todas las categorias sin repetir
+      const categorias = [];
+      // for(let i = 0; i < response.length; i++){
+      //     if(categorias.indexOf(response[i].categorias) == -1){
+      //       categorias.push(response[i].categorias)
+      //     }
+      // }
+      // return { message: 'cat', data: categorias }
+
       for (let i = 0; i < response.length; i++) {
         console.log("voy por aca", i)
         // console.log(Stocks.length, "Stocks.length")
         await new Promise((resolve) => setTimeout(resolve, 300));
         const categoriaHomologada = await this.promosOpcion.getCategoriaHomologada(response[i].categorias);
-        const categorias_db = <any>await this.aphService.getCategoryBySlug({ slug: categoriaHomologada });
-        const checkProduct = await this.aphService.checkProduct(response[i].skuPadre);
-        // console.log(Stocks.length, "Stocks.length")
-        if (response[i].skuPadre == 'SOC 011-09') {
-          aux.push({ product: response[i], error: "description" })
-          console.log(response[i])
+        console.log(categoriaHomologada, 'categoriaHomologada')
+        if(categoriaHomologada == '' || categoriaHomologada == null || categoriaHomologada == undefined){
+          continue;
         }
+        const categorias_db = <any>await this.aphService.getCategoryBySlug({ slug: categoriaHomologada });
+        const checkProduct = await this.aphService.checkProduct(response[i].skuPadre, supplier);
+        // console.log(Stocks.length, "Stocks.length")
         if (checkProduct.length == 0) {
+          const name_aux = await this.promosOpcion.corregirTexto(response[i].nombrePadre)
           const obj = {
-            nombre: response[i].nombrePadre,
+            nombre: name_aux,
             referencia: response[i].skuPadre,
             description_product: response[i].descripcion,
             metadata: {
@@ -987,7 +1054,14 @@ export class AppController {
           // console.log(product_db, price_db)
           // aux.push({ id: product_db, price: price_db })
           // console.log(Stocks.length, "Stocks.length")
+          const product_aux = checkProduct[0];
+          const name_aux = await this.promosOpcion.corregirTexto(response[i].nombrePadre)
+          const desc_aux = await this.promosOpcion.corregirTexto(response[i].descripcion)
+          product_aux.name_product = name_aux;
+          product_aux.description_product = desc_aux;
 
+          // console.log(response[i].descripcion,"description_product")
+          await this.aphService.updateProduct(product_aux);
           if (Stocks.length == 0 || Stocks == undefined) {
             aux.push({ id: product_db, producto: response[i], iteracion: i })
           }
@@ -996,34 +1070,38 @@ export class AppController {
             // console.log("iteracion", i, "hijo", c)
 
             const variants = <any>await this.aphService.getVariantBySku({ sku: response[i].hijos[c].skuHijo });
-            if (variants.length == 1) {
-              // console.log(variants)
-              /*buscar si el sku de la variante (variants[0].sku) es igual a el material del stock (Stock["Material"]) y obtener el objeto del stock */
-              const stock = Stocks.find((stock: { "Material": string, "Stock": number, "Planta": string }) => stock["Material"] == variants[0].sku);
-              if (stock != -1) {
-                const location = await this.aphService.getStockByVariant({ id_variant: variants[0].id_variant })
-                // console.log(location)
-                /*buscar en la constante location el objeto que contiene el name de 'Local' */
-                if (location.length > 0) {
-                  const location_local = location.find((location: { "name": string }) => location["name"] == 'Local');
-                  const location_total = location.find((location: { "name": string }) => location["name"] == 'Total');
-                  await this.aphService.updateStock({ id_variant: location_local.variant_id, quantity: stock == undefined ? 0 : stock.Stock, locationId: location_local.locationId })
-                  await this.aphService.updateStock({ id_variant: location_total.variant_id, quantity: stock == undefined ? 0 : stock.Stock, locationId: location_total.locationId })
+            try {
+              if (variants.length == 1) {
+                // console.log(variants)
+                /*buscar si el sku de la variante (variants[0].sku) es igual a el material del stock (Stock["Material"]) y obtener el objeto del stock */
+                const stock = Stocks.find((stock: { "Material": string, "Stock": number, "Planta": string }) => stock["Material"] == variants[0].sku);
+                if (stock != -1) {
+                  const location = await this.aphService.getStockByVariant({ id_variant: variants[0].id_variant })
+                  // console.log(location)
+                  /*buscar en la constante location el objeto que contiene el name de 'Local' */
+                  if (location.length > 0) {
+                    const location_local = location.find((location: { "name": string }) => location["name"] == 'Local');
+                    const location_total = location.find((location: { "name": string }) => location["name"] == 'Total');
+                    await this.aphService.updateStock({ id_variant: location_local.variant_id, quantity: stock == undefined ? 0 : stock.Stock, locationId: location_local.locationId })
+                    await this.aphService.updateStock({ id_variant: location_total.variant_id, quantity: stock == undefined ? 0 : stock.Stock, locationId: location_total.locationId })
+                  } else {
+                    await this.aphService.setStock({ locationId: locations[0].id, quantity: stock == undefined ? 0 : stock.Stock, variant_id: variants[0].id_variant, quantity_allocated: 0 });
+                    await this.aphService.setStock({ locationId: locations[1].id, quantity: stock == undefined ? 0 : stock.Stock, variant_id: variants[0].id_variant, quantity_allocated: 0 });
+                    await this.aphService.setStock({ locationId: locations[3].id, quantity: stock == undefined ? 0 : stock.Stock, variant_id: variants[0].id_variant, quantity_allocated: 0 });
+                  }
+                  if (stock == undefined) {
+                    aux.push({ id: product_db, variants, error: "no existe el stock, pero se cargo como 0" })
+                  }
                 } else {
-                  await this.aphService.setStock({ locationId: locations[0].id, quantity: stock == undefined ? 0 : stock.Stock, variant_id: variants[0].id_variant, quantity_allocated: 0 });
-                  await this.aphService.setStock({ locationId: locations[1].id, quantity: stock == undefined ? 0 : stock.Stock, variant_id: variants[0].id_variant, quantity_allocated: 0 });
-                  await this.aphService.setStock({ locationId: locations[3].id, quantity: stock == undefined ? 0 : stock.Stock, variant_id: variants[0].id_variant, quantity_allocated: 0 });
+                  console.log("no existe el stock")
+                  aux.push({ id: product_db, variants, error: "no existe el stock" })
                 }
-                if (stock == undefined) {
-                  aux.push({ id: product_db, variants, error: "no existe el stock, pero se cargo como 0" })
-                }
-              } else {
-                console.log("no existe el stock")
-                aux.push({ id: product_db, variants, error: "no existe el stock" })
               }
-            }
-            if (variants.length > 1) {
-              aux.push({ id: product_db, variants, error: "mas de una variante" })
+              if (variants.length > 1) {
+                aux.push({ id: product_db, variants, error: "mas de una variante" })
+              }
+            } catch (err) {
+              console.log(err, "que paso?")
             }
 
           }
@@ -1142,14 +1220,27 @@ export class AppController {
     try {
       const supplier = '72775493-e7d6-43e7-847f-2b9c4565d480'
       const jsonPrice = await this.promosOpcion.getJsonPrice({})
+      const collection = 'b4995e35-2373-4b36-a3f8-d147f6833a5a'
+      const collection_ofeta = '88f91efa-e7f0-4a68-b330-9f3720a738c5'
       const aux = []
       for (let i = 0; i < jsonPrice.length; i++) {
+        console.log("voy por aca", i + ":" + jsonPrice.length)
         await new Promise((resolve) => setTimeout(resolve, 150));
         const product = await <any>this.aphService.getProductByReferenceAndSupplier({ reference: jsonPrice[i].referencia, supplier })
         if (product.length > 0) {
           const price = await this.aphService.getPriceById({ id: product[0].price_base })
-          console.log(jsonPrice[i].precio)
+          console.log(jsonPrice[i].precio, "precio")
+          if (jsonPrice[i].tipo == 'LIQUIDACIÓN') {
+            product[0].collection_id = collection_ofeta
+            await this.aphService.updateProduct(product[0])
 
+          } else if (jsonPrice[i].tipo == 'PRECIO ÚNICO') {
+            product[0].collection_id = collection
+            await this.aphService.updateProduct(product[0])
+          } else {
+            product[0].collection_id = '47ac63e1-42ef-4e49-9ba1-33f1d0050e4d'
+            await this.aphService.updateProduct(product[0])
+          }
           if (price.length > 0) {
             const priceUpdate = await this.aphService.updatePrice(
               {
@@ -1169,7 +1260,7 @@ export class AppController {
             const variantUpdate = await this.aphService.updateVariant(
               {
                 ...variant[0],
-                price_override: jsonPrice[i].precio,
+                price_override: jsonPrice[i].tipo == "NORMAL" ? jsonPrice[i].precio : jsonPrice[i].precio * 5 / 3,
               })
             await new Promise((resolve) => setTimeout(resolve, 150));
 
@@ -1184,11 +1275,12 @@ export class AppController {
       for (let i = 0; i < products.length; i++) {
         //bucscar si los productos que tengo en mi base de datos estan en el json, si no estan usar deleteProduct
         const product = jsonPrice.find((element) => element.referencia == products[i].reference)
-        console.log(products[i].reference,"reference")
+        console.log(products[i].reference, "reference")
         if (!product) {
           await this.aphService.deleteFullProduct(products[i].idProducts)
         }
       }
+      console.log('termine')
       return { message: 'Precios cargados', dato: { jsonPrice, length: aux.length }, error: [] }
     } catch (err) {
       return { data: null, message: "error", error: err.message }
@@ -1224,15 +1316,15 @@ export class AppController {
       const aux = [{}]
       const products = []
       let product = {}
-
       for (let c = 0; c < data.length; c++) {
-        const check_product = <any>await this.aphService.getProductByReference({ reference: data[c]['sku padre'] })
+        const supplier = await this.aphService.getProveedorByName({ name: data[c]['proveedor'] })
+        console.log(supplier, "supplier")
+        const check_product = <any>await this.aphService.checkProduct(data[c]['sku padre'], supplier[0].id)
         console.log(check_product, "check_product")
         if (check_product.length == 0) {
           console.log("el producto no existe")
           const catergoria = await this.aphService.getCategoryBySlug({ slug: data[c]['categoria'] })
-          const collection = await this.aphService.getCollectionsBySlug({ slug: data[c]['coleccion'] })
-          const supplier = await this.aphService.getProveedorByName({ name: data[c]['proveedor'] })
+          const collection = await this.aphService.getCollectionsBySlug({ slug: 'precio-neto' })
           console.log(catergoria, "categorias")
           console.log(collection, "coleccion")
           console.log(supplier, "proveedor")
@@ -1243,7 +1335,7 @@ export class AppController {
             metadata: { medidas: data[c]['medidas'], material: data[c]['material'], talla: data[c]['talla'], color: data[c]['color'] },
             channel: data[c]['proveedor'],
             is_published: data[c]['publicado'] == 'si' ? true : false,
-            peso: data[c]['peso'],
+            peso: data[c]['peso'] || 0,
             category_id: catergoria != undefined ? { id: catergoria.id_categorias, name: catergoria.name_category, slug: catergoria.slug_category } : { name: null, id: null },
             product_class_id: null,
             collection_id: collection != undefined ? { name: collection[0].name_collection, id: collection[0].idCollection, slug: collection[0].slug_collection } : { name: null, id: null },
@@ -1253,7 +1345,8 @@ export class AppController {
           }
           console.log(product, "product")
         }
-        const check_variant = <any>await this.aphService.getVariantBySku({ sku: data[c]['sku hijo'] })
+        console.log(check_product.length, "check_product")
+        const check_variant = <any>await this.aphService.getVariantBySku({ sku: data[c]['sku hijo'], product_id: check_product.length !== 0 ? check_product[0].idProducts : null })
         if (check_variant.length > 0) {
           console.log("la variante ya existe")
           aux.push({ message: "la variante ya existe", err: check_variant, data: data[c] })
@@ -1264,15 +1357,15 @@ export class AppController {
           name_variants: data[c]['nombre'],
           sku: data[c]['sku hijo'],
           price_override: data[c]['precio sugerido'],
-          metadata_variants: { color: data[c]['color'], talla: data[c]['talla'], material: data[c]['material'], medidas: data[c]['medidas'] },
+          metadata_variants: { color: data[c]['color'], talla: data[c]['talla'], material: data[c]['material'], medidas: data[c]['medidas'], almacenamiento: data[c]['almacenamiento'] },
           weight_override: data[c]['peso'],
           brand: data[c]['marca'],
           description_variant: data[c]['descripcion'],
           image: data[c]['imagen'],
           stock: [
             {
-              location: data[c]['localizacion del stock'],
-              quantity: data[c]['stock']
+              location: 'Total',
+              quantity: data[c]['stock_total']
             }
           ]
         }
@@ -1289,10 +1382,11 @@ export class AppController {
     }
   }
   @EventPattern('process_csv_products')//problema con la carga de imagenes
-  async processCsvProducts(data: any) {
+  async processCsvProducts(data1: any) {
     try {
       // console.log(data)
       //agrupar por referencia
+      const data = promoline
       const locations = [
         { id: '0994b3d5-becd-401f-983f-47447352ce19', name: 'local' },
         { id: '9b245cdf-acc8-4655-9738-ee432f654e20', name: 'ZonaFranca' },
@@ -1310,7 +1404,8 @@ export class AppController {
       }
         , {});
       for (const key in products) {
-        const check_product = <any>await this.aphService.getProductByReference({ reference: key })
+        const check_product = <any>await this.aphService.checkProduct( key, products[key][0].proveedor.id)
+        console.log(check_product)
         if (check_product.length == 0) {
           const product_aux = {
             nombre: products[key][0].nombre,
@@ -1328,8 +1423,10 @@ export class AppController {
             product_class_id: products[key][0].product_class_id
           }
           const price_db = await this.aphService.setPrice({
-            metadata: { precioSugerido: products[key][0].collection_id.name == 'precio sugerido' ? products[key][0].price : 0 },
-            price: products[key][0].collection_id.name == 'precio neto' ? products[key][0].price : 0,
+            // metadata: { precioSugerido: products[key][0].collection_id.name == 'precio sugerido' ? products[key][0].price : 0 },
+            metadata: { precioSugerido: products[key][0].price * 5 / 3 },
+            // price: products[key][0].collection_id.name == 'precio neto' ? products[key][0].price : 0,
+            price: products[key][0].price,
             product_id: null,
             currency: products[key][0].currency == undefined ? 'COP' : products[key][0].currency,
             type: "Precio Neto"
@@ -1337,59 +1434,74 @@ export class AppController {
           product_aux.price = price_db.id_price
           product_db = await this.aphService.setProduct(product_aux)
           await this.aphService.updatePrice({ ...price_db, productId: product_db.id_productos })
-          await this.aphService.setProductImage({ productId: product_db.id_productos, url: JSON.stringify([products[key][0].image]) })
+
+          await this.aphService.setProductImage({ productId: product_db.id_productos, url: JSON.stringify(products[key][0].variants[0].image) })
         }
 
+        const product_aux = check_product[0]
+        if(check_product.length !== 0){
+          console.log(products[key][0].description_product,"des")
+          console.log(product_aux,"des")
+          product_aux.description_product = products[key][0].description_product
+          await this.aphService.updateProduct(product_aux)
+        }
+        // const image_db = await this.aphService.getImagesProduct({ id: check_product.length != 0 ? check_product[0].idProducts : product_db.id_productos })
+        // console.log(image_db, "image_db")
+        // await this.aphService.updateImagesProducs({ idImage:image_db[0].idImage,urlImage:JSON.stringify([products[key][0].variants[0].image]),productId:image_db[0].productId})
         for (let i = 0; i < products[key].length; i++) {
-          const check_variant = <any>await this.aphService.getVariantBySku({ sku: products[key][i].variants[0].sku })
+          console.log(check_product, "checkproducts")
+          const check_variant = <any>await this.aphService.getVariantBySku({ sku: products[key][i].variants[0].sku, product_id: check_product.length != 0 ? check_product[0].idProducts : product_db.id_productos })
           if (check_variant.length == 0) {
+            console.log(products[key][i].variants[0], "sku")
             const variant_db = await this.aphService.setVariant({
               name_variants: products[key][i].variants[0].name_variants,
               sku: products[key][i].variants[0].sku,
               price_override: products[key][i].variants[0].price_override,
-              metadata_variants: products[key][i].variants[0].metadata_variants,
+              metadata_variant: products[key][i].variants[0].metadata_variants,
               weight_override: products[key][i].variants[0].weight_override,
               brand: products[key][i].variants[0].brand,
-              description_variant: JSON.stringify(products[key][i].variants[0].metadata_variants),
-              product_id: check_product.length > 0 ? check_product[0].id_productos : product_db.id_productos,
+              description_variant: products[key][i].variants[0].description_variant,
+              product_id: check_product.length != 0 ? check_product[0].idProducts : product_db.id_productos,
             })
-            console.log(variant_db, "variant")
+            // console.log(variant_db, "variant")
+            
             await this.aphService.setVariantImage({ variantId: variant_db.id_variant, urlImage: JSON.stringify([products[key][i].variants[0].image]) })
             const idStock = locations.find((item) => item.name.toLowerCase() == products[key][i].variants[0].stock[0].location.toLowerCase())
             console.log(idStock, "stocl")
             await this.aphService.setStock({
-              locationId: idStock.id,
+              locationId: '3b257993-638c-4505-ad1d-5a6dd24d9ac5',
               quantity: products[key][i].variants[0].stock[0].quantity,
               variant_id: variant_db.id_variant,
               quantity_allocated: 0
             })
           } else {
-            const price_db = await this.aphService.getPrice({ id: check_variant[0].idProducts })
+            const price_db = await this.aphService.getPrice({ id: check_product[0].idProducts })
             await this.aphService.updatePrice({
               id: price_db[0].id,
               type: 'Precio Neto',
-              metadata: { precioSugerido: products[key][0].collection_id.name == 'precio sugerido' ? products[key][0].price : 0 },
+              metadata: JSON.stringify({ precioSugerido: parseInt(products[key][0].price) * 5 / 3 }),
               currency: 'COP',
               price: products[key][0].collection_id.name == 'precio neto' ? products[key][0].price : 0,
               productId: price_db[0].productId
             })
-            const stock_update = locations.find((item) => item.name.toLowerCase() == products[key][i].variants[0].stock[0].location.toLowerCase())
             const stock_db = await this.aphService.getStockByVariant({ id_variant: check_variant[0].id_variant })
-            const check_stock = stock_db.find((item) => item.location == stock_update.id)
+            const check_stock = stock_db.find((item) => item.location == '3b257993-638c-4505-ad1d-5a6dd24d9ac5')
             if (check_stock) {
-              await this.aphService.updateStock({ variant_id: check_variant.idVariant, quantity: products[key][i].variants[0].stock[0].quantity, quantity_allocated: 0, location: stock_update.id })
+              await this.aphService.updateStock({ variant_id: check_variant.idVariant, quantity: products[key][i].variants[0].stock[0].quantity, quantity_allocated: 0, locationId: '3b257993-638c-4505-ad1d-5a6dd24d9ac5' })
             } else {
-              await this.aphService.setStock({
-                location: stock_update.id,
-                quantity: products[key][i].variants[0].stock[0].quantity,
-                variant_id: check_variant[0].id_variant,
-                quantity_allocated: 0
-              })
+              // await this.aphService.setStock({
+              //   locationId: '3b257993-638c-4505-ad1d-5a6dd24d9ac5',
+              //   quantity: products[key][i].variants[0].stock[0].quantity,
+              //   variant_id: check_variant[0].id_variant,
+              //   quantity_allocated: 0
+              // })
             }
           }
         }
 
       }
+      console.log("productos cargados")
+      return { message: "productos cargados" }
     } catch (err) {
       console.log(err)
       return { error: err.message, message: "productos " }
@@ -1435,7 +1547,7 @@ export class AppController {
         if (image_product.length == 0) {
           continue
         }
-        console.log("el producto esta en oferta?",oferta)
+        console.log("el producto esta en oferta?", oferta)
         const mainImages = []
         for (let x = 0; x < image_product.length; x++) {
           const imagen = image_product[x];
@@ -1644,10 +1756,16 @@ export class AppController {
       const products = JSON.parse(readFileSync('products.json', 'utf8'))
       const aux = []
       const err = []
+      const target = []
+      let locate = 0
       const size = products.length
       for (let i = 0; i < size; i++) {
         console.log(i, "de", size)
-        await new Promise(resolve => setTimeout(resolve, 200));
+        if(products[i].reference == 'LLSE'){
+          target.push(products[i])
+          locate = i
+        }
+        // await new Promise(resolve => setTimeout(resolve, 200));
         const categoria = await this.esferosService.getCategoriasHomologadas(products[i].categorie)
         console.log(categoria, "homo")
         if (categoria.error !== '') {
@@ -1660,8 +1778,9 @@ export class AppController {
         slug_aux = slug_aux.toLowerCase()
         slug_aux = products[i].id + '-' + slug_aux.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
         const reference = products[i].reference === '' ? slug_aux : products[i].reference
-        const check_product = await this.aphService.checkProduct(reference)
-        // console.log(check_product)
+        const check_product = await this.aphService.checkProduct(reference, proveedor)
+        console.log(check_product)
+
         if (check_product.length == 0) {
           if (products[i].active_product == 0 || products[i].active_product == '0') {
             continue;
@@ -1781,8 +1900,8 @@ export class AppController {
           const product_db = check_product[0];
           console.log(products[i].active_product, "....................................................")
           if (products[i].active_product == 0 || products[i].active_product == '0') {
-            console.log("delete")
-            await this.aphService.deleteFullProduct(product_db.idProducts)
+            //   console.log("delete")
+            //   await this.aphService.deleteFullProduct(product_db.idProducts)
             continue;
           }
           const variant_db = await this.aphService.getVariants({ idProducts: product_db.idProducts });
@@ -1809,44 +1928,21 @@ export class AppController {
                 productId: price_db[0].productId
               })
           }
-          if(products[i].oferta == 1){
+          product_db.description_product = await this.esferosService.clearTagsHtml(products[i].description);
+          await this.aphService.updateProduct(product_db)
+          if (products[i].oferta == 1) {
             product_db.collection_id = collection_ofeta
             await this.aphService.updateProduct(product_db)
-          }else{
-            if(product_db.collection_id != collection ){
+          } else {
+            if (product_db.collection_id != collection) {
               product_db.collection_id = collection
               await this.aphService.updateProduct(product_db)
             }
           }
-          // const imageArray = []
-          // try {
-          //   console.log(products[i].image, "images")
-          //   for (let x = 0; x < products[i].image.length; x++) {
-          //     const imageBit = await this.esferosService.getImageByURL(products[i].image[x])
-          //     const newpath = await this.aphService.uploadImage({ image: imageBit, name: products[i].name, sku: 'aph' })
-          //     imageArray.push(newpath)
-          //   }
-          // }catch (err) {
-          //   console.log(err)
-
-          // }
-          // if (imageArray.length > 0) {
-          //   const images = await this.aphService.getImagesProduct({ id: price_db[0].productId })
-          //   if (images.length > 0) {
-          //     images[0].urlImage = JSON.stringify(imageArray)
-          //     await this.aphService.updateImagesProducs(images[0])
-          //   }else{
-          //     await this.aphService.setProductImage({
-          //       productId: product_db.id_productos,
-          //       image: null,
-          //       url: JSON.stringify(imageArray)
-          //     })
-          //   }
-          // }
           if (variant_db.length == 0) {
             console.log("no tengo variante")
             for (let j = 0; j < products[i].variants.length; j++) {
-              await new Promise(resolve => setTimeout(resolve, 100));
+              // await new Promise(resolve => setTimeout(resolve, 100));
               const variant = products[i].variants[j];
               const descripcion = await this.esferosService.clearTagsHtml(products[i].description);
               const variantaux = {
@@ -1876,11 +1972,14 @@ export class AppController {
               })
             }
           } else {
-            for (let c = 0; products[i].variants.length > c; c++) {
+            for (let c = 0; variant_db.length > c; c++) {
               await new Promise(resolve => setTimeout(resolve, 100));
-              console.log(variant_db[c])
+              // console.log(products[i].variants[c], "soy la variante")
               try {
-                const variant = <any>await this.aphService.getVariantBySku({ sku: variant_db[c].sku });
+                let sku_desig = products[i].variants.length != 1 && products[i].variants[c].sku != undefined ? products[i].variants[c].sku + '-' + products[i].variants[c].atribut : reference + '-' + 'default';
+
+                const variant = <any>await this.aphService.getVariantBySku({ sku: sku_desig });
+                // console.log(variant, "soy la variante que salio")
                 const stock_db = <any>await this.aphService.getStockByVariant({ id_variant: variant[0].id_variant });
                 if (stock_db.length == 0) {
                   await this.aphService.setStock({
@@ -1897,6 +1996,7 @@ export class AppController {
                   })
                 }
                 // console.log(variant)
+                //desbloquear
                 await this.aphService.updateVariant({
                   name_variant: variant[0].name_variant,
                   metadata_variant: variant[0].metadata_variant,
@@ -1908,6 +2008,7 @@ export class AppController {
                   product_id: variant[0].product_id,
                   id_variant: variant[0].id_variant
                 })
+                //hasta aca
               } catch (error) {
                 console.log(error)
                 err.push({ error: error.message, sku: products[i].variants[c], product_l: products[i] })
@@ -1915,16 +2016,19 @@ export class AppController {
             }
           }
         }
-        aux.push(products[i])
+        // aux.push(products[i])
 
       }
       console.log("termine")
-      return { message: 'ok', err:JSON.stringify(err) }
+      console.log(target, "target")
+      console.log(locate, "i")
+      return { message: 'ok', err: JSON.stringify(err), target: target, locate: locate }
     } catch (err) {
       console.log(err)
       return { error: err }
     }
   }
+
 }
 /* 
   multiplicar el precio neto por 3/5

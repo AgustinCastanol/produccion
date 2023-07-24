@@ -629,7 +629,9 @@ async function search(data) {
       products.value = res
       products.value.map(async (item) => {
         const aux = JSON.parse(item["urlImage"])
-        item.metadata_price = JSON.parse(item.metadata_price)
+        console.log(aux)
+        console.log(item.metadata_price)
+        item.metadata_price = item.metadata_price == '[object Object] '? {} : JSON.parse(item.metadata_price)
         if(typeof item.metadata_price == 'string'){
           item.metadata_price = JSON.parse(item.metadata_price)
         }
@@ -638,7 +640,7 @@ async function search(data) {
           const cparent = await API.getCategory({ id: item.parent })
           item.name_parent_category = cparent.data[0].name_category
         }
-
+        console.log(aux)
       })
       totalRows.value = res.length
     } else {

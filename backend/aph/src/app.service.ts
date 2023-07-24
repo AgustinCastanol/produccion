@@ -173,7 +173,7 @@ export class AppService {
         nombre: data.nombre ? data.nombre : data.name_product,
         referencia: data.referencia ? data.referencia : data.reference,
         descripcion: data.description_product ? data.description_product : data.descripcion,
-        metadata: JSON.stringify(data.metadata),
+        metadata: data.metadata,
         channel: data.channel,
         disponible: data.disponible ? new Date(data.disponible).toISOString().slice(0, 19).replace('T', ' ') : new Date(data.available_on).toISOString().slice(0, 19).replace('T', ' '),
         is_published: data.is_published,
@@ -242,7 +242,7 @@ export class AppService {
         nombre: data.nombre,
         referencia: data.referencia,
         descripcion: data.description_product ? data.description_product : "not description",
-        metadata: JSON.stringify(data.metadata),
+        metadata: data.metadata,
         channel: data.channel,
         disponible: new Date().toISOString().slice(0, 19).replace('T', ' '),
         is_published: data.is_published,
@@ -253,6 +253,7 @@ export class AppService {
         price_base: data.price,
         collection_id: data.collection_id
       };
+      console.log("obj_metadata", obj.metadata)
       console.log("obj_priice", obj.price_base)
       console.log("data_price", data.price)
       await this.sequelize.query(`INSERT INTO public.products(
@@ -449,12 +450,22 @@ export class AppService {
       if (data.sku == undefined || data.sku == null) {
         return { message: 'missing sku' }
       }
-      const res = await this.sequelize.query(
-        `SELECT * FROM "public"."variants"
-        where sku = '${data.sku}'`,
-      );
+      console.log(data,"getVariantBySku")
+      if(data.product_id != undefined && data.product_id != null){
+        const res = await this.sequelize.query(
+          `SELECT * FROM "public"."variants"
+          where sku = '${data.sku}' AND product_id = '${data.product_id}'`,
+        );
+        return res[0];
+      }else{
+        const res = await this.sequelize.query(
+          `SELECT * FROM "public"."variants"
+          where sku = '${data.sku}'`,
+        );
+        return res[0];
+      }
 
-      return res[0];
+
     } catch (err) {
       console.log(err)
     }
@@ -476,14 +487,14 @@ export class AppService {
         description_variant: data.description_variant ? data.description_variant : "  ",
         brand: data.brand,
         price_override: data.price_override,
-        weight_override: data.weight_override,
+        weight_override: data.weight_override || 0,
         sku: data.sku,
         product_id: data.product_id
       };
       const res = await this.sequelize.query(`
   INSERT INTO public.variants(
 	id_variant, name_variant,metadata_variant,description_variant,brand,price_override,weight_override, sku, product_id)
-	VALUES ('${obj.id_variant}','${obj.name_variant}','${obj.metadata_variant}','${obj.description_variant}','${obj.brand}',${obj.price_override},${obj.weight_override},'${obj.sku}','${obj.product_id}')`);
+	VALUES ('${obj.id_variant}','${obj.name_variant}','${obj.metadata_variant}','${obj.description_variant}','${obj.brand}',${obj.price_override},'${obj.weight_override}','${obj.sku}','${obj.product_id}')`);
       // console.log('res', res);
       return obj;
     } catch (err) {
@@ -1005,10 +1016,10 @@ WHERE (supplier = '${data.id_supplier}' and  "categories"."parent" is null)`);
       return e;
     }
   }
-  async checkProduct(referencia: any) {
+  async checkProduct(referencia: string, supplier: string) {
     try {
       const res = await this.sequelize.query(`
-      SELECT * FROM public.products WHERE reference = '${referencia}';`);
+      SELECT * FROM public.products WHERE reference = '${referencia}' AND supplier = '${supplier}';`);
       return res[0];
     } catch (e) {
       console.log(e);

@@ -131,7 +131,8 @@ function corregirTexto(texto) {
     .replace(/&ntilde;/gi, "ñ")
     .replace(/&ntilde/gi,'ñ')
     .replace(/&nbsp/gi,' ')
-
+    .replace(/&quot/gi,'')
+    .replace(/&quot;/gi,'')
   // .replace(/[^\w\s]/gi, '');
   return texto;
 }

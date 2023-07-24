@@ -84,7 +84,7 @@ export class PromoopcionService {
     try {
       const categoriaHomologada = <any>diccionarioPromo["homologacion"].find(e => e.nombre == data);
       if (categoriaHomologada == undefined) {
-        console.log("categoria no homologada", `categoria: -${data}-`)
+        console.log("categoria no homologada", `categoria: ${data}`)
         return '';
       }
       return categoriaHomologada.slugAveChildrent == '' ? categoriaHomologada.slugAve : categoriaHomologada.slugAveChildrent;
@@ -117,5 +117,28 @@ export class PromoopcionService {
       console.log(err)
       return 'error';
     }
+  }
+  async corregirTexto(texto:string) {
+    // Corregir caracteres especiales
+    texto = texto
+      .replace(/&aacute/gi, "a")
+      .replace(/&eacute/gi, "e")
+      .replace(/&iacute/gi, 'i')
+      .replace(/&oacute/gi, 'o')
+      .replace(/&uacute/gi, 'u')
+      .replace(/&uuml/gi, "u")
+      .replace(/&nbsp;/gi, " ")
+      .replace(/&aacute;/gi, "á")
+      .replace(/&eacute;/gi, "é")
+      .replace(/&iacute;/gi, 'í')
+      .replace(/&uacute;/gi, 'ú')
+      .replace(/&oacute;/gi, 'ó')
+      .replace(/&ntilde;/gi, "ñ")
+      .replace(/&ntilde/gi,'ñ')
+      .replace(/&nbsp/gi,' ')
+      .replace(/&quot/gi,'')
+      .replace(/&quot;/gi,'')
+      // .replace(/[^\w\s]/gi, '');
+    return texto;
   }
 }

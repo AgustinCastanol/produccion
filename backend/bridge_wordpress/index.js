@@ -158,8 +158,8 @@ console.log("----------- CONECTED TO USERS DB");
 global.knex_products_db = products_db;
 // Crea una instancia del cliente Redis
 const client = redis.createClient({
-  url: 'redis://157.230.11.89:6379',
-  password:'_dir$to-easy./'
+  url: 'redis://localhost:6379',
+  password:'__@picker-redis'
 });
  client.on('connect', function() {
     console.log('Redis client connected');
@@ -169,11 +169,11 @@ client.on('error', function (err) {
 });
 await client.connect();
 global.redis = client;
-  //de aca no pasa sin tokens
+  //de aca no pasa sin key
 app.use(api_key_proxy);
 //
-app.use("/",client_dis)
 app.use("/bgwp", users);
+app.use("/",client_dis)
 //de aca no pasa sin tokens
 
 app.use(jwt_proxy);

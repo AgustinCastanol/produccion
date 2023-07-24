@@ -69,8 +69,9 @@ export default class Users {
   }
   async verifyUser(user) {
     try {
+      console.log("entre a verificar")
       const res = await global.knex_user_db('user_admin').where({ email: user.email }).select('*').join('role', 'user_admin.role_admin', '=', 'role.id_role');
-      console.log(res)
+      console.log(res,"restpuesta")
       if (res.length > 0) {
         const match = await bcrypt.compare(user.password, res[0].password);
         if (match) {
@@ -79,14 +80,20 @@ export default class Users {
       }
       return false;
     } catch (err) {
+      console.log(err,"hubo un error")
       return false;
     }
   }
   async verifyUser() {
     try {
+      console.log("entre a verificar sin data")
       const res = await knex_user_db('user_admin').where({ email: this.email }).select('*').join('role', 'user_admin.role_admin', '=', 'role.id_role');
+      console.log(res,"restpuesta")
       if (res.length > 0) {
+        console.log("this.password",this.password)
+        console.log("res[0].password",res[0].password)
         const match = await bcrypt.compare(this.password, res[0].password);
+        console.log(match,"match")
         if (match) {
           this.role = res[0].role_admin;
           return true;
@@ -105,6 +112,7 @@ export default class Users {
         password: this.password,
       };
       const exist_user = await this.verifyUser(user);
+      console.log("exit_iser", exist_user)
       if (exist_user) {
         const token = this.createToken();
         return { token, role: this.role };
@@ -143,9 +151,13 @@ export default class Users {
         user: this.user,
         password: this.password
       };
+      console.log(this.password,"soy lo que se va a hashear")
       const salt = await bcrypt.genSalt(parseInt(process.env.SALT_ROUNDS));
       user.password = await bcrypt.hash(this.password, salt);
+      console.log("aca")
+      console.log(user)
       await knex_user_db('user_admin').where({ id_wordpress: user.id_wordpress }).update(user);
+      
       return { error: false, message: 'User updated' };
     } catch (err) {
       return { error: true, message: err.message };

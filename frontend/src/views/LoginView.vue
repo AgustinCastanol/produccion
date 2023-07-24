@@ -57,6 +57,7 @@ async function login() {
   const res = await API.login({ user: username.value, password: password.value, email: email.value })
   if (res.data !== undefined) {
     toast.add({ severity: 'success', summary: 'Success', detail: 'Login successful', life: 3000 });
+    console.log(res.data)
     localStorage.setItem('token', res.data.token)
     router.push('/')
   } else {

@@ -2,331 +2,355 @@
 export default{
   "homologacion": [
     {
-      "nombre": "accesorios_escritorio_set_escritorio_organizadores",
-      "slugAve": "oficina-y-negocios",
-      "slugAveChildrent":"artculos-escritorio",
+      "nombre": "SETS PARA ESCRITORIO Y ORGANIZADORES",
+      "slugAve": "artculos-escritorio",
+      "slugAveChildrent":"",
     },
     {
-      "nombre": "hogar_herramientas_bar",
-      "slugAve": "hogar",
-      "slugAveChildrent":"artculos-cocina",
+      "nombre": "BAR",
+      "slugAve": "bar-y-vino",
+      "slugAveChildrent":"",
     },
     {
-      "nombre": "viaje_accesorios_playa",
+      "nombre": "ACCESORIOS PARA PLAYA",
       "slugAve": "viaje",
       "slugAveChildrent":"",
     },
     {
-      "nombre": "textiles_mochilas",
-      "slugAve": "bolsos-maletines-y-morrales",
+      "nombre": "MOCHILAS EJECUTIVAS",
+      "slugAve": "morrales-y-maletines",
       "slugAveChildrent":"",
     },
     {
-      "nombre": "cilindros_plasticos",
-      "slugAve": "bebidas",
-      "slugAveChildrent":"botilitos-plsticos",
+      "nombre": "CILINDROS PL&aacute;STICOS",
+      "slugAve": "botilitos-plsticos",
+      "slugAveChildrent":"",
     },
     {
-      "nombre": "oficina_tecnologia_accesorios_smartphone_tablets",
+      "nombre": "ACCESORIOS SMARTPHONE Y TABLET",
       "slugAve": "accesorios-para-moviles",
       "slugAveChildrent":"",
     },
     {
-      "nombre": "audio_audifonos",
-      "slugAve": "tecnologa",
-      "slugAveChildrent":"audifonos",
-    },
-    {
-      "nombre": "textiles_hieleras_loncheras",
-      "slugAve": "neveras-y-loncheras",
+      "nombre": "AUD&iacute;FONOS",
+      "slugAve": "audifonos",
       "slugAveChildrent":"",
     },
     {
-      "nombre": "hogar_herramientas_bbq",
+      "nombre": "BBQ",
       "slugAve": "set-de-bbq",
       "slugAveChildrent":"",
     },
     {
-      "nombre": "accesorios_escritorio_calendarios",
+      "nombre": "CALENDARIOS",
       "slugAve": "artculos-escritorio",
       "slugAveChildrent":"",
     },
     {
-      "nombre": "oficina_tecnologia_computo",
-      "slugAve": "tecnologa",
+      "nombre": "C&oacute;MPUTO",
+      "slugAve": "accesorios-de-computador",
       "slugAveChildrent":"",
     },
     {
-      "nombre": "textiles_chamarras_chalecos",
+      "nombre": "CHAMARRAS Y CHALECOS",
       "slugAve": "chaquetas",
       "slugAveChildrent":"",
     },
     {
-      "nombre": "belleza_espejos_cepillos",
+      "nombre": "ESPEJOS Y CEPILLOS",
+      "slugAve": "salud-y-cuidado-personal",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "COSMETIQUERAS Y ALHAJEROS",
       "slugAve": "belleza",
       "slugAveChildrent":"",
     },
     {
-      "nombre": "belleza_cosmetiqueras_alhajeros",
+      "nombre": "SETS DE BROCHAS Y MANICURE",
       "slugAve": "belleza",
       "slugAveChildrent":"",
     },
     {
-      "nombre": "belleza_set_brochas_manicure",
-      "slugAve": "belleza",
-      "slugAveChildrent":"",
-    },
-    {
-      "nombre": "viaje_complementos_equipaje",
+      "nombre": "COMPLEMENTOS DE EQUIPAJE",
       "slugAve": "organizadores-de-viaje",
       "slugAveChildrent":"",
     },
     {
-      "nombre": "belleza_costureros",
-      "slugAve": "belleza",
+      "nombre": "COSTUREROS",
+      "slugAve": "varios",
       "slugAveChildrent":"",
     },
     {
-      "nombre": "salud_higiene_cuidado_personal",
+      "nombre": "HIGIENE Y CUIDADO PERSONAL",
       "slugAve": "salud-y-cuidado-personal",
       "slugAveChildrent":"",
     },
     {
-      "nombre": "ninios_articulos_escolares",
+      "nombre": "ART&iacute;CULOS ESCOLARES",
       "slugAve": "artculos-escritorio",
       "slugAveChildrent":"",
     },
     {
-      "nombre": "llaveros_funciones",
+      "nombre": "LLAVEROS FUNCIONES",
       "slugAve": "llaveros",
       "slugAveChildrent":"",
     },
     {
-      "nombre": "escritura_boligrafos_funciones",
-      "slugAve": "escritura",
+      "nombre": "BOL&iacute;GRAFOS FUNCIONES",
+      "slugAve": "boligrafos-plasticos",
       "slugAveChildrent":"",
     },
     {
-      "nombre": "ninios_juguetes",
-      "slugAve": "deportes-y-juegos",
+      "nombre": "JUGUETES",
+      "slugAve": "juegos-y-recreacin",
       "slugAveChildrent":"",
-    },{
-      "nombre": "escritura_boligrafos_plasticos",
-      "slugAve": "escritura",
-      "slugAveChildrent":"boligrafos-plasticos",
     },
     {
-      "nombre": "hogar_herramientas_auto",
+      "nombre": "BOL&iacute;GRAFOS PL&aacute;STICOS",
+      "slugAve": "boligrafos-plasticos",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "AUTO",
       "slugAve": "accesorios-para-automovil",
       "slugAveChildrent":"",
     },
     {
-      "nombre": "escritura_boligrafos_metalicos",
-      "slugAve": "escritura",
-      "slugAveChildrent":"boligrafos-metlicos",
-    },
-    {
-      "nombre": "hogar_herramientas_sets_herramientas_multifuncionales",
-      "slugAve": "hogar",
-      "slugAveChildrent":"artculos-hogar",
-    },
-    {
-      "nombre": "hogar_herramientas_desarmadores_flexometros",
-      "slugAve": "herramienteros",
+      "nombre": "SET DE HERRAMIENTAS Y MULTIFUNCIONALES",
+      "slugAve": "herramientas-e-iluminacin",
       "slugAveChildrent":"",
     },
     {
-      "nombre": "hogar_herramientas_jardineria",
-      "slugAve": "herramienteros",
+      "nombre": "DESARMADORES Y FLEX&oacute;METROS",
+      "slugAve": "metros",
       "slugAveChildrent":"",
     },
     {
-      "nombre": "hogar_herramientas_navajas",
-      "slugAve": "herramienteros",
-      "slugAveChildrent":"",
-    },
-    {
-      "nombre": "libretas_carpetas_escritorio",
-      "slugAve": "libretas-y-agendas",
-      "slugAveChildrent":"",
-    },
-    {
-      "nombre": "libretas_carpetas_ecologicas",
-      "slugAve": "libretas-y-agendas",
-      "slugAveChildrent":"",
-    },
-    {
-      "nombre": "libretas_carpetas_bolsillo",
-      "slugAve": "libretas-y-agendas",
-      "slugAveChildrent":"",
-    },
-    {
-      "nombre": "accesorios_escritorio_porta_notas",
-      "slugAve": "stickies-y-sets-adhesivos",
-      "slugAveChildrent":"",
-    },
-    {
-      "nombre":"salud_articulos_medicos",
-      "slugAve":"salud-y-cuidado-personal",
-      "slugAveChildrent":"",
-    },
-    {
-      "nombre":"libretas_carpetas_carpetas",
-      "slugAve":"libretas-y-agendas",
-      "slugAveChildrent":"",
-    },
-    {
-      "nombre":"textiles_paraguas_impermeable",
-      "slugAve":"impermeables",
-      "slugAveChildrent":"",
-    },
-    {
-      "nombre":"ninios_alcancias",
-      "slugAve":"artculos-escritorio",
-      "slugAveChildrent":"",
-    },
-    {
-      "nombre":"tiempo_libre_entretenimiento",
-      "slugAve":"juegos-y-recreacin",
-      "slugAveChildrent":"",
-    },
-    {
-      "nombre": "llaveros_metalicos",
-      "slugAve": "metalicos",
-      "slugAveChildrent":"",
-    },
-    {
-      "nombre": "hogar_herramientas_accesorios_cocina",
-      "slugAve": "hogar",
-      "slugAveChildrent":"artculos-cocina",
-    },
-    {
-      "nombre": "hogar_herramientas_lamparas",
+      "nombre": "JARDINERIA",
       "slugAve": "artculos-hogar",
       "slugAveChildrent":"",
     },
     {
-      "nombre": "hogar_herramientas_relojes",
-      "slugAve": "relojes",
+      "nombre": "NAVAJAS",
+      "slugAve": "herramienteros",
       "slugAveChildrent":"",
     },
     {
-      "nombre": "accesorios_escritorio_portagafetes",
+      "nombre": "LIBRETAS DE ESCRITORIO",
+      "slugAve": "libretas-y-agendas",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "LIBRETAS ECOL&oacute;GICAS",
+      "slugAve": "libretas-y-agendas",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "LIBRETAS DE BOLSILLO",
+      "slugAve": "libretas-y-agendas",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "PORTA NOTAS",
+      "slugAve": "portadocumentos-y-portafolios",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "LIBRETAS",
+      "slugAve": "libretas-y-agendas",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "ACCESORIOS DE ESCRITORIO",
       "slugAve": "artculos-escritorio",
       "slugAveChildrent":"",
     },
     {
-      "nombre": "hogar_herramientas_portarretratos",
-      "slugAve": "hogar",
-      "slugAveChildrent":"artculos-hogar",
-    },
-    { 
-      "nombre": "salud_pastilleros",
-      "slugAve": "salud-y-cuidado-personal",
-      "slugAveChildrent":"pastilleros",
-    },
-    {
-      "nombre": "mochilas_escolares",
-      "slugAve": "bolsos-maletines-y-morrales",
+      "nombre": "PARAGUAS E IMPERMEABLE",
+      "slugAve": "paraguas-e-impermeables",
       "slugAveChildrent":"",
     },
     {
-      "nombre": "textiles_bolsas",
-      "slugAve": "bolsos-maletines-y-morrales",
+      "nombre": "ALCANC&iacute;AS",
+      "slugAve": "artculos-escritorio",
       "slugAveChildrent":"",
     },
     {
-      "nombre": "maletas_sport",
-      "slugAve": "bolsos-maletines-y-morrales",
-      "slugAveChildrent":"maletines-deportivas",
-    },
-    {
-      "nombre":"mochilas_ejecutivas",
-      "slugAve":"bolsos-maletines-y-morrales",
-      "slugAveChildrent":"morrales-y-maletines",
-    },
-    {
-      "nombre":"maletas_viaje",
-      "slugAve":"bolsos-maletines-y-morrales",
-      "slugAveChildrent":"organizadores-de-viaje",
-    },
-    {
-      "nombre":"mochilas_casuales",
-      "slugAve":"bolsos-maletines-y-morrales",
-      "slugAveChildrent":"morrales-y-maletines",
-    },
-    {
-      "nombre":"salud_antiestres",
-      "slugAve":"antiestrs",
+      "nombre": "ENTRETENIMIENTO",
+      "slugAve": "juegos-y-recreacin",
       "slugAveChildrent":"",
     },
     {
-      "nombre":"deportes_soccer",
-      "slugAve":"deportes-y-juegos",
-      "slugAveChildrent":"productos-futbol",
-    },
-    {
-      "nombre":"textiles_maletas",
-      "slugAve":"bolsos-maletines-y-morrales",
-      "slugAveChildrent":"morrales-y-maletines",
-    },
-    {
-      "nombre":"deportes_accesorios_deportivos",
-      "slugAve":"deportes-y-juegos",
+      "nombre": "ACCESORIOS DE COCINA",
+      "slugAve": "artculos-cocina",
       "slugAveChildrent":"",
     },
     {
-      "nombre":"bebidas_tazas",
-      "slugAve":"bebidas",
+      "nombre": "HIELERAS Y LONCHERAS",
+      "slugAve": "neveras-y-loncheras",
       "slugAveChildrent":"",
     },
     {
-      "nombre":"cilindros_metalicos",
-      "slugAve":"botilitos-metlicos",
+      "nombre": "L&aacute;MPARAS",
+      "slugAve": "herramientas-e-iluminacin",
       "slugAveChildrent":"",
     },
     {
-      "nombre":"bebidas_termos",
-      "slugAve":"termos",
+      "nombre": "CARPETAS",
+      "slugAve": "portadocumentos-y-portafolios",
       "slugAveChildrent":"",
     },
     {
-      "nombre":"bebidas_vasos",
-      "slugAve":"bebidas",
+      "nombre": "CARTERAS Y PORTA DOCUMENTOS",
+      "slugAve": "portadocumentos-y-portafolios",
       "slugAveChildrent":"",
     },
     {
-      "nombre":"oficina_tecnologia_usb",
-      "slugAve":"memorias-usb",
-      "slugAveChildrent":"",
-    },
-    {
-      "nombre":"audio_bocinas",
-      "slugAve":"speakers",
-      "slugAveChildrent":"",
-    },
-    {
-      "nombre":"viaje_carteras_portadocumentos",
-      "slugAve":"portadocumentos-y-portafolios",
-      "slugAveChildrent":"",
-    },
-    {
-      "nombre": "accesorios_escritorio_tarjeteros",
+      "nombre": "TARJETEROS",
       "slugAve": "tarjeteros",
       "slugAveChildrent":"",
-    }
+    },
+    {
+      "nombre": "RELOJES DE ESCRITORIO",
+      "slugAve": "artculos-escritorio",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "RELOJES DE PARED",
+      "slugAve": "relojes",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "PARAGUAS",
+      "slugAve": "paraguas-e-impermeables",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "LLAVEROS MET&aacute;LICOS",
+      "slugAve": "metalicos",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "PORTARRETRATOS",
+      "slugAve": "oficina-y-negocios",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "PASTILLEROS",
+      "slugAve": "pastilleros",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "BOL&iacute;GRAFOS MET&aacute;LICOS",
+      "slugAve": "boligrafos-metlicos",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "BOL&iacute;GRAFOS DE PL&aacute;STICO",
+      "slugAve": "boligrafos-plasticos",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "MOCHILAS ESCOLARES",
+      "slugAve": "tulas",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "BOLSAS",
+      "slugAve": "bolsos-maletines-y-morrales",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "MALETAS SPORT",
+      "slugAve": "maletines-deportivas",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "MALETAS DE VIAJE",
+      "slugAve": "morrales-y-maletines",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "MOCHILAS CASUALES",
+      "slugAve": "morrales-y-maletines",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "MOCHILAS",
+      "slugAve": "morrales-y-maletines",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "ART&iacute;CULOS MEDICOS",
+      "slugAve": "salud-y-cuidado-personal",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "ANTIESTR&eacute;S",
+      "slugAve": "antiestrs",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "SOCCER",
+      "slugAve": "productos-futbol",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "ACCESORIOS DEPORTIVOS",
+      "slugAve": "deportes-y-juegos",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "TAZAS",
+      "slugAve": "botilitos-y-mugs-sublimacion",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "CILINDROS MET&aacute;LICOS",
+      "slugAve": "botilitos-metlicos",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "TERMOS",
+      "slugAve": "termos",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "VASOS",
+      "slugAve": "vasos-y-copas",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "TERMO METALICO",
+      "slugAve": "termos",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "USB",
+      "slugAve": "memorias-usb",
+      "slugAveChildrent":"",
+    },
+    {
+      "nombre": "BOCINAS",
+      "slugAve": "accesorios-para-automovil",
+      "slugAveChildrent":"",
+    },  
   ]
   }
 
-/*[ 
+/* [
 
-    "bebidas_tazas",
-    "cilindros_metalicos",
-    "bebidas_termos",
-    "bebidas_vasos",
-    "oficina_tecnologia_usb",
-    "audio_bocinas"
-]*/
+    "SOCCER",
+    "ACCESORIOS DEPORTIVOS",
+    "TAZAS",
+    "CILINDROS MET&aacute;LICOS",
+    "TERMOS",
+    "VASOS",
+    "TERMO METALICO",
+    "USB",
+    "BOCINAS"
+  ]*/
     
 
 /*[

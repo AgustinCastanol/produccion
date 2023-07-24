@@ -20,7 +20,7 @@ export default class User {
       try {
         console.log("this.generateToken")
         const res = await knex_user_db.raw(`SELECT * FROM "public"."role" WHERE "id_role" = '${user.role}'`)
-        console.log(res)
+        console.log(res.rows[0])
         console.log(user)
         if(res.rows.length > 0){
           this.role = res.rows[0].id_role;
@@ -38,10 +38,10 @@ export default class User {
             expiresIn: process.env.JWT_EXPIRES_IN || "1d",
           }
         );
+        console.log(token)
         return token;
       } catch (err) {
-        console.log(err)
-  
+        console.log(err);
         return null;
       }
     }
@@ -77,14 +77,18 @@ export default class User {
       this.role = null;
     }
     async login(){
+      console.log(this.id_wordpress, this.email, this.password)
       const user = await this.getUser();
+      // console.log("valido user",user)
       if(user == null){
         return {token: false, role: null}
       }
       const check_password = await bcrypt.compare(this.password, user.password_user);
+      // console.log("valido pass",check_password)
       if(!check_password){
         return {token: false, role: null}
       }
+      // console.log("valido role",user.role)
       if(user.role == null){
         return {token: false, role: null}
       }
@@ -145,6 +149,7 @@ export default class User {
     }
     async getUser(){
       try{
+        console.log("this.id_wordpress", this.id_wordpress)
         const res = await knex_user_db.raw(`SELECT * FROM "public"."user" WHERE "id_wp" = '${this.id_wordpress}'`)
         if(res.rows.length > 0){
           return res.rows[0];

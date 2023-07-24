@@ -27,7 +27,7 @@
       </Column>
       <Column field="category_id" header="Categoria">
         <template #body="slotProps">
-          <div>{{ slotProps.data.category_id.name }}</div>
+          <div>{{ slotProps.data.category_id== undefined ? '':slotProps.data.category_id.name }}</div>
         </template>
       </Column>
       <Column field="referencia" header="Referencia">
@@ -73,13 +73,13 @@
     </template>
     <div class="contenedor">
       <div :class="disabled==true?'csv activo':'csv'">
-        <FileUpload name="csv" accept=".csv" url="http://localhost:48700/csv" :chooseLabel="Choose"
+        <FileUpload name="csv" accept=".csv" url="https://back.soyave.com/img_api/csv" :chooseLabel="Choose"
           :uploadLabel="Upload" @before-upload="procesCSV">
         </FileUpload>
       </div>
       <div v-if="disabled"  :class="disabled==true?'image_csv activo':'image_csv'" >
         <FileUpload :multiple="true" name="image" accept=".png"
-          url='http://localhost:48700/imagesArray' @before-upload="loadImages">
+          url='https://back.soyave.com/img_api/imagesArray' @before-upload="loadImages">
           <template #empty>
             <p>Arrastre y suelte las imagenes que desea enlazar</p>
           </template>

@@ -11,7 +11,7 @@ const API_KEY_WP = 'bgwp_marcou8XoL0b47ImGhZsSuwzHCxX0qC6jQhljhhsGYHjisq57KY2rp3
 const URL_API = 'https://api.cataprom.com/rest';
 const collectionOBJ = [
   { id: 'b4995e35-2373-4b36-a3f8-d147f6833a5a', name: 'precio neto' },
-  { id: 'cdf316a6-12f6-4303-8474-23505961e0d2', name: 'precio bruto' },
+  { id: '47ac63e1-42ef-4e49-9ba1-33f1d0050e4d', name: 'precio bruto' },
   { id: '47ac63e1-42ef-4e49-9ba1-33f1d0050e4d', name: 'produccion nacional' },
   { id: '88f91efa-e7f0-4a68-b330-9f3720a738c5', name: 'oferta' }
 ]
@@ -153,7 +153,7 @@ export class PromosService {
         collection = collectionOBJ.find(e => e.name == 'precio neto').id;
       }
       if (collection == '') {
-        collection = collectionOBJ.find(e => e.name == 'precio bruto').id;
+        collection = collectionOBJ.find(e => e.name == 'precio sugerido').id;
       }
       return { str, collection };
     }catch(err){

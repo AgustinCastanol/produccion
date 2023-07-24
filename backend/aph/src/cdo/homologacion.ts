@@ -7,6 +7,11 @@ export default{
       "nombre": "Escritura,Nivel Ejecutivo,Escrituras Metálicas  ",
     },
     {
+      "slugAve":"hogar",
+      "slugAveChildrent":"",
+      "nombre":"Hogar,Eco"
+    },
+    {
       "slugAve": "escritura",
       "slugAveChildrent":"",
       "nombre":"Escritura,Escrituras Plásticas y otros"
@@ -541,6 +546,26 @@ export default{
       "slugAve":"oficina-y-negocios",
       "slugAveChildrent":"",
       "nombre":"Hogar,Oficina y Negocios,Eco,Home Office"
+    },
+    {
+      "slugAve":"boligrafos-metlicos",
+      "slugAveChildrent":"",
+      "nombre":"Escrituras Metálicas  ,Oficina y Negocios,Nivel Ejecutivo"
+    },
+    {
+      "slugAve":"bolsos-maletines-y-morrales",
+      "slugAveChildrent":"",
+      "nombre":"Bolsos, Maletines y Morrales,Big Logo,Nivel Ejecutivo,Oficina y Negocios"
+    },
+    {
+      "slugAve":"viaje",
+      "slugAveChildrent":"",
+      "nombre":"Tiempo Libre,Bolsos, Maletines y Morrales,Oficina y Negocios,Viajes"
+    },
+    {
+      "slugAve":"oficina-y-negocios",
+      "slugAveChildrent":"",
+      "nombre":"Oficina y Negocios,Eco,Pocket,Masivos,Home Office,Hogar"
     }
     ]
 }
