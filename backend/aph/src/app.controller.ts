@@ -1074,7 +1074,7 @@ export class AppController {
               if (variants.length == 1) {
                 // console.log(variants)
                 /*buscar si el sku de la variante (variants[0].sku) es igual a el material del stock (Stock["Material"]) y obtener el objeto del stock */
-                const stock = Stocks.find((stock: { "Material": string, "Stock": number, "Planta": string }) => stock["Material"] == variants[0].sku);
+                const stock = Stocks.find((stock: { "Material": string, "Stock": number, "Planta": string }) =>( stock["Material"] == variants[0].sku && stock["Planta"] == 'COL'));
                 if (stock != -1) {
                   const location = await this.aphService.getStockByVariant({ id_variant: variants[0].id_variant })
                   // console.log(location)
